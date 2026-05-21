@@ -1,0 +1,7 @@
+*                       @tekktopia/frontend
+
+/packages/ui/           @tekktopia/design-system
+/packages/design-tokens/  @tekktopia/design-system
+/apps/super-admin/      @tekktopia/frontend @tekktopia/platform
+/apps/credentials/      @tekktopia/frontend
+/apps/learn/            @tekktopia/frontend @tekktopia/training
