@@ -1,0 +1,4 @@
+{
+  "extends": "@topiadesk/tsconfig/base.json",
+  "include": ["src/**/*"]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "@topiadesk/tsconfig",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared TypeScript configuration for topiadesk-web",
+  "files": ["base.json", "nextjs.json", "react-library.json"]
+}
