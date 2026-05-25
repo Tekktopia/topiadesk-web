@@ -1,0 +1,50 @@
+/**
+ * Topiadesk design tokens — Tailwind v4 theme.
+ * Apps that consume @topiadesk/ui should import this file once in their
+ * global stylesheet (after `@import "tailwindcss"`).
+ */
+
+@theme {
+  /* Brand */
+  --color-brand-navy: #1d3a5f;
+  --color-brand-navy-light: #22436e;
+  --color-brand-green: #22c55e;
+
+  /* Semantic surface colors */
+  --color-background: #ffffff;
+  --color-foreground: #0f172a;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-border: #e2e8f0;
+  --color-ring: #1d3a5f;
+
+  /* Status */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Radii */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* Base resets and defaults that apply across every Topiadesk app. */
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
