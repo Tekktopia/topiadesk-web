@@ -2,9 +2,9 @@ import { cn } from '../lib/cn';
 
 const priorityClasses: Record<string, string> = {
   low: 'bg-slate-400',
-  medium: 'bg-info',
-  high: 'bg-warning',
-  urgent: 'bg-danger',
+  medium: 'bg-blue-500',
+  high: 'bg-amber-500',
+  urgent: 'bg-red-500',
 };
 
 const priorityLabels: Record<string, string> = {

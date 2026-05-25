@@ -1,50 +1,188 @@
 /**
- * Topiadesk design tokens — Tailwind v4 theme.
- * Apps that consume @topiadesk/ui should import this file once in their
- * global stylesheet (after `@import "tailwindcss"`).
+ * Topiadesk / Tekktopia brand theme — Tailwind v4.
+ * Apps consume this file via `@import '@topiadesk/ui/theme.css'` (or a
+ * relative path). The host stylesheet is responsible for `@import "tailwindcss"`.
  */
 
-@theme {
-  /* Brand */
-  --color-brand-navy: #1d3a5f;
-  --color-brand-navy-light: #22436e;
-  --color-brand-green: #22c55e;
+@custom-variant dark (&:is(.dark *));
 
-  /* Semantic surface colors */
-  --color-background: #ffffff;
-  --color-foreground: #0f172a;
-  --color-muted: #f1f5f9;
-  --color-muted-foreground: #64748b;
-  --color-border: #e2e8f0;
-  --color-ring: #1d3a5f;
+@theme inline {
+  --color-background:   var(--background);
+  --color-foreground:   var(--foreground);
 
-  /* Status */
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-  --color-info: #3b82f6;
+  /* Font mapping */
+  --font-sans:    var(--font-inter);
+  --font-display: var(--font-space-grotesk);
+  --font-mono:    var(--font-jetbrains-mono);
 
-  /* Radii */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
+  /* Brand colour tokens */
+  --color-navy:         var(--navy);
+  --color-navy-mid:     var(--navy-mid);
+  --color-navy-light:   var(--navy-light);
+  --color-blue:         var(--blue);
+  --color-blue-light:   var(--blue-light);
+  --color-orange:       var(--orange);
+  --color-orange-light: var(--orange-light);
+  --color-slate:        var(--slate);
+  --color-off-white:    var(--off-white);
 
-  /* Typography */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --color-card:                var(--card);
+  --color-card-foreground:     var(--card-foreground);
+  --color-primary:             var(--primary);
+  --color-primary-foreground:  var(--primary-foreground);
+  --color-secondary:           var(--secondary);
+  --color-secondary-foreground:var(--secondary-foreground);
+  --color-muted:               var(--muted);
+  --color-muted-foreground:    var(--muted-foreground);
+  --color-accent:              var(--accent);
+  --color-accent-foreground:   var(--accent-foreground);
+  --color-border:              var(--border);
+  --color-input:               var(--input);
+  --color-ring:                var(--ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.5);
 }
 
-/* Base resets and defaults that apply across every Topiadesk app. */
+:root {
+  /* ── Tekktopia Brand Tokens ─────────────────── */
+  --navy:         #0F172A;   /* deep navy — dark sections, footer */
+  --navy-mid:     #1E293B;   /* slightly lighter navy */
+  --navy-light:   #334155;   /* muted navy — borders on dark sections */
+
+  --blue:         #2563EB;   /* primary brand blue */
+  --blue-light:   #3B82F6;   /* hover state */
+
+  --orange:       #F97316;   /* brand orange — logo, active states, accents */
+  --orange-light: #FB923C;   /* orange hover */
+
+  --slate:        #64748B;   /* body text secondary */
+  --off-white:    #F8FAFC;   /* light section bg */
+
+  --radius: 0.75rem;
+}
+
+html.dark{
+  /* ── Semantic Tokens ──────────────── */
+  --background:   #04080F;
+  --foreground:   #ffffff;
+
+  --card:              #FFFFFF;
+  --card-foreground:   #0F172A;
+
+  --primary:             #2563EB;
+  --primary-foreground:  #FFFFFF;
+
+  --secondary:             #F8FAFC;
+  --secondary-foreground:  #0F172A;
+
+  --muted:             #F1F5F9;
+  --muted-foreground:  #64748B;
+
+  --accent:             #F97316;
+  --accent-foreground:  #FFFFFF;
+
+  --border: #E2E8F0;
+  --input:  #E2E8F0;
+  --ring:   #2563EB;
+}
+
+/* Light mode semantic token */
+html.light{
+  --background:        #F8FAFC;
+  --foreground:        #0F172A;
+
+  --card:              #FFFFFF;
+  --card-foreground:   #0F172A;
+
+  --primary:           #3B82F6;   /* blue in light mode */
+  --primary-foreground:#FFFFFF;
+
+  --secondary:             #F1F5F9;
+  --secondary-foreground:  #0F172A;
+
+  --muted:             #F1F5F9;
+  --muted-foreground:  #64748B;
+
+  --accent:            #F97316;
+  --accent-foreground: #FFFFFF;
+
+  --border: #E2E8F0;
+  --input:  #E2E8F0;
+  --ring:   #3B82F6;
+}
+
 @layer base {
   * {
-    border-color: var(--color-border);
+    @apply border-border outline-ring/50;
   }
-
+  html {
+    @apply scroll-smooth;
+    overflow-x: hidden;
+  }
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
+    @apply bg-background text-foreground antialiased font-sans selection:bg-blue selection:text-white;
+    overflow-x: hidden;
   }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display text-foreground;
+  }
+}
+
+/* ── GT Walsheim Pro (local — place files in /public/fonts/) ─────────────── */
+/*    Grilli Type licenced font. Drop the .woff2 files from your licence kit  */
+/*    into public/fonts/ using the exact filenames below.                     */
+@font-face {
+  font-family: "GT Walsheim Pro";
+  src: url("/fonts/GTWalsheimPro-Regular.woff2") format("woff2"),
+       url("/fonts/GTWalsheimPro-Regular.woff")  format("woff");
+  font-weight: 400;
+  font-style:  normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GT Walsheim Pro";
+  src: url("/fonts/GTWalsheimPro-Medium.woff2") format("woff2"),
+       url("/fonts/GTWalsheimPro-Medium.woff")  format("woff");
+  font-weight: 500;
+  font-style:  normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GT Walsheim Pro";
+  src: url("/fonts/GTWalsheimPro-Bold.woff2") format("woff2"),
+       url("/fonts/GTWalsheimPro-Bold.woff")  format("woff");
+  font-weight: 700;
+  font-style:  normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GT Walsheim Pro";
+  src: url("/fonts/GTWalsheimPro-Black.woff2") format("woff2"),
+       url("/fonts/GTWalsheimPro-Black.woff")  format("woff");
+  font-weight: 900;
+  font-style:  normal;
+  font-display: swap;
+}
+
+/* ── Marquee ticker ───────────────────────────────────────────────────────── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ── Subtle grid pattern used in hero ────────────────────────────────────── */
+.bg-grid-slate {
+  background-image:
+    linear-gradient(to right, #E2E8F040 1px, transparent 1px),
+    linear-gradient(to bottom, #E2E8F040 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ── Subtle dot grid for dark sections ───────────────────────────────────── */
+.bg-dot-navy {
+  background-image: radial-gradient(#FFFFFF0A 1px, transparent 1px);
+  background-size: 24px 24px;
 }
