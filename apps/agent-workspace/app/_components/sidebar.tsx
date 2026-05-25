@@ -38,7 +38,7 @@ export function Sidebar() {
   return (
     <aside className="hidden w-60 shrink-0 flex-col border-r bg-background md:flex">
       <div className="flex h-14 items-center gap-3 border-b px-5">
-        <div className="grid h-8 w-8 place-items-center rounded-md bg-brand-navy text-white">
+        <div className="grid h-8 w-8 place-items-center rounded-md bg-primary text-white">
           <span className="text-sm font-bold">T</span>
         </div>
         <div className="flex flex-col leading-tight">
@@ -61,7 +61,7 @@ export function Sidebar() {
                   className={cn(
                     'group flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                     active
-                      ? 'bg-brand-navy text-white'
+                      ? 'bg-primary text-white'
                       : 'text-foreground hover:bg-muted',
                   )}
                 >

@@ -22,9 +22,9 @@ import {
   TableRow,
   cn,
 } from '@topiadesk/ui';
-import { useTickets } from '../../lib/queries';
-import { initials, relativeTime } from '../../lib/format';
-import type { TicketStatus } from '../../lib/mock-data';
+import { useTickets } from '@/lib/queries';
+import { initials, relativeTime } from '@/lib/format';
+import type { TicketStatus } from '@/lib/mock-data';
 
 const statusFilters: Array<TicketStatus | 'all'> = [
   'all',
@@ -105,7 +105,7 @@ export default function TicketsPage() {
                   className={cn(
                     'rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
                     statusFilter === s
-                      ? 'bg-brand-navy text-white'
+                      ? 'bg-primary text-white'
                       : 'bg-muted text-foreground hover:bg-muted/70',
                   )}
                 >

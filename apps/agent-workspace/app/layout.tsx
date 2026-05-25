@@ -1,8 +1,24 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Shell } from './_components/shell';
+import { Inter, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import { Providers } from './providers';
 import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-space-grotesk',
+  display: 'swap',
+});
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Topiadesk - Agent Workspace',
@@ -11,11 +27,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body className="bg-muted/30 text-foreground antialiased">
-        <Providers>
-          <Shell>{children}</Shell>
-        </Providers>
+    <html
+      lang="en"
+      className={`light ${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
+    >
+      <body className="antialiased">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

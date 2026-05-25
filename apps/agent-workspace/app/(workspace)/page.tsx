@@ -21,8 +21,8 @@ import {
   Clock,
   ArrowUpRight,
 } from 'lucide-react';
-import { useDashboardMetrics, useTickets } from '../lib/queries';
-import { initials, relativeTime } from '../lib/format';
+import { useDashboardMetrics, useTickets } from '@/lib/queries';
+import { initials, relativeTime } from '@/lib/format';
 
 export default function DashboardPage() {
   const metrics = useDashboardMetrics();
@@ -92,7 +92,7 @@ export default function DashboardPage() {
             <CardTitle>Recent activity</CardTitle>
             <Link
               href="/tickets"
-              className="inline-flex items-center gap-1 text-xs font-medium text-brand-navy hover:underline"
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
             >
               View all
               <ArrowUpRight className="h-3 w-3" />
@@ -175,9 +175,9 @@ interface MetricCardProps {
 }
 
 const accentClasses: Record<MetricCardProps['accent'], string> = {
-  info: 'bg-info/10 text-info',
-  warning: 'bg-warning/10 text-warning',
-  success: 'bg-success/10 text-success',
+  info: 'bg-blue-100 text-blue-800',
+  warning: 'bg-amber-100 text-amber-800',
+  success: 'bg-emerald-100 text-emerald-800',
   default: 'bg-muted text-muted-foreground',
 };
 
@@ -226,9 +226,9 @@ interface SlaBarProps {
 }
 
 const slaBarFill: Record<SlaBarProps['variant'], string> = {
-  success: 'bg-success',
-  warning: 'bg-warning',
-  danger: 'bg-danger',
+  success: 'bg-emerald-500',
+  warning: 'bg-amber-500',
+  danger: 'bg-red-500',
 };
 
 function SlaBar({ label, count, total, variant }: SlaBarProps) {

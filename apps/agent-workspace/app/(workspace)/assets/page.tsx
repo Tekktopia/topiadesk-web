@@ -16,8 +16,8 @@ import {
   TableRow,
   type BadgeProps,
 } from '@topiadesk/ui';
-import { useAssets } from '../../lib/queries';
-import { initials } from '../../lib/format';
+import { useAssets } from '@/lib/queries';
+import { initials } from '@/lib/format';
 
 type AssetStatus = 'in_use' | 'in_stock' | 'under_repair' | 'lost';
 

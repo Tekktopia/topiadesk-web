@@ -22,10 +22,10 @@ import {
   TabsTrigger,
   Textarea,
 } from '@topiadesk/ui';
-import { useTicket } from '../../../lib/queries';
-import { mockAssets } from '../../../lib/mock-data';
-import { absoluteDateTime, initials, relativeTime } from '../../../lib/format';
-import type { ConversationMessage, Person } from '../../../lib/mock-data';
+import { useTicket } from '@/lib/queries';
+import { mockAssets } from '@/lib/mock-data';
+import { absoluteDateTime, initials, relativeTime } from '@/lib/format';
+import type { ConversationMessage, Person } from '@/lib/mock-data';
 
 export default function TicketDetailPage() {
   const params = useParams<{ id: string }>();
@@ -45,7 +45,7 @@ export default function TicketDetailPage() {
         <p className="text-sm text-muted-foreground">Ticket not found.</p>
         <Link
           href="/tickets"
-          className="mt-3 inline-flex items-center gap-2 text-sm text-brand-navy hover:underline"
+          className="mt-3 inline-flex items-center gap-2 text-sm text-primary hover:underline"
         >
           <ArrowLeft className="h-4 w-4" /> Back to tickets
         </Link>
@@ -311,7 +311,7 @@ function ConversationThread({
       {all.map((m) => (
         <Card
           key={m.id}
-          className={m.isInternal ? 'border-warning/40 bg-warning/5' : undefined}
+          className={m.isInternal ? 'border-amber-300 bg-amber-50' : undefined}
         >
           <CardContent className="space-y-2 p-4">
             <div className="flex items-center justify-between">

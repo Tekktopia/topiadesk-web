@@ -35,7 +35,7 @@ export function Topbar() {
           className="relative grid h-9 w-9 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <Bell className="h-4 w-4" />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-danger" />
+          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
         </button>
 
         <DropdownMenu>
