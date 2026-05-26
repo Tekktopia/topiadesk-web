@@ -1,11 +1,5 @@
 @import 'tailwindcss';
 @import '../../../packages/ui/src/theme.css';
+
 @source '../../../packages/ui/src';
-
-:root {
-  color-scheme: light;
-}
-
-body {
-  font-family: Inter, system-ui, -apple-system, sans-serif;
-}
+@source '../app';
