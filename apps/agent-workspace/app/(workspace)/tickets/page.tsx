@@ -6,19 +6,26 @@ import type { ComponentType } from 'react';
 import {
   ArrowDown,
   ArrowUp,
-  ArrowUpRight,
   Bookmark,
   ChevronDown,
+  ChevronRight,
+  Code,
   Download,
   Filter,
+  Globe,
+  Group,
   Inbox,
   LayoutGrid,
   Mail,
+  MessageSquare,
+  MonitorSmartphone,
   MoreHorizontal,
+  Phone,
   Plus,
   Reply,
   Rows3,
   Search,
+  Smartphone,
   Sparkles,
   Tag,
   Trash2,
@@ -54,14 +61,21 @@ import {
   cn,
 } from '@topiadesk/ui';
 import { useTickets } from '@/lib/queries';
-import type { MockTicket, TicketStatus } from '@/lib/mock-data';
-import { initials, relativeTime } from '@/lib/format';
+import { agentDirectory } from '@/lib/mock-data';
+import type {
+  MockTicket,
+  Person,
+  TicketChannel,
+  TicketPriority,
+  TicketStatus,
+} from '@/lib/mock-data';
+import { absoluteDateTime, initials, relativeTime } from '@/lib/format';
 
 interface View {
   id: string;
   label: string;
   icon: ComponentType<{ className?: string }>;
-  count?: number;
+  source: 'system' | 'personal' | 'shared';
   filter: (t: MockTicket) => boolean;
 }
 
@@ -72,12 +86,14 @@ const VIEWS: View[] = [
     id: 'all',
     label: 'All open',
     icon: Inbox,
+    source: 'system',
     filter: (t) => !['resolved', 'closed', 'spam'].includes(t.status),
   },
   {
     id: 'my-open',
     label: 'My open',
     icon: Mail,
+    source: 'system',
     filter: (t) =>
       t.assignee?.id === CURRENT_AGENT_ID &&
       !['resolved', 'closed', 'spam'].includes(t.status),
@@ -86,12 +102,14 @@ const VIEWS: View[] = [
     id: 'unassigned',
     label: 'Unassigned',
     icon: UserPlus,
+    source: 'system',
     filter: (t) => !t.assignee,
   },
   {
     id: 'attention',
     label: 'Needs attention',
     icon: Sparkles,
+    source: 'system',
     filter: (t) =>
       t.slaStatus === 'breached' ||
       t.slaStatus === 'at_risk' ||
@@ -101,12 +119,21 @@ const VIEWS: View[] = [
     id: 'high-priority',
     label: 'High priority',
     icon: Bookmark,
+    source: 'system',
     filter: (t) => t.priority === 'high' || t.priority === 'urgent',
+  },
+  {
+    id: 'vip',
+    label: 'VIP requesters',
+    icon: Sparkles,
+    source: 'personal',
+    filter: (t) => t.tags.includes('vip'),
   },
   {
     id: 'resolved',
     label: 'Resolved this week',
-    icon: ArrowUpRight,
+    icon: Inbox,
+    source: 'shared',
     filter: (t) => t.status === 'resolved',
   },
 ];
@@ -122,16 +149,62 @@ const STATUS_OPTIONS: TicketStatus[] = [
   'closed',
 ];
 
-type SortKey = 'updated' | 'priority' | 'created';
+const PRIORITY_OPTIONS: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
+
+const CHANNEL_OPTIONS: TicketChannel[] = [
+  'email',
+  'portal',
+  'whatsapp',
+  'voice',
+  'sms',
+  'widget',
+  'api',
+];
+
+const CHANNEL_META: Record<TicketChannel, { label: string; icon: ComponentType<{ className?: string }> }> = {
+  email: { label: 'Email', icon: Mail },
+  portal: { label: 'Customer portal', icon: Globe },
+  whatsapp: { label: 'WhatsApp', icon: Smartphone },
+  voice: { label: 'Voice call', icon: Phone },
+  sms: { label: 'SMS', icon: MessageSquare },
+  widget: { label: 'Web widget', icon: MonitorSmartphone },
+  api: { label: 'API', icon: Code },
+};
+
+const STATUS_LABEL: Record<TicketStatus, string> = {
+  new: 'New',
+  open: 'Open',
+  in_progress: 'In progress',
+  pending: 'Pending',
+  on_hold: 'On hold',
+  escalated: 'Escalated',
+  resolved: 'Resolved',
+  closed: 'Closed',
+};
+
+const PRIORITY_LABEL: Record<TicketPriority, string> = {
+  low: 'Low',
+  medium: 'Medium',
+  high: 'High',
+  urgent: 'Urgent',
+};
+
+type SortKey = 'updated' | 'priority' | 'created' | 'sla';
 type Density = 'compact' | 'comfortable';
+type GroupKey = 'none' | 'status' | 'priority' | 'assignee' | 'channel';
+
+const PAGE_SIZE = 25;
 
 export default function TicketsPage() {
   const { data: tickets, isLoading } = useTickets();
+
   const [viewId, setViewId] = useState<string>('all');
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<Set<TicketStatus>>(
-    new Set(),
-  );
+  const [statusFilter, setStatusFilter] = useState<Set<TicketStatus>>(new Set());
+  const [priorityFilter, setPriorityFilter] = useState<Set<TicketPriority>>(new Set());
+  const [assigneeFilter, setAssigneeFilter] = useState<Set<string>>(new Set());
+  const [channelFilter, setChannelFilter] = useState<Set<TicketChannel>>(new Set());
+
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' }>({
@@ -139,6 +212,9 @@ export default function TicketsPage() {
     dir: 'desc',
   });
   const [density, setDensity] = useState<Density>('comfortable');
+  const [groupBy, setGroupBy] = useState<GroupKey>('none');
+  const [page, setPage] = useState(1);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   const activeView = VIEWS.find((v) => v.id === viewId) ?? VIEWS[0]!;
 
@@ -156,16 +232,33 @@ export default function TicketsPage() {
     return list
       .filter((t) => {
         if (statusFilter.size > 0 && !statusFilter.has(t.status)) return false;
+        if (priorityFilter.size > 0 && !priorityFilter.has(t.priority)) return false;
+        if (channelFilter.size > 0 && !channelFilter.has(t.channel)) return false;
+        if (assigneeFilter.size > 0) {
+          if (assigneeFilter.has('__unassigned__')) {
+            if (t.assignee && !assigneeFilter.has(t.assignee.id)) return false;
+            if (!t.assignee) {
+              // include unassigned (allowed)
+            } else if (!assigneeFilter.has(t.assignee.id)) {
+              return false;
+            }
+          } else {
+            if (!t.assignee || !assigneeFilter.has(t.assignee.id)) return false;
+          }
+        }
         if (search) {
           const q = search.toLowerCase();
-          if (
-            !t.subject.toLowerCase().includes(q) &&
-            !t.number.toLowerCase().includes(q) &&
-            !t.requester.name.toLowerCase().includes(q) &&
-            !t.category.toLowerCase().includes(q)
-          ) {
-            return false;
-          }
+          const hay = [
+            t.subject,
+            t.number,
+            t.requester.name,
+            t.requester.email,
+            t.category,
+            ...t.tags,
+          ]
+            .join(' ')
+            .toLowerCase();
+          if (!hay.includes(q)) return false;
         }
         return true;
       })
@@ -173,15 +266,19 @@ export default function TicketsPage() {
         const dir = sort.dir === 'asc' ? 1 : -1;
         if (sort.key === 'updated') {
           return (
-            (new Date(a.updatedAt).getTime() -
-              new Date(b.updatedAt).getTime()) *
+            (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()) *
             dir
           );
         }
         if (sort.key === 'created') {
           return (
-            (new Date(a.createdAt).getTime() -
-              new Date(b.createdAt).getTime()) *
+            (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) *
+            dir
+          );
+        }
+        if (sort.key === 'sla') {
+          return (
+            (new Date(a.slaDueAt).getTime() - new Date(b.slaDueAt).getTime()) *
             dir
           );
         }
@@ -193,19 +290,40 @@ export default function TicketsPage() {
         };
         return ((order[a.priority] ?? 0) - (order[b.priority] ?? 0)) * dir;
       });
-  }, [tickets, activeView, search, statusFilter, sort]);
+  }, [
+    tickets,
+    activeView,
+    search,
+    statusFilter,
+    priorityFilter,
+    assigneeFilter,
+    channelFilter,
+    sort,
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pageStart = (safePage - 1) * PAGE_SIZE;
+  const pageRows = groupBy === 'none' ? filtered.slice(pageStart, pageStart + PAGE_SIZE) : filtered;
+
+  const grouped = useMemo(() => groupTickets(pageRows, groupBy), [pageRows, groupBy]);
 
   const allSelected =
-    filtered.length > 0 && filtered.every((t) => selected.has(t.id));
+    pageRows.length > 0 && pageRows.every((t) => selected.has(t.id));
   const someSelected =
-    filtered.some((t) => selected.has(t.id)) && !allSelected;
+    pageRows.some((t) => selected.has(t.id)) && !allSelected;
+
+  function clearAllFilters() {
+    setStatusFilter(new Set());
+    setPriorityFilter(new Set());
+    setAssigneeFilter(new Set());
+    setChannelFilter(new Set());
+    setSearch('');
+  }
 
   function toggleSelectAll() {
-    if (allSelected) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(filtered.map((t) => t.id)));
-    }
+    if (allSelected) setSelected(new Set());
+    else setSelected(new Set(pageRows.map((t) => t.id)));
   }
 
   function toggleRow(id: string) {
@@ -213,15 +331,6 @@ export default function TicketsPage() {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
-      return next;
-    });
-  }
-
-  function toggleStatusFilter(s: TicketStatus) {
-    setStatusFilter((prev) => {
-      const next = new Set(prev);
-      if (next.has(s)) next.delete(s);
-      else next.add(s);
       return next;
     });
   }
@@ -234,9 +343,25 @@ export default function TicketsPage() {
     );
   }
 
+  function toggleGroup(key: string) {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
   const previewTicket = previewId
     ? filtered.find((t) => t.id === previewId) ?? null
     : null;
+
+  const activeFilterCount =
+    statusFilter.size +
+    priorityFilter.size +
+    assigneeFilter.size +
+    channelFilter.size +
+    (search ? 1 : 0);
 
   return (
     <div className="grid h-full min-h-[calc(100vh-3.5rem)] grid-cols-1 md:grid-cols-[220px_1fr] xl:grid-cols-[220px_1fr_380px]">
@@ -246,6 +371,7 @@ export default function TicketsPage() {
           setViewId(id);
           setSelected(new Set());
           setPreviewId(null);
+          setPage(1);
         }}
         counts={viewCounts}
       />
@@ -256,18 +382,64 @@ export default function TicketsPage() {
           total={tickets?.length ?? 0}
           showing={filtered.length}
           search={search}
-          setSearch={setSearch}
+          setSearch={(v) => {
+            setSearch(v);
+            setPage(1);
+          }}
           density={density}
           setDensity={setDensity}
+          groupBy={groupBy}
+          setGroupBy={(g) => {
+            setGroupBy(g);
+            setPage(1);
+          }}
         />
 
         <FilterBar
           statusFilter={statusFilter}
-          onToggleStatus={toggleStatusFilter}
-          onClear={() => setStatusFilter(new Set())}
+          setStatusFilter={(s) => {
+            setStatusFilter(s);
+            setPage(1);
+          }}
+          priorityFilter={priorityFilter}
+          setPriorityFilter={(s) => {
+            setPriorityFilter(s);
+            setPage(1);
+          }}
+          assigneeFilter={assigneeFilter}
+          setAssigneeFilter={(s) => {
+            setAssigneeFilter(s);
+            setPage(1);
+          }}
+          channelFilter={channelFilter}
+          setChannelFilter={(s) => {
+            setChannelFilter(s);
+            setPage(1);
+          }}
         />
 
-        {selected.size > 0 && <BulkActionBar count={selected.size} onClear={() => setSelected(new Set())} />}
+        {activeFilterCount > 0 && (
+          <ActiveFiltersBar
+            search={search}
+            setSearch={setSearch}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            priorityFilter={priorityFilter}
+            setPriorityFilter={setPriorityFilter}
+            assigneeFilter={assigneeFilter}
+            setAssigneeFilter={setAssigneeFilter}
+            channelFilter={channelFilter}
+            setChannelFilter={setChannelFilter}
+            onClear={clearAllFilters}
+          />
+        )}
+
+        {selected.size > 0 && (
+          <BulkActionBar
+            count={selected.size}
+            onClear={() => setSelected(new Set())}
+          />
+        )}
 
         <div className="flex-1 overflow-auto">
           {isLoading ? (
@@ -280,6 +452,11 @@ export default function TicketsPage() {
               title="No tickets match your filters"
               description="Try clearing filters or switching views."
               className="m-6"
+              action={
+                <Button variant="outline" size="sm" onClick={clearAllFilters}>
+                  Clear all filters
+                </Button>
+              }
             />
           ) : (
             <Table>
@@ -295,14 +472,11 @@ export default function TicketsPage() {
                             : false
                       }
                       onCheckedChange={toggleSelectAll}
-                      aria-label="Select all"
+                      aria-label="Select all on this page"
                     />
                   </TableHead>
-                  <SortableHead
-                    label="Ticket"
-                    active={false}
-                    onClick={() => undefined}
-                  />
+                  <TableHead className="w-10" />
+                  <TableHead>Ticket</TableHead>
                   <TableHead>Requester</TableHead>
                   <TableHead>Status</TableHead>
                   <SortableHead
@@ -311,41 +485,73 @@ export default function TicketsPage() {
                     dir={sort.dir}
                     onClick={() => flipSort('priority')}
                   />
+                  <SortableHead
+                    label="SLA"
+                    active={sort.key === 'sla'}
+                    dir={sort.dir}
+                    onClick={() => flipSort('sla')}
+                  />
                   <TableHead>Assignee</TableHead>
                   <SortableHead
                     label="Updated"
                     active={sort.key === 'updated'}
                     dir={sort.dir}
                     onClick={() => flipSort('updated')}
-                    className="w-32"
+                    className="w-28"
                   />
                   <TableHead className="w-10" />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((t) => (
-                  <TicketRow
-                    key={t.id}
-                    ticket={t}
-                    selected={selected.has(t.id)}
-                    onToggle={() => toggleRow(t.id)}
-                    onPreview={() => setPreviewId(t.id)}
-                    isPreviewed={previewId === t.id}
-                    density={density}
-                  />
-                ))}
+                {groupBy === 'none'
+                  ? pageRows.map((t) => (
+                      <TicketRow
+                        key={t.id}
+                        ticket={t}
+                        selected={selected.has(t.id)}
+                        onToggle={() => toggleRow(t.id)}
+                        onPreview={() => setPreviewId(t.id)}
+                        isPreviewed={previewId === t.id}
+                        density={density}
+                      />
+                    ))
+                  : grouped.map((group) => (
+                      <GroupedSection
+                        key={group.key}
+                        group={group}
+                        collapsed={collapsedGroups.has(group.key)}
+                        onToggle={() => toggleGroup(group.key)}
+                        selected={selected}
+                        onRowToggle={toggleRow}
+                        onRowPreview={(id) => setPreviewId(id)}
+                        previewId={previewId}
+                        density={density}
+                      />
+                    ))}
               </TableBody>
             </Table>
           )}
         </div>
 
-        <Footer count={filtered.length} />
+        <Footer
+          total={filtered.length}
+          page={safePage}
+          totalPages={totalPages}
+          onPrev={() => setPage((p) => Math.max(1, p - 1))}
+          onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+          showPager={groupBy === 'none'}
+        />
       </div>
 
-      <PreviewPane ticket={previewTicket} onClose={() => setPreviewId(null)} />
+      <PreviewPane
+        ticket={previewTicket}
+        onClose={() => setPreviewId(null)}
+      />
     </div>
   );
 }
+
+// ─── Views rail ──────────────────────────────────────────────────────────────
 
 interface ViewsRailProps {
   viewId: string;
@@ -354,6 +560,12 @@ interface ViewsRailProps {
 }
 
 function ViewsRail({ viewId, onViewChange, counts }: ViewsRailProps) {
+  const groups: Array<{ label: string; views: View[] }> = [
+    { label: 'System', views: VIEWS.filter((v) => v.source === 'system') },
+    { label: 'Personal', views: VIEWS.filter((v) => v.source === 'personal') },
+    { label: 'Shared', views: VIEWS.filter((v) => v.source === 'shared') },
+  ];
+
   return (
     <aside className="hidden flex-col bg-muted/30 md:flex">
       <div className="flex h-14 items-center justify-between border-b px-3">
@@ -364,7 +576,7 @@ function ViewsRail({ viewId, onViewChange, counts }: ViewsRailProps) {
           <TooltipTrigger asChild>
             <button
               type="button"
-              aria-label="Create view"
+              aria-label="Create view from current filters"
               className="grid h-6 w-6 place-items-center rounded text-muted-foreground hover:bg-background hover:text-foreground"
             >
               <Plus className="h-3.5 w-3.5" />
@@ -373,51 +585,60 @@ function ViewsRail({ viewId, onViewChange, counts }: ViewsRailProps) {
           <TooltipContent>Save current as view</TooltipContent>
         </Tooltip>
       </div>
-      <ul className="flex-1 space-y-0.5 overflow-y-auto p-2">
-        {VIEWS.map((v) => {
-          const Icon = v.icon;
-          const active = v.id === viewId;
-          return (
-            <li key={v.id}>
-              <button
-                type="button"
-                onClick={() => onViewChange(v.id)}
-                className={cn(
-                  'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
-                  active
-                    ? 'bg-primary text-white'
-                    : 'text-foreground hover:bg-background',
-                )}
-              >
-                <Icon
-                  className={cn(
-                    'h-3.5 w-3.5 shrink-0',
-                    active ? 'text-white' : 'text-muted-foreground',
-                  )}
-                />
-                <span className="flex-1 truncate text-left">{v.label}</span>
-                <span
-                  className={cn(
-                    'text-[11px] tabular-nums',
-                    active ? 'text-white/80' : 'text-muted-foreground',
-                  )}
-                >
-                  {counts[v.id] ?? 0}
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-      <div className="border-t p-2 text-[10px] text-muted-foreground">
-        <button className="flex w-full items-center justify-between rounded-md px-2 py-1.5 hover:bg-background">
-          <span>Shared views (2)</span>
-          <ChevronDown className="h-3 w-3" />
-        </button>
+      <div className="flex-1 space-y-3 overflow-y-auto p-2">
+        {groups.map((g) =>
+          g.views.length > 0 ? (
+            <div key={g.label}>
+              <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                {g.label}
+              </p>
+              <ul className="space-y-0.5">
+                {g.views.map((v) => {
+                  const Icon = v.icon;
+                  const active = v.id === viewId;
+                  return (
+                    <li key={v.id}>
+                      <button
+                        type="button"
+                        onClick={() => onViewChange(v.id)}
+                        className={cn(
+                          'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+                          active
+                            ? 'bg-primary text-white'
+                            : 'text-foreground hover:bg-background',
+                        )}
+                      >
+                        <Icon
+                          className={cn(
+                            'h-3.5 w-3.5 shrink-0',
+                            active ? 'text-white' : 'text-muted-foreground',
+                          )}
+                        />
+                        <span className="flex-1 truncate text-left">
+                          {v.label}
+                        </span>
+                        <span
+                          className={cn(
+                            'text-[11px] tabular-nums',
+                            active ? 'text-white/80' : 'text-muted-foreground',
+                          )}
+                        >
+                          {counts[v.id] ?? 0}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null,
+        )}
       </div>
     </aside>
   );
 }
+
+// ─── List header ─────────────────────────────────────────────────────────────
 
 interface ListHeaderProps {
   activeView: View;
@@ -427,6 +648,8 @@ interface ListHeaderProps {
   setSearch: (v: string) => void;
   density: Density;
   setDensity: (d: Density) => void;
+  groupBy: GroupKey;
+  setGroupBy: (g: GroupKey) => void;
 }
 
 function ListHeader({
@@ -437,6 +660,8 @@ function ListHeader({
   setSearch,
   density,
   setDensity,
+  groupBy,
+  setGroupBy,
 }: ListHeaderProps) {
   const Icon = activeView.icon;
   return (
@@ -464,12 +689,34 @@ function ListHeader({
           />
         </div>
 
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8 text-xs">
+              <Group className="h-3.5 w-3.5" />
+              {groupBy === 'none' ? 'Group by' : `By ${groupBy}`}
+              <ChevronDown className="h-3 w-3 opacity-70" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuLabel>Group by</DropdownMenuLabel>
+            {(['none', 'status', 'priority', 'assignee', 'channel'] as GroupKey[]).map((g) => (
+              <DropdownMenuItem
+                key={g}
+                onSelect={() => setGroupBy(g)}
+              >
+                <Checkbox checked={groupBy === g} className="pointer-events-none" />
+                <span className="capitalize">{g === 'none' ? 'No grouping' : g}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="outline"
               size="sm"
-              className="h-8"
+              className="h-8 w-8 p-0"
               onClick={() =>
                 setDensity(density === 'compact' ? 'comfortable' : 'compact')
               }
@@ -487,11 +734,21 @@ function ListHeader({
           </TooltipContent>
         </Tooltip>
 
-        <Button variant="outline" size="sm" className="h-8">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8 text-xs">
+              <Bookmark className="h-3.5 w-3.5" />
+              Save view
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Save current filters as a new view</TooltipContent>
+        </Tooltip>
+
+        <Button variant="outline" size="sm" className="h-8 text-xs">
           <Download className="h-3.5 w-3.5" />
           Export
         </Button>
-        <Button size="sm" className="h-8">
+        <Button size="sm" className="h-8 text-xs">
           <Plus className="h-3.5 w-3.5" />
           New ticket
         </Button>
@@ -500,94 +757,239 @@ function ListHeader({
   );
 }
 
+// ─── Filter bar ──────────────────────────────────────────────────────────────
+
 interface FilterBarProps {
   statusFilter: Set<TicketStatus>;
-  onToggleStatus: (s: TicketStatus) => void;
-  onClear: () => void;
+  setStatusFilter: (s: Set<TicketStatus>) => void;
+  priorityFilter: Set<TicketPriority>;
+  setPriorityFilter: (s: Set<TicketPriority>) => void;
+  assigneeFilter: Set<string>;
+  setAssigneeFilter: (s: Set<string>) => void;
+  channelFilter: Set<TicketChannel>;
+  setChannelFilter: (s: Set<TicketChannel>) => void;
 }
 
-function FilterBar({ statusFilter, onToggleStatus, onClear }: FilterBarProps) {
+function FilterBar({
+  statusFilter,
+  setStatusFilter,
+  priorityFilter,
+  setPriorityFilter,
+  assigneeFilter,
+  setAssigneeFilter,
+  channelFilter,
+  setChannelFilter,
+}: FilterBarProps) {
   return (
     <div className="flex shrink-0 flex-wrap items-center gap-2 border-b bg-muted/20 px-4 py-2">
       <Filter className="h-3 w-3 text-muted-foreground" />
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 rounded-full border border-dashed border-input bg-card px-2.5 py-0.5 text-xs font-medium text-foreground hover:bg-muted"
-          >
-            Status
-            {statusFilter.size > 0 && (
-              <Badge variant="secondary" className="h-4 px-1.5 text-[9px]">
-                {statusFilter.size}
-              </Badge>
-            )}
-            <ChevronDown className="h-3 w-3 text-muted-foreground" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-48">
-          <DropdownMenuLabel>Filter by status</DropdownMenuLabel>
-          {STATUS_OPTIONS.map((s) => (
-            <DropdownMenuItem
-              key={s}
-              onSelect={(e) => {
-                e.preventDefault();
-                onToggleStatus(s);
-              }}
-            >
-              <Checkbox checked={statusFilter.has(s)} />
-              <span className="capitalize">{s.replace('_', ' ')}</span>
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      {[...statusFilter].map((s) => (
-        <button
-          key={s}
-          type="button"
-          onClick={() => onToggleStatus(s)}
-          className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
-        >
-          <span className="capitalize">{s.replace('_', ' ')}</span>
-          <X className="h-3 w-3" />
-        </button>
-      ))}
-
-      <button
-        type="button"
-        className="inline-flex items-center gap-1 rounded-full border border-dashed border-input bg-card px-2.5 py-0.5 text-xs font-medium text-foreground hover:bg-muted"
-      >
-        Priority
-        <ChevronDown className="h-3 w-3 text-muted-foreground" />
-      </button>
-      <button
-        type="button"
-        className="inline-flex items-center gap-1 rounded-full border border-dashed border-input bg-card px-2.5 py-0.5 text-xs font-medium text-foreground hover:bg-muted"
-      >
-        Assignee
-        <ChevronDown className="h-3 w-3 text-muted-foreground" />
-      </button>
-      <button
-        type="button"
-        className="inline-flex items-center gap-1 rounded-full border border-dashed border-input bg-card px-2.5 py-0.5 text-xs font-medium text-foreground hover:bg-muted"
-      >
-        Channel
-        <ChevronDown className="h-3 w-3 text-muted-foreground" />
-      </button>
-
-      {statusFilter.size > 0 && (
-        <button
-          type="button"
-          onClick={onClear}
-          className="ml-1 text-xs text-muted-foreground underline-offset-2 hover:underline"
-        >
-          Clear all
-        </button>
-      )}
+      <FilterMenu<TicketStatus>
+        label="Status"
+        options={STATUS_OPTIONS}
+        labelFor={(s) => STATUS_LABEL[s]}
+        selected={statusFilter}
+        onSelectedChange={setStatusFilter}
+      />
+      <FilterMenu<TicketPriority>
+        label="Priority"
+        options={PRIORITY_OPTIONS}
+        labelFor={(p) => PRIORITY_LABEL[p]}
+        selected={priorityFilter}
+        onSelectedChange={setPriorityFilter}
+      />
+      <FilterMenu<string>
+        label="Assignee"
+        options={['__unassigned__', ...agentDirectory.map((a) => a.id)]}
+        labelFor={(id) =>
+          id === '__unassigned__'
+            ? 'Unassigned'
+            : agentDirectory.find((a) => a.id === id)?.name ?? id
+        }
+        selected={assigneeFilter}
+        onSelectedChange={setAssigneeFilter}
+      />
+      <FilterMenu<TicketChannel>
+        label="Channel"
+        options={CHANNEL_OPTIONS}
+        labelFor={(c) => CHANNEL_META[c].label}
+        selected={channelFilter}
+        onSelectedChange={setChannelFilter}
+      />
     </div>
   );
 }
+
+interface FilterMenuProps<T extends string> {
+  label: string;
+  options: T[];
+  labelFor: (opt: T) => string;
+  selected: Set<T>;
+  onSelectedChange: (next: Set<T>) => void;
+}
+
+function FilterMenu<T extends string>({
+  label,
+  options,
+  labelFor,
+  selected,
+  onSelectedChange,
+}: FilterMenuProps<T>) {
+  function toggle(opt: T) {
+    const next = new Set(selected);
+    if (next.has(opt)) next.delete(opt);
+    else next.add(opt);
+    onSelectedChange(next);
+  }
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            'inline-flex items-center gap-1 rounded-full border border-dashed border-input bg-card px-2.5 py-0.5 text-xs font-medium text-foreground transition-colors hover:bg-muted',
+            selected.size > 0 && 'border-solid border-primary/40 bg-primary/5 text-primary',
+          )}
+        >
+          {label}
+          {selected.size > 0 && (
+            <Badge
+              variant="secondary"
+              className="h-4 bg-primary/10 px-1.5 text-[9px] text-primary"
+            >
+              {selected.size}
+            </Badge>
+          )}
+          <ChevronDown className="h-3 w-3" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-56">
+        <DropdownMenuLabel>Filter by {label.toLowerCase()}</DropdownMenuLabel>
+        {options.map((opt) => (
+          <DropdownMenuItem
+            key={opt}
+            onSelect={(e) => {
+              e.preventDefault();
+              toggle(opt);
+            }}
+          >
+            <Checkbox checked={selected.has(opt)} className="pointer-events-none" />
+            {labelFor(opt)}
+          </DropdownMenuItem>
+        ))}
+        {selected.size > 0 && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => onSelectedChange(new Set())}>
+              Clear
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+interface ActiveFiltersBarProps {
+  search: string;
+  setSearch: (v: string) => void;
+  statusFilter: Set<TicketStatus>;
+  setStatusFilter: (s: Set<TicketStatus>) => void;
+  priorityFilter: Set<TicketPriority>;
+  setPriorityFilter: (s: Set<TicketPriority>) => void;
+  assigneeFilter: Set<string>;
+  setAssigneeFilter: (s: Set<string>) => void;
+  channelFilter: Set<TicketChannel>;
+  setChannelFilter: (s: Set<TicketChannel>) => void;
+  onClear: () => void;
+}
+
+function ActiveFiltersBar(props: ActiveFiltersBarProps) {
+  const removeFromSet = <T extends string>(
+    set: Set<T>,
+    value: T,
+    setter: (s: Set<T>) => void,
+  ) => {
+    const next = new Set(set);
+    next.delete(value);
+    setter(next);
+  };
+  return (
+    <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-b bg-primary/[0.03] px-4 py-1.5 text-xs">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        Active
+      </span>
+      {props.search && (
+        <ActiveChip
+          label={`Search: "${props.search}"`}
+          onRemove={() => props.setSearch('')}
+        />
+      )}
+      {[...props.statusFilter].map((s) => (
+        <ActiveChip
+          key={`s-${s}`}
+          label={`Status: ${STATUS_LABEL[s]}`}
+          onRemove={() => removeFromSet(props.statusFilter, s, props.setStatusFilter)}
+        />
+      ))}
+      {[...props.priorityFilter].map((p) => (
+        <ActiveChip
+          key={`p-${p}`}
+          label={`Priority: ${PRIORITY_LABEL[p]}`}
+          onRemove={() => removeFromSet(props.priorityFilter, p, props.setPriorityFilter)}
+        />
+      ))}
+      {[...props.assigneeFilter].map((id) => (
+        <ActiveChip
+          key={`a-${id}`}
+          label={`Assignee: ${
+            id === '__unassigned__'
+              ? 'Unassigned'
+              : agentDirectory.find((a) => a.id === id)?.name ?? id
+          }`}
+          onRemove={() => removeFromSet(props.assigneeFilter, id, props.setAssigneeFilter)}
+        />
+      ))}
+      {[...props.channelFilter].map((c) => (
+        <ActiveChip
+          key={`c-${c}`}
+          label={`Channel: ${CHANNEL_META[c].label}`}
+          onRemove={() => removeFromSet(props.channelFilter, c, props.setChannelFilter)}
+        />
+      ))}
+      <button
+        type="button"
+        onClick={props.onClear}
+        className="ml-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+      >
+        Clear all
+      </button>
+    </div>
+  );
+}
+
+function ActiveChip({
+  label,
+  onRemove,
+}: {
+  label: string;
+  onRemove: () => void;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+      {label}
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={`Remove ${label}`}
+        className="rounded-full hover:bg-primary/20"
+      >
+        <X className="h-3 w-3" />
+      </button>
+    </span>
+  );
+}
+
+// ─── Bulk actions ────────────────────────────────────────────────────────────
 
 function BulkActionBar({
   count,
@@ -611,6 +1013,10 @@ function BulkActionBar({
         <Reply className="h-3 w-3" />
         Reply with macro
       </Button>
+      <Button variant="outline" size="sm" className="h-7 text-xs">
+        <Sparkles className="h-3 w-3" />
+        Run automation
+      </Button>
       <Button variant="outline" size="sm" className="h-7 text-xs text-red-600">
         <Trash2 className="h-3 w-3" />
         Move to trash
@@ -625,6 +1031,8 @@ function BulkActionBar({
     </div>
   );
 }
+
+// ─── Sortable header ─────────────────────────────────────────────────────────
 
 interface SortableHeadProps {
   label: string;
@@ -648,7 +1056,7 @@ function SortableHead({
         onClick={onClick}
         className={cn(
           'inline-flex items-center gap-1 transition-colors',
-          active ? 'text-foreground' : 'text-muted-foreground',
+          active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
         )}
       >
         {label}
@@ -662,6 +1070,120 @@ function SortableHead({
     </TableHead>
   );
 }
+
+// ─── Grouped sections ────────────────────────────────────────────────────────
+
+interface TicketGroup {
+  key: string;
+  label: string;
+  tickets: MockTicket[];
+}
+
+function groupTickets(tickets: MockTicket[], groupBy: GroupKey): TicketGroup[] {
+  if (groupBy === 'none') return [];
+  const buckets = new Map<string, MockTicket[]>();
+  for (const t of tickets) {
+    let key: string;
+    if (groupBy === 'status') {
+      key = t.status;
+    } else if (groupBy === 'priority') {
+      key = t.priority;
+    } else if (groupBy === 'channel') {
+      key = t.channel;
+    } else {
+      key = t.assignee?.id ?? '__unassigned__';
+    }
+    const arr = buckets.get(key) ?? [];
+    arr.push(t);
+    buckets.set(key, arr);
+  }
+  return [...buckets.entries()]
+    .map(([key, arr]) => ({
+      key,
+      label: groupLabelFor(groupBy, key, arr),
+      tickets: arr,
+    }))
+    .sort((a, b) => {
+      if (groupBy === 'priority') {
+        const order: Record<string, number> = {
+          urgent: 1,
+          high: 2,
+          medium: 3,
+          low: 4,
+        };
+        return (order[a.key] ?? 9) - (order[b.key] ?? 9);
+      }
+      return a.label.localeCompare(b.label);
+    });
+}
+
+function groupLabelFor(groupBy: GroupKey, key: string, items: MockTicket[]): string {
+  if (groupBy === 'status') return STATUS_LABEL[key as TicketStatus] ?? key;
+  if (groupBy === 'priority') return PRIORITY_LABEL[key as TicketPriority] ?? key;
+  if (groupBy === 'channel') return CHANNEL_META[key as TicketChannel]?.label ?? key;
+  return items[0]?.assignee?.name ?? 'Unassigned';
+}
+
+interface GroupedSectionProps {
+  group: TicketGroup;
+  collapsed: boolean;
+  onToggle: () => void;
+  selected: Set<string>;
+  onRowToggle: (id: string) => void;
+  onRowPreview: (id: string) => void;
+  previewId: string | null;
+  density: Density;
+}
+
+function GroupedSection({
+  group,
+  collapsed,
+  onToggle,
+  selected,
+  onRowToggle,
+  onRowPreview,
+  previewId,
+  density,
+}: GroupedSectionProps) {
+  return (
+    <>
+      <TableRow className="bg-muted/30 hover:bg-muted/40">
+        <TableCell colSpan={10} className="py-2">
+          <button
+            type="button"
+            onClick={onToggle}
+            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-foreground"
+          >
+            <ChevronRight
+              className={cn(
+                'h-3 w-3 transition-transform',
+                !collapsed && 'rotate-90',
+              )}
+            />
+            {group.label}
+            <Badge variant="secondary" className="h-4 px-1.5 text-[9px]">
+              {group.tickets.length}
+            </Badge>
+          </button>
+        </TableCell>
+      </TableRow>
+      {!collapsed &&
+        group.tickets.map((t) => (
+          <TicketRow
+            key={t.id}
+            ticket={t}
+            selected={selected.has(t.id)}
+            onToggle={() => onRowToggle(t.id)}
+            onPreview={() => onRowPreview(t.id)}
+            isPreviewed={previewId === t.id}
+            density={density}
+          />
+        ))}
+    </>
+  );
+}
+
+// ─── Ticket row ──────────────────────────────────────────────────────────────
 
 interface TicketRowProps {
   ticket: MockTicket;
@@ -681,11 +1203,12 @@ function TicketRow({
   density,
 }: TicketRowProps) {
   const compact = density === 'compact';
+  const ChannelIcon = CHANNEL_META[ticket.channel].icon;
   return (
     <TableRow
       onClick={onPreview}
       className={cn(
-        'cursor-pointer',
+        'group cursor-pointer',
         selected && 'bg-primary/5',
         isPreviewed && 'bg-primary/10',
       )}
@@ -697,6 +1220,16 @@ function TicketRow({
           aria-label={`Select ${ticket.number}`}
         />
       </TableCell>
+      <TableCell className="w-10 text-center">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="inline-flex">
+              <ChannelIcon className="h-3.5 w-3.5 text-muted-foreground" />
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>{CHANNEL_META[ticket.channel].label}</TooltipContent>
+        </Tooltip>
+      </TableCell>
       <TableCell className={cn(compact && 'py-2')}>
         <div className="flex items-center gap-2">
           <span className="font-mono text-[11px] text-muted-foreground">
@@ -704,22 +1237,37 @@ function TicketRow({
           </span>
           {ticket.slaStatus === 'breached' && (
             <Badge variant="danger" className="h-4 px-1.5 text-[9px]">
-              SLA
+              Breached
             </Badge>
           )}
           {ticket.slaStatus === 'at_risk' && (
             <Badge variant="warning" className="h-4 px-1.5 text-[9px]">
-              SLA
+              At risk
+            </Badge>
+          )}
+          {ticket.status === 'escalated' && (
+            <Badge variant="outline" className="h-4 px-1.5 text-[9px]">
+              Escalated
             </Badge>
           )}
         </div>
         <p className="mt-0.5 max-w-md truncate text-sm font-medium">
           {ticket.subject}
         </p>
-        {!compact && (
-          <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-            {ticket.category} · {ticket.group}
-          </p>
+        {!compact && ticket.tags.length > 0 && (
+          <div className="mt-1 flex flex-wrap items-center gap-1">
+            {ticket.tags.slice(0, 4).map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-0.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+              >
+                #{tag}
+              </span>
+            ))}
+            <span className="text-[10px] text-muted-foreground">
+              · {ticket.category}
+            </span>
+          </div>
         )}
       </TableCell>
       <TableCell className={cn(compact && 'py-2')}>
@@ -739,6 +1287,9 @@ function TicketRow({
       </TableCell>
       <TableCell className={cn(compact && 'py-2')}>
         <PriorityIndicator priority={ticket.priority} />
+      </TableCell>
+      <TableCell className={cn(compact && 'py-2')}>
+        <SlaTimer ticket={ticket} />
       </TableCell>
       <TableCell className={cn(compact && 'py-2')}>
         {ticket.assignee ? (
@@ -762,7 +1313,10 @@ function TicketRow({
         )}
       </TableCell>
       <TableCell
-        className={cn('whitespace-nowrap text-[11px] text-muted-foreground', compact && 'py-2')}
+        className={cn(
+          'whitespace-nowrap text-[11px] text-muted-foreground',
+          compact && 'py-2',
+        )}
       >
         {relativeTime(ticket.updatedAt)}
       </TableCell>
@@ -772,7 +1326,7 @@ function TicketRow({
             <button
               type="button"
               aria-label="Row actions"
-              className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover:opacity-100"
             >
               <MoreHorizontal className="h-3.5 w-3.5" />
             </button>
@@ -792,22 +1346,121 @@ function TicketRow({
   );
 }
 
-function Footer({ count }: { count: number }) {
+// ─── SLA timer ───────────────────────────────────────────────────────────────
+
+function SlaTimer({ ticket }: { ticket: MockTicket }) {
+  const due = new Date(ticket.slaDueAt).getTime();
+  const created = new Date(ticket.createdAt).getTime();
+  const now = Date.now();
+  const total = Math.max(due - created, 1);
+  const remainingMs = due - now;
+  const pct = Math.max(0, Math.min(100, (remainingMs / total) * 100));
+
+  let label: string;
+  if (remainingMs < 0) {
+    label = `${Math.abs(Math.round(remainingMs / 60_000))}m late`;
+  } else if (remainingMs < 60 * 60 * 1000) {
+    label = `${Math.round(remainingMs / 60_000)}m`;
+  } else if (remainingMs < 24 * 60 * 60 * 1000) {
+    label = `${Math.round(remainingMs / (60 * 60 * 1000))}h`;
+  } else {
+    label = `${Math.round(remainingMs / (24 * 60 * 60 * 1000))}d`;
+  }
+
+  let tone: 'ok' | 'warning' | 'danger' = 'ok';
+  if (ticket.slaStatus === 'breached' || remainingMs < 0) tone = 'danger';
+  else if (ticket.slaStatus === 'at_risk' || pct < 30) tone = 'warning';
+
+  const fillClass =
+    tone === 'danger'
+      ? 'bg-red-500'
+      : tone === 'warning'
+        ? 'bg-amber-500'
+        : 'bg-emerald-500';
+  const textClass =
+    tone === 'danger'
+      ? 'text-red-600'
+      : tone === 'warning'
+        ? 'text-amber-600'
+        : 'text-muted-foreground';
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="flex items-center gap-2">
+          <div className="h-1 w-14 overflow-hidden rounded-full bg-muted">
+            <div
+              className={cn('h-full rounded-full', fillClass)}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <span
+            className={cn(
+              'font-mono text-[10px] tabular-nums font-medium',
+              textClass,
+            )}
+          >
+            {label}
+          </span>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        Resolution due {absoluteDateTime(ticket.slaDueAt)}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+// ─── Footer / pagination ─────────────────────────────────────────────────────
+
+function Footer({
+  total,
+  page,
+  totalPages,
+  onPrev,
+  onNext,
+  showPager,
+}: {
+  total: number;
+  page: number;
+  totalPages: number;
+  onPrev: () => void;
+  onNext: () => void;
+  showPager: boolean;
+}) {
   return (
     <div className="flex shrink-0 items-center justify-between border-t bg-card px-4 py-2 text-xs text-muted-foreground">
-      <span>{count} tickets</span>
-      <div className="flex items-center gap-1">
-        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
-          Previous
-        </Button>
-        <span className="px-2">Page 1 of 1</span>
-        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
-          Next
-        </Button>
-      </div>
+      <span>{total} tickets</span>
+      {showPager && (
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            disabled={page <= 1}
+            onClick={onPrev}
+          >
+            Previous
+          </Button>
+          <span className="px-2 tabular-nums">
+            Page {page} of {totalPages}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            disabled={page >= totalPages}
+            onClick={onNext}
+          >
+            Next
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
+
+// ─── Preview pane ────────────────────────────────────────────────────────────
 
 function PreviewPane({
   ticket,
@@ -831,11 +1484,13 @@ function PreviewPane({
   }
 
   const lastMessage = ticket.conversations[ticket.conversations.length - 1];
+  const ChannelIcon = CHANNEL_META[ticket.channel].icon;
 
   return (
     <aside className="hidden flex-col border-l bg-card xl:flex">
       <div className="flex h-14 items-center justify-between border-b px-4">
         <div className="flex items-center gap-2">
+          <ChannelIcon className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="font-mono text-xs text-muted-foreground">
             {ticket.number}
           </span>
@@ -857,12 +1512,17 @@ function PreviewPane({
             {ticket.subject}
           </h3>
           <p className="mt-1 text-xs text-muted-foreground">
-            Opened by {ticket.requester.name} · {relativeTime(ticket.createdAt)}
+            Opened by {ticket.requester.name} via{' '}
+            {CHANNEL_META[ticket.channel].label.toLowerCase()} ·{' '}
+            {relativeTime(ticket.createdAt)}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 text-xs">
-          <Property label="Priority" value={<PriorityIndicator priority={ticket.priority} />} />
+          <Property
+            label="Priority"
+            value={<PriorityIndicator priority={ticket.priority} />}
+          />
           <Property label="Category" value={ticket.category} />
           <Property label="Group" value={ticket.group} />
           <Property
@@ -882,6 +1542,7 @@ function PreviewPane({
               )
             }
           />
+          <Property label="SLA" value={<SlaTimer ticket={ticket} />} />
         </div>
 
         <div className="space-y-2">
@@ -967,3 +1628,6 @@ function Property({
     </div>
   );
 }
+
+// Re-export markers to keep types referenced.
+export type _Markers = Person;
