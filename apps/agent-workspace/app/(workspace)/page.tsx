@@ -15,6 +15,7 @@ import {
   ProgressRing,
   Skeleton,
   Sparkline,
+  StatusPill,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -22,21 +23,31 @@ import {
 } from '@topiadesk/ui';
 import {
   Activity,
+  AlertCircle,
   AlertTriangle,
   ArrowDownRight,
   ArrowUpRight,
+  Bot,
   CheckCircle2,
   Clock,
   Inbox,
   Mail,
   MessageSquare,
   Phone,
+  Plus,
+  Reply,
+  Send,
   Smartphone,
-  Sparkles,
   TrendingUp,
+  Upload,
+  UserPlus,
 } from 'lucide-react';
 import { useDashboardMetrics, useTickets } from '@/lib/queries';
+import type { MockTicket } from '@/lib/mock-data';
 import { initials, relativeTime } from '@/lib/format';
+
+const CURRENT_AGENT_ID = 'a1';
+const CURRENT_AGENT_NAME = 'Tunde';
 
 // Stable sparkline trend data per metric (last 12 buckets).
 const TRENDS = {
@@ -58,7 +69,6 @@ const CHANNEL_BREAKDOWN = [
   { channel: 'Portal', icon: MessageSquare, count: 56, pct: 22 },
   { channel: 'WhatsApp', icon: Smartphone, count: 41, pct: 16 },
   { channel: 'Voice', icon: Phone, count: 24, pct: 9 },
-  { channel: 'API', icon: Sparkles, count: 13, pct: 5 },
 ];
 
 const LEADERBOARD = [
@@ -80,9 +90,108 @@ const VOLUME = [
   { day: 'Today', created: 18, resolved: 14 },
 ];
 
+type ActivityType =
+  | 'resolved'
+  | 'reply'
+  | 'assign'
+  | 'escalate'
+  | 'create'
+  | 'note'
+  | 'sla';
+
+interface ActivityEvent {
+  id: string;
+  who: string;
+  whoType: 'agent' | 'customer' | 'system';
+  action: string;
+  ticket: string;
+  subject: string;
+  time: string;
+  type: ActivityType;
+}
+
+const ACTIVITY_FEED: ActivityEvent[] = [
+  {
+    id: 'e1',
+    who: 'Adaeze Nwosu',
+    whoType: 'agent',
+    action: 'resolved',
+    ticket: '#1018',
+    subject: 'Slack notifications muted',
+    time: '12m ago',
+    type: 'resolved',
+  },
+  {
+    id: 'e2',
+    who: 'Sarah Okonkwo',
+    whoType: 'customer',
+    action: 'replied to',
+    ticket: '#1024',
+    subject: 'Cannot connect to VPN',
+    time: '24m ago',
+    type: 'reply',
+  },
+  {
+    id: 'e3',
+    who: 'Automation',
+    whoType: 'system',
+    action: 'escalated',
+    ticket: '#1021',
+    subject: 'CCTV cameras offline',
+    time: '38m ago',
+    type: 'escalate',
+  },
+  {
+    id: 'e4',
+    who: 'SLA engine',
+    whoType: 'system',
+    action: 'flagged at-risk',
+    ticket: '#1024',
+    subject: 'Cannot connect to VPN',
+    time: '42m ago',
+    type: 'sla',
+  },
+  {
+    id: 'e5',
+    who: 'Kwame Mensah',
+    whoType: 'agent',
+    action: 'assigned to themselves',
+    ticket: '#1020',
+    subject: 'Outlook password prompts',
+    time: '1h ago',
+    type: 'assign',
+  },
+  {
+    id: 'e6',
+    who: 'Adaeze Nwosu',
+    whoType: 'agent',
+    action: 'left an internal note on',
+    ticket: '#1023',
+    subject: 'Printer paper-jam (no jam visible)',
+    time: '1h ago',
+    type: 'note',
+  },
+  {
+    id: 'e7',
+    who: 'Grace Maathai',
+    whoType: 'customer',
+    action: 'opened',
+    ticket: '#1019',
+    subject: 'Laptop for new joiner',
+    time: '2h ago',
+    type: 'create',
+  },
+];
+
 export default function DashboardPage() {
   const metrics = useDashboardMetrics();
   const tickets = useTickets();
+
+  const myQueue = (tickets.data ?? []).filter(
+    (t) =>
+      t.assignee?.id === CURRENT_AGENT_ID &&
+      !['resolved', 'closed', 'spam'].includes(t.status),
+  );
 
   const attention = (tickets.data ?? [])
     .filter(
@@ -95,7 +204,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-5 p-5">
-      <PageHeader />
+      <PageHeader queueCount={myQueue.length} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
@@ -146,9 +255,104 @@ export default function DashboardPage() {
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b py-3">
             <div>
+              <CardTitle className="text-sm">My queue</CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Tickets assigned to you, ordered by SLA urgency
+              </p>
+            </div>
+            <Link
+              href="/tickets?view=my-open"
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
+              Open queue
+              <ArrowUpRight className="h-3 w-3" />
+            </Link>
+          </CardHeader>
+          <CardContent className="p-0">
+            {tickets.isLoading ? (
+              <div className="space-y-2 p-4">
+                <Skeleton className="h-14" />
+                <Skeleton className="h-14" />
+                <Skeleton className="h-14" />
+              </div>
+            ) : myQueue.length === 0 ? (
+              <p className="p-8 text-center text-sm text-muted-foreground">
+                Your queue is empty.
+              </p>
+            ) : (
+              <ul className="divide-y">
+                {myQueue.map((t) => (
+                  <MyQueueRow key={t.id} ticket={t} />
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="border-b py-3">
+            <CardTitle className="text-sm">SLA health</CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Across {(42 + 4 + 1).toLocaleString()} active tickets
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4 pt-5">
+            <div className="flex items-center gap-5">
+              <ProgressRing
+                value={89}
+                size={88}
+                strokeWidth={8}
+                className="text-emerald-500"
+              >
+                <div className="text-center">
+                  <p className="text-base font-semibold">89%</p>
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground">
+                    On track
+                  </p>
+                </div>
+              </ProgressRing>
+              <div className="space-y-2 text-xs">
+                <SlaStatRow label="On track" count={42} dotClass="bg-emerald-500" />
+                <SlaStatRow label="At risk" count={4} dotClass="bg-amber-500" />
+                <SlaStatRow label="Breached" count={1} dotClass="bg-red-500" />
+              </div>
+            </div>
+            <div className="border-t pt-4">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                By channel
+              </p>
+              <div className="space-y-2">
+                {CHANNEL_BREAKDOWN.map((c) => {
+                  const Icon = c.icon;
+                  return (
+                    <div key={c.channel} className="flex items-center gap-2 text-xs">
+                      <Icon className="h-3 w-3 text-muted-foreground" />
+                      <span className="w-16 truncate">{c.channel}</span>
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${c.pct}%` }}
+                        />
+                      </div>
+                      <span className="w-8 text-right tabular-nums text-muted-foreground">
+                        {c.count}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b py-3">
+            <div>
               <CardTitle className="text-sm">Needs attention</CardTitle>
               <p className="text-xs text-muted-foreground">
-                Breached, at-risk and escalated tickets
+                Breached, at-risk and escalated tickets across the workspace
               </p>
             </div>
             <Link
@@ -232,56 +436,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="border-b py-3">
-            <CardTitle className="text-sm">SLA health</CardTitle>
-            <p className="text-xs text-muted-foreground">
-              Across {(42 + 4 + 1).toLocaleString()} active tickets
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-5">
-            <div className="flex items-center gap-5">
-              <ProgressRing value={89} size={88} strokeWidth={8} className="text-emerald-500">
-                <div className="text-center">
-                  <p className="text-base font-semibold">89%</p>
-                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground">
-                    On track
-                  </p>
-                </div>
-              </ProgressRing>
-              <div className="space-y-2 text-xs">
-                <SlaStatRow label="On track" count={42} dotClass="bg-emerald-500" />
-                <SlaStatRow label="At risk" count={4} dotClass="bg-amber-500" />
-                <SlaStatRow label="Breached" count={1} dotClass="bg-red-500" />
-              </div>
-            </div>
-            <div className="border-t pt-4">
-              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                By channel
-              </p>
-              <div className="space-y-2">
-                {CHANNEL_BREAKDOWN.slice(0, 4).map((c) => {
-                  const Icon = c.icon;
-                  return (
-                    <div key={c.channel} className="flex items-center gap-2 text-xs">
-                      <Icon className="h-3 w-3 text-muted-foreground" />
-                      <span className="w-16 truncate">{c.channel}</span>
-                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full rounded-full bg-primary"
-                          style={{ width: `${c.pct}%` }}
-                        />
-                      </div>
-                      <span className="w-8 text-right tabular-nums text-muted-foreground">
-                        {c.count}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <ActivityFeed events={ACTIVITY_FEED} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -354,28 +509,48 @@ export default function DashboardPage() {
   );
 }
 
-function PageHeader() {
+function PageHeader({ queueCount }: { queueCount: number }) {
   return (
     <header className="flex flex-wrap items-end justify-between gap-3">
-      <div>
+      <div className="space-y-1">
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          Overview
+          Helpdesk overview
         </p>
         <h1 className="font-display text-2xl font-bold tracking-tight">
-          Good morning, Tunde
+          Good morning, {CURRENT_AGENT_NAME}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Here&rsquo;s what needs your attention today.
+          You have{' '}
+          <Link
+            href="/tickets?view=my-open"
+            className="font-medium text-foreground hover:underline"
+          >
+            {queueCount} open tickets
+          </Link>{' '}
+          in your queue. 2 are due in the next hour.
         </p>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/tickets?view=my-open">
+            <Inbox className="h-3 w-3" />
+            My queue
+            <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[9px]">
+              {queueCount}
+            </Badge>
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm">
+          <Upload className="h-3 w-3" />
+          Import
+        </Button>
         <Button variant="outline" size="sm">
           <Activity className="h-3 w-3" />
-          Today&rsquo;s queue
+          Run report
         </Button>
         <Button size="sm">
-          <Sparkles className="h-3 w-3" />
-          Run report
+          <Plus className="h-3 w-3" />
+          New ticket
         </Button>
       </div>
     </header>
@@ -453,6 +628,219 @@ function MetricCard({
           </div>
         </div>
         <Sparkline data={trend} width={240} height={28} className={accentClass.spark} />
+      </CardContent>
+    </Card>
+  );
+}
+
+function MyQueueRow({ ticket }: { ticket: MockTicket }) {
+  const sla = computeSlaProgress(ticket);
+  return (
+    <li>
+      <Link
+        href={`/tickets/${ticket.id}`}
+        className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/50"
+      >
+        <PriorityIndicator priority={ticket.priority} className="shrink-0" />
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[11px] text-muted-foreground">
+              {ticket.number}
+            </span>
+            <StatusPill status={ticket.status} />
+            {ticket.slaStatus === 'breached' && (
+              <Badge variant="danger" className="h-4 px-1.5 text-[9px]">
+                Breached
+              </Badge>
+            )}
+          </div>
+          <p className="mt-0.5 truncate text-sm font-medium">{ticket.subject}</p>
+          <p className="truncate text-[11px] text-muted-foreground">
+            {ticket.requester.name} · {ticket.category}
+          </p>
+        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-2">
+              <ProgressRing
+                value={sla.percentRemaining}
+                size={32}
+                strokeWidth={3}
+                className={cn(
+                  sla.tone === 'danger' && 'text-red-500',
+                  sla.tone === 'warning' && 'text-amber-500',
+                  sla.tone === 'ok' && 'text-emerald-500',
+                )}
+              />
+              <div className="text-right">
+                <p
+                  className={cn(
+                    'text-xs font-medium tabular-nums',
+                    sla.tone === 'danger' && 'text-red-600',
+                    sla.tone === 'warning' && 'text-amber-600',
+                  )}
+                >
+                  {sla.label}
+                </p>
+                <p className="text-[10px] text-muted-foreground">SLA</p>
+              </div>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            Resolution due {new Date(ticket.slaDueAt).toLocaleString()}
+          </TooltipContent>
+        </Tooltip>
+        <div className="flex items-center gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                aria-label="Reply"
+                className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                onClick={(e) => e.preventDefault()}
+              >
+                <Reply className="h-3.5 w-3.5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Quick reply</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                aria-label="Mark resolved"
+                className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                onClick={(e) => e.preventDefault()}
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Mark resolved</TooltipContent>
+          </Tooltip>
+        </div>
+      </Link>
+    </li>
+  );
+}
+
+interface SlaProgress {
+  percentRemaining: number;
+  label: string;
+  tone: 'ok' | 'warning' | 'danger';
+}
+
+function computeSlaProgress(ticket: MockTicket): SlaProgress {
+  const due = new Date(ticket.slaDueAt).getTime();
+  const created = new Date(ticket.createdAt).getTime();
+  const now = Date.now();
+  const total = Math.max(due - created, 1);
+  const remainingMs = due - now;
+  const remainingMin = Math.round(remainingMs / 60_000);
+  const pct = Math.max(0, Math.min(100, (remainingMs / total) * 100));
+
+  let label: string;
+  if (remainingMs < 0) {
+    label = `${Math.abs(Math.round(remainingMs / 60_000))}m late`;
+  } else if (remainingMin < 60) {
+    label = `${remainingMin}m left`;
+  } else {
+    label = `${Math.round(remainingMin / 60)}h left`;
+  }
+
+  let tone: SlaProgress['tone'] = 'ok';
+  if (ticket.slaStatus === 'breached' || remainingMs < 0) tone = 'danger';
+  else if (ticket.slaStatus === 'at_risk' || pct < 30) tone = 'warning';
+
+  return { percentRemaining: pct, label, tone };
+}
+
+const activityMeta: Record<
+  ActivityType,
+  { icon: ComponentType<{ className?: string }>; tone: string }
+> = {
+  resolved: { icon: CheckCircle2, tone: 'bg-emerald-100 text-emerald-700' },
+  reply: { icon: Reply, tone: 'bg-blue-100 text-blue-700' },
+  assign: { icon: UserPlus, tone: 'bg-blue-100 text-blue-700' },
+  escalate: { icon: AlertTriangle, tone: 'bg-red-100 text-red-700' },
+  create: { icon: Send, tone: 'bg-muted text-muted-foreground' },
+  note: { icon: MessageSquare, tone: 'bg-amber-100 text-amber-700' },
+  sla: { icon: AlertCircle, tone: 'bg-amber-100 text-amber-700' },
+};
+
+function ActivityFeed({ events }: { events: ActivityEvent[] }) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b py-3">
+        <div>
+          <CardTitle className="text-sm">Recent activity</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Across all tickets in this tenant
+          </p>
+        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="outline" className="cursor-default text-[10px]">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              Live
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>Updates in real time</TooltipContent>
+        </Tooltip>
+      </CardHeader>
+      <CardContent className="p-0">
+        <ul className="divide-y">
+          {events.map((e) => {
+            const meta = activityMeta[e.type];
+            const Icon = meta.icon;
+            const showAvatar = e.whoType !== 'system';
+            return (
+              <li key={e.id} className="flex items-start gap-3 px-4 py-2.5">
+                <div className="relative shrink-0">
+                  {showAvatar ? (
+                    <Avatar className="h-7 w-7">
+                      <AvatarFallback>{initials(e.who)}</AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <div className="grid h-7 w-7 place-items-center rounded-full bg-muted">
+                      <Bot className="h-3.5 w-3.5 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div
+                    className={cn(
+                      'absolute -bottom-0.5 -right-0.5 grid h-4 w-4 place-items-center rounded-full ring-2 ring-background',
+                      meta.tone,
+                    )}
+                  >
+                    <Icon className="h-2.5 w-2.5" />
+                  </div>
+                </div>
+                <div className="min-w-0 flex-1 text-xs leading-relaxed">
+                  <p>
+                    <span className="font-medium text-foreground">{e.who}</span>{' '}
+                    <span className="text-muted-foreground">{e.action}</span>{' '}
+                    <Link
+                      href={`/tickets/${e.ticket.replace('#', 't-')}`}
+                      className="font-mono text-[11px] font-medium text-primary hover:underline"
+                    >
+                      {e.ticket}
+                    </Link>
+                  </p>
+                  <p className="truncate text-muted-foreground">{e.subject}</p>
+                  <p className="text-[10px] text-muted-foreground/70">{e.time}</p>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="border-t bg-muted/20 p-2 text-center">
+          <Link
+            href="#"
+            className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
+          >
+            View full activity log
+            <ArrowUpRight className="h-3 w-3" />
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );
