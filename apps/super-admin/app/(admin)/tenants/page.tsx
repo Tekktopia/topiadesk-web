@@ -44,7 +44,7 @@ function formatDate(iso: string) {
 }
 
 const PLAN_STYLES: Record<TenantPlan, string> = {
-  enterprise: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
+  enterprise: 'bg-coral/12 text-coral-dark dark:bg-violet-900/30 dark:text-violet-300',
   business:   'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
   starter:    'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
 };
@@ -117,7 +117,7 @@ export default function TenantsPage() {
   return (
     <div className="space-y-5">
       {/* Gradient header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-emerald-700 px-6 py-5">
+      <div className="relative overflow-hidden bg-navy px-6 py-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
@@ -126,7 +126,7 @@ export default function TenantsPage() {
             <h1 className="font-display text-2xl font-bold tracking-tight text-white">Tenants</h1>
             <p className="mt-0.5 text-sm text-white/70">{counts.all} tenants · {counts.active} active · {counts.trialing} trialling</p>
           </div>
-          <Button size="sm" className="bg-white text-emerald-700 hover:bg-white/90">
+          <Button size="sm" className="bg-coral text-white hover:bg-white/90">
             <Plus className="h-3 w-3" />Create tenant
           </Button>
         </div>

@@ -105,7 +105,7 @@ export function Topbar() {
 
   return (
     <>
-      <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/50 bg-background/80 px-4 backdrop-blur-xl">
+      <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/60 bg-card/70 px-4 backdrop-blur-xl">
         <Breadcrumbs />
 
         <button

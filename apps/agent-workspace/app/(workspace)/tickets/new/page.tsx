@@ -352,7 +352,7 @@ export default function NewTicketPage() {
                     <p className="text-sm font-semibold text-blue-900">{form.requesterName}</p>
                     <p className="text-xs text-blue-600">{form.requesterEmail}</p>
                   </div>
-                  {form.requesterId && <Badge variant="outline" className="ml-auto border-blue-200 bg-white text-blue-700 text-[10px]">Existing contact</Badge>}
+                  {form.requesterId && <Badge variant="outline" className="ml-auto border-blue-200 bg-coral text-white text-[10px]">Existing contact</Badge>}
                 </div>
               )}
             </div>

@@ -70,6 +70,16 @@ import {
   type MockAutomation,
   type SLAPolicy,
   type MockAgentChannel,
+  orgBranches,
+  orgDepartments,
+  orgRoleTemplates,
+  mockOnboardings,
+  mockOrgMetrics,
+  type OrgBranch,
+  type OrgDepartment,
+  type OrgRoleTemplate,
+  type OnboardingRequest,
+  type OrgMetrics,
 } from './mock-data';
 
 /**
@@ -368,5 +378,56 @@ export function useAIMetrics() {
   return useQuery<AIMetrics>({
     queryKey: ['ai', 'metrics'],
     queryFn: () => delay(mockAIMetrics, 150),
+  });
+}
+
+// ── Smart Org Awareness / Onboarding ─────────────────────────────────────────
+
+export function useOrgBranches() {
+  return useQuery<OrgBranch[]>({
+    queryKey: ['org', 'branches'],
+    queryFn: () => delay(orgBranches, 100),
+  });
+}
+
+export function useOrgDepartments() {
+  return useQuery<OrgDepartment[]>({
+    queryKey: ['org', 'departments'],
+    queryFn: () => delay(orgDepartments, 100),
+  });
+}
+
+export function useOrgRoleTemplates() {
+  return useQuery<OrgRoleTemplate[]>({
+    queryKey: ['org', 'role-templates'],
+    queryFn: () => delay(orgRoleTemplates, 150),
+  });
+}
+
+export function useOrgRoleTemplate(id: string) {
+  return useQuery<OrgRoleTemplate | undefined>({
+    queryKey: ['org', 'role-templates', id],
+    queryFn: () => delay(orgRoleTemplates.find((r) => r.id === id)),
+  });
+}
+
+export function useOnboardings() {
+  return useQuery<OnboardingRequest[]>({
+    queryKey: ['onboarding'],
+    queryFn: () => delay(mockOnboardings, 200),
+  });
+}
+
+export function useOnboarding(id: string) {
+  return useQuery<OnboardingRequest | undefined>({
+    queryKey: ['onboarding', id],
+    queryFn: () => delay(mockOnboardings.find((o) => o.id === id)),
+  });
+}
+
+export function useOrgMetrics() {
+  return useQuery<OrgMetrics>({
+    queryKey: ['org', 'metrics'],
+    queryFn: () => delay(mockOrgMetrics, 100),
   });
 }

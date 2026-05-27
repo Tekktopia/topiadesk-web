@@ -298,7 +298,7 @@ function PageHeader({
   outOfWarranty: number;
 }) {
   return (
-    <div className="relative -mx-5 -mt-5 mb-1 overflow-hidden bg-gradient-to-br from-blue-700 to-blue-800 px-5 py-5">
+    <div className="relative -mx-5 -mt-5 mb-1 overflow-hidden bg-navy px-5 py-5">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
       <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
       <div className="relative flex flex-wrap items-center justify-between gap-4">
@@ -318,7 +318,7 @@ function PageHeader({
             <QrCode className="h-3 w-3" />
             Scan
           </Button>
-          <Button size="sm" className="bg-white text-blue-700 hover:bg-white/90">
+          <Button size="sm" className="bg-coral text-white hover:bg-white/90">
             <Plus className="h-3 w-3" />
             Add asset
           </Button>

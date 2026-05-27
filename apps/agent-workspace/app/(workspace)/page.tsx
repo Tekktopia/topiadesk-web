@@ -511,7 +511,7 @@ export default function DashboardPage() {
 
 function PageHeader({ queueCount }: { queueCount: number }) {
   return (
-    <header className="relative overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-600 to-blue-700 px-6 py-5 shadow-lg shadow-blue-600/15">
+    <header className="relative overflow-hidden rounded-2xl border border-blue-100 bg-navy px-6 py-5 shadow-lg shadow-blue-600/15">
       {/* Subtle pattern */}
       <div
         className="pointer-events-none absolute inset-0 opacity-10"
@@ -572,7 +572,7 @@ function PageHeader({ queueCount }: { queueCount: number }) {
           </Button>
           <Button
             size="sm"
-            className="bg-white text-blue-700 font-semibold shadow-md hover:bg-blue-50"
+            className="bg-coral text-white font-semibold shadow-md hover:bg-blue-50"
           >
             <Plus className="h-3 w-3" />
             New ticket

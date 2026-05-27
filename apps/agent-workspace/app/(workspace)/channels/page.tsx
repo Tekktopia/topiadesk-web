@@ -44,7 +44,7 @@ function channelColor(type: ChannelType) {
   switch (type) {
     case 'email':    return 'bg-blue-50 text-blue-600';
     case 'whatsapp': return 'bg-emerald-50 text-emerald-600';
-    case 'voice':    return 'bg-purple-50 text-purple-600';
+    case 'voice':    return 'bg-coral/8 text-coral';
     case 'sms':      return 'bg-cyan-50 text-cyan-600';
     case 'widget':   return 'bg-amber-50 text-amber-600';
     case 'api':      return 'bg-slate-50 text-slate-600';
@@ -109,7 +109,7 @@ export default function ChannelsPage() {
               {counts.connected} connected · {counts.totalOpen} open tickets · {counts.totalPending} pending
             </p>
           </div>
-          <Button size="sm" className="bg-white text-blue-700 hover:bg-white/90">
+          <Button size="sm" className="bg-coral text-white hover:bg-white/90">
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             Add channel
           </Button>

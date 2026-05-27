@@ -116,7 +116,7 @@ export default function SystemPage() {
   return (
     <div className="space-y-5 p-6">
       {/* Gradient header */}
-      <div className="relative -mx-6 -mt-6 mb-1 overflow-hidden bg-gradient-to-br from-emerald-600 to-emerald-700 px-6 py-5">
+      <div className="relative -mx-6 -mt-6 mb-1 overflow-hidden bg-navy px-6 py-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative flex flex-wrap items-center justify-between gap-4">

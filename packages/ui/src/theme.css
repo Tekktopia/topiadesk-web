@@ -1,7 +1,7 @@
 /**
- * Topiadesk / Tekktopia brand theme — Tailwind v4.
- * Apps consume this file via `@import '@topiadesk/ui/theme.css'` (or a
- * relative path). The host stylesheet is responsible for `@import "tailwindcss"`.
+ * Topiadesk brand theme — Tailwind v4.
+ * Refresh 2026 — cream sidebar, coral accent, navy primary, airy whitespace.
+ * Apps consume this file via `@import '@topiadesk/ui/theme.css'`.
  */
 
 @custom-variant dark (&:is(.dark *));
@@ -11,19 +11,26 @@
   --color-foreground:   var(--foreground);
 
   /* Font mapping — Effra by Dalton Maag (self-hosted commercial licence)     */
-  /* Drop the .woff2 / .woff files into every app's public/fonts/ directory.  */
   --font-sans:    'Effra', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-display: 'Effra', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono:    'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', 'Menlo', monospace;
 
-  /* Brand colour tokens */
+  /* ── Refresh palette tokens — exposed as Tailwind utilities ────────────── */
+  --color-cream:        var(--cream);
+  --color-cream-deep:   var(--cream-deep);
+  --color-coral:        var(--coral);
+  --color-coral-light:  var(--coral-light);
+  --color-coral-dark:   var(--coral-dark);
   --color-navy:         var(--navy);
   --color-navy-mid:     var(--navy-mid);
   --color-navy-light:   var(--navy-light);
+  --color-lavender:     var(--lavender);
+
+  /* Legacy brand tokens kept for backwards-compatibility ────────────────── */
   --color-blue:         var(--blue);
   --color-blue-light:   var(--blue-light);
-  --color-orange:       var(--orange);
-  --color-orange-light: var(--orange-light);
+  --color-orange:       var(--coral);          /* alias: orange → coral */
+  --color-orange-light: var(--coral-light);
   --color-slate:        var(--slate);
   --color-off-white:    var(--off-white);
 
@@ -48,71 +55,75 @@
 }
 
 :root {
-  /* ── Tekktopia Brand Tokens ─────────────────── */
-  --navy:         #0F172A;   /* deep navy — dark sections, footer */
-  --navy-mid:     #1E293B;   /* slightly lighter navy */
-  --navy-light:   #334155;   /* muted navy — borders on dark sections */
+  /* ── Refresh palette (Cream · Coral · Navy) ─────────────────────────── */
+  --cream:        #FBF6F0;   /* sidebar background + canvas warmth */
+  --cream-deep:   #F4EDE2;   /* hover/pressed states on cream */
+  --coral:        #FF6B4A;   /* primary accent — avatars, active dots, key CTAs */
+  --coral-light:  #FF8A6E;
+  --coral-dark:   #E5512F;
+  --navy:         #1A1B2E;   /* primary button background, headings */
+  --navy-mid:     #2A2B40;
+  --navy-light:   #3D3E54;
+  --lavender:     #EEEAF6;   /* right-side gradient accent on canvas */
 
-  --blue:         #2563EB;   /* primary brand blue */
-  --blue-light:   #3B82F6;   /* hover state */
-
-  --orange:       #F97316;   /* brand orange — logo, active states, accents */
-  --orange-light: #FB923C;   /* orange hover */
-
-  --slate:        #64748B;   /* body text secondary */
-  --off-white:    #F8FAFC;   /* light section bg */
+  /* Legacy mappings (kept so existing classes don't break) */
+  --blue:         #2563EB;
+  --blue-light:   #3B82F6;
+  --slate:        #7A7568;
+  --off-white:    #FBF6F0;
 
   --radius: 0.75rem;
 }
 
+/* Both .dark and .light branches now share the refresh palette so the design
+ * is consistent regardless of which class Next.js applies to <html>. */
+
 html.dark{
-  /* ── Semantic Tokens ──────────────── */
-  --background:   #04080F;
-  --foreground:   #ffffff;
+  --background:   #FBFAF7;
+  --foreground:   #0F0F1A;
 
   --card:              #FFFFFF;
-  --card-foreground:   #0F172A;
+  --card-foreground:   #0F0F1A;
 
-  --primary:             #2563EB;
+  --primary:             #1A1B2E;   /* dark navy CTA */
   --primary-foreground:  #FFFFFF;
 
-  --secondary:             #F8FAFC;
-  --secondary-foreground:  #0F172A;
+  --secondary:             #F4EDE2;
+  --secondary-foreground:  #1A1B2E;
 
-  --muted:             #F1F5F9;
-  --muted-foreground:  #64748B;
+  --muted:             #F4EFE6;
+  --muted-foreground:  #7A7568;
 
-  --accent:             #F97316;
+  --accent:             #FF6B4A;
   --accent-foreground:  #FFFFFF;
 
-  --border: #E2E8F0;
-  --input:  #E2E8F0;
-  --ring:   #2563EB;
+  --border: #EFEAE1;
+  --input:  #EFEAE1;
+  --ring:   #FF6B4A;
 }
 
-/* Light mode semantic token */
 html.light{
-  --background:        #F1F5FA;
-  --foreground:        #0F172A;
+  --background:        #FBFAF7;
+  --foreground:        #0F0F1A;
 
   --card:              #FFFFFF;
-  --card-foreground:   #0F172A;
+  --card-foreground:   #0F0F1A;
 
-  --primary:           #2563EB;   /* richer blue */
+  --primary:           #1A1B2E;
   --primary-foreground:#FFFFFF;
 
-  --secondary:             #F1F5F9;
-  --secondary-foreground:  #0F172A;
+  --secondary:             #F4EDE2;
+  --secondary-foreground:  #1A1B2E;
 
-  --muted:             #EEF2F7;
-  --muted-foreground:  #64748B;
+  --muted:             #F4EFE6;
+  --muted-foreground:  #7A7568;
 
-  --accent:            #F97316;
+  --accent:            #FF6B4A;
   --accent-foreground: #FFFFFF;
 
-  --border: #DDE3EC;
-  --input:  #DDE3EC;
-  --ring:   #2563EB;
+  --border: #EFEAE1;
+  --input:  #EFEAE1;
+  --ring:   #FF6B4A;
 }
 
 @layer base {
@@ -124,7 +135,7 @@ html.light{
     overflow-x: hidden;
   }
   body {
-    @apply bg-background text-foreground antialiased font-sans selection:bg-blue selection:text-white;
+    @apply bg-background text-foreground antialiased font-sans selection:bg-coral selection:text-white;
     overflow-x: hidden;
   }
   h1, h2, h3, h4, h5, h6 {
@@ -132,21 +143,59 @@ html.light{
   }
 }
 
-/* ── Elevation & depth helpers ────────────────────────────────────────────── */
+/* ── Canvas gradient — warm cream → white → soft lavender ────────────────── */
+.bg-canvas {
+  background-color: #FBFAF7;
+  background-image:
+    linear-gradient(to right,
+      #FBF6F0 0%,
+      #FFFFFF 35%,
+      #FFFFFF 65%,
+      #F4F1FA 100%);
+}
+
+/* ── Sidebar cream surface ───────────────────────────────────────────────── */
+.sidebar-cream {
+  background: #FBF6F0;
+}
+
+/* ── Subtle pill for selected nav rows (light context) ───────────────────── */
+.nav-pill-active {
+  background: #FFFFFF;
+  box-shadow:
+    0 1px 2px 0 rgb(0 0 0 / 0.04),
+    0 1px 3px 0 rgb(0 0 0 / 0.05);
+}
+
+/* ── Soft segmented control track ────────────────────────────────────────── */
+.segmented-track {
+  background: #F4EDE2;
+  border-radius: 9999px;
+  padding: 3px;
+}
+.segmented-pill {
+  background: #FFFFFF;
+  border-radius: 9999px;
+  box-shadow:
+    0 1px 2px 0 rgb(0 0 0 / 0.05),
+    0 1px 3px 0 rgb(0 0 0 / 0.06);
+}
+
+/* ── Elevation helpers (kept for compat — used by many existing screens) ── */
 .card-raised {
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.07),
-              0 1px 2px -1px rgb(0 0 0 / 0.07);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05),
+              0 1px 2px -1px rgb(0 0 0 / 0.04);
   transition: box-shadow 150ms ease, transform 150ms ease;
 }
 .card-raised:hover {
-  box-shadow: 0 4px 12px 0 rgb(0 0 0 / 0.1),
-              0 2px 4px -2px rgb(0 0 0 / 0.08);
+  box-shadow: 0 4px 12px 0 rgb(0 0 0 / 0.08),
+              0 2px 4px -2px rgb(0 0 0 / 0.06);
   transform: translateY(-1px);
 }
 
-/* ── Gradient text ────────────────────────────────────────────────────────── */
+/* ── Gradient text (legacy — used by marketing site) ─────────────────────── */
 .gradient-text {
-  background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+  background: linear-gradient(135deg, #FF6B4A 0%, #1A1B2E 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -154,34 +203,35 @@ html.light{
 
 /* ── Glass panel (frosted backdrop) ──────────────────────────────────────── */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(12px) saturate(1.4);
-  -webkit-backdrop-filter: blur(12px) saturate(1.4);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.55);
 }
 
-/* ── Sidebar dark surface ─────────────────────────────────────────────────── */
+/* ── Sidebar dark surface (legacy — kept so any remaining usage compiles) ─ */
 .sidebar-dark {
-  background: #0B1120;
+  background: #FBF6F0;     /* now redirects to cream so legacy callers inherit the refresh */
 }
 
-/* ── Radial gradient mesh (hero sections) ────────────────────────────────── */
+/* ── Radial gradient mesh ────────────────────────────────────────────────── */
 .bg-mesh-blue {
-  background-color: #0f172a;
+  background-color: #1A1B2E;
   background-image:
-    radial-gradient(ellipse 80% 60% at 50% -10%, #1d4ed830 0%, transparent 60%),
-    radial-gradient(ellipse 40% 30% at 80% 20%, #7c3aed18 0%, transparent 50%);
+    radial-gradient(ellipse 80% 60% at 50% -10%, #FF6B4A30 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 80% 20%, #FFFFFF18 0%, transparent 50%);
 }
 .bg-mesh-light {
   background-image:
-    radial-gradient(ellipse 80% 50% at 50% -20%, #eff6ff 0%, transparent 65%);
+    radial-gradient(ellipse 80% 50% at 50% -20%, #FFF5EE 0%, transparent 65%);
 }
 
 /* ── Stat card accent strip ──────────────────────────────────────────────── */
-.stat-accent-blue   { border-top: 2px solid #2563EB; }
+.stat-accent-blue   { border-top: 2px solid #1A1B2E; }
 .stat-accent-amber  { border-top: 2px solid #F59E0B; }
 .stat-accent-emerald{ border-top: 2px solid #10B981; }
-.stat-accent-violet { border-top: 2px solid #7C3AED; }
+.stat-accent-violet { border-top: 2px solid #FF6B4A; }
+.stat-accent-coral  { border-top: 2px solid #FF6B4A; }
 
 /* ── Live pulse dot ──────────────────────────────────────────────────────── */
 @keyframes pulse-ring {
@@ -197,66 +247,48 @@ html.light{
   animation: pulse-ring 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* ── Effra by Dalton Maag (licensed — self-hosted) ───────────────────────── */
-/*    Purchase a web licence at daltonmaag.com and place the font files in    */
-/*    each app's  public/fonts/  directory using the exact filenames below.   */
-/*    The font stack above falls back gracefully to system-ui until files     */
-/*    are present.                                                             */
+/* ── Effra font faces ────────────────────────────────────────────────────── */
 @font-face {
   font-family: 'Effra';
   src: url('/fonts/Effra-Regular.woff2') format('woff2'),
        url('/fonts/Effra-Regular.woff')  format('woff');
-  font-weight: 400;
-  font-style:  normal;
-  font-display: swap;
+  font-weight: 400; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: 'Effra';
   src: url('/fonts/Effra-Italic.woff2') format('woff2'),
        url('/fonts/Effra-Italic.woff')  format('woff');
-  font-weight: 400;
-  font-style:  italic;
-  font-display: swap;
+  font-weight: 400; font-style: italic; font-display: swap;
 }
 @font-face {
   font-family: 'Effra';
   src: url('/fonts/Effra-Medium.woff2') format('woff2'),
        url('/fonts/Effra-Medium.woff')  format('woff');
-  font-weight: 500;
-  font-style:  normal;
-  font-display: swap;
+  font-weight: 500; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: 'Effra';
   src: url('/fonts/Effra-MediumItalic.woff2') format('woff2'),
        url('/fonts/Effra-MediumItalic.woff')  format('woff');
-  font-weight: 500;
-  font-style:  italic;
-  font-display: swap;
+  font-weight: 500; font-style: italic; font-display: swap;
 }
 @font-face {
   font-family: 'Effra';
   src: url('/fonts/Effra-Bold.woff2') format('woff2'),
        url('/fonts/Effra-Bold.woff')  format('woff');
-  font-weight: 700;
-  font-style:  normal;
-  font-display: swap;
+  font-weight: 700; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: 'Effra';
   src: url('/fonts/Effra-BoldItalic.woff2') format('woff2'),
        url('/fonts/Effra-BoldItalic.woff')  format('woff');
-  font-weight: 700;
-  font-style:  italic;
-  font-display: swap;
+  font-weight: 700; font-style: italic; font-display: swap;
 }
 @font-face {
   font-family: 'Effra';
   src: url('/fonts/Effra-Heavy.woff2') format('woff2'),
        url('/fonts/Effra-Heavy.woff')  format('woff');
-  font-weight: 900;
-  font-style:  normal;
-  font-display: swap;
+  font-weight: 900; font-style: normal; font-display: swap;
 }
 
 /* ── Marquee ticker ───────────────────────────────────────────────────────── */
@@ -268,13 +300,13 @@ html.light{
 /* ── Subtle grid pattern used in hero ────────────────────────────────────── */
 .bg-grid-slate {
   background-image:
-    linear-gradient(to right, #E2E8F040 1px, transparent 1px),
-    linear-gradient(to bottom, #E2E8F040 1px, transparent 1px);
+    linear-gradient(to right, #EFEAE140 1px, transparent 1px),
+    linear-gradient(to bottom, #EFEAE140 1px, transparent 1px);
   background-size: 48px 48px;
 }
 
 /* ── Subtle dot grid for dark sections ───────────────────────────────────── */
 .bg-dot-navy {
-  background-image: radial-gradient(#FFFFFF0A 1px, transparent 1px);
+  background-image: radial-gradient(#1A1B2E0A 1px, transparent 1px);
   background-size: 24px 24px;
 }

@@ -90,7 +90,7 @@ export default function AutomationsPage() {
   return (
     <div className="space-y-5">
       {/* Gradient header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-orange-500 to-orange-600 px-6 py-5">
+      <div className="relative overflow-hidden bg-navy px-6 py-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
@@ -106,7 +106,7 @@ export default function AutomationsPage() {
             <Button variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white">
               Import rule
             </Button>
-            <Button size="sm" className="bg-white text-orange-600 hover:bg-white/90">
+            <Button size="sm" className="bg-coral text-white hover:bg-white/90">
               <Plus className="h-3 w-3" />
               New rule
             </Button>

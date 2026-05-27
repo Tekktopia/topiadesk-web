@@ -32,10 +32,27 @@ export interface Person {
   email: string;
 }
 
+export interface EmailAddress {
+  name?: string;
+  email: string;
+}
+
 export interface ConversationMessage {
   id: string;
   author: Person;
   authorType: 'agent' | 'customer' | 'system';
+  /** When the message originated as an email, these headers are populated. */
+  channel?: 'email' | 'chat' | 'phone' | 'portal' | 'whatsapp' | 'note';
+  from?:    EmailAddress;
+  to?:      EmailAddress[];
+  cc?:      EmailAddress[];
+  bcc?:     EmailAddress[];
+  subject?: string;
+  /** Threaded email Message-ID for reply chain tracking */
+  messageId?: string;
+  inReplyTo?: string;
+  /** Attachments shown inline below the body */
+  attachments?: { name: string; sizeKb: number; mime?: string }[];
   body: string;
   isInternal: boolean;
   createdAt: string;
@@ -73,6 +90,13 @@ export interface MockTicket {
   linkedAssetId?: string;
   conversations: ConversationMessage[];
   tags: string[];
+  /** Email thread metadata (populated for email-channel tickets) */
+  emailSubject?:  string;
+  emailFrom?:     EmailAddress;
+  emailTo?:       EmailAddress[];
+  emailCc?:       EmailAddress[];
+  /** Mailbox the inbound email landed in (e.g. support@consomoafrica.com) */
+  inboundMailbox?: EmailAddress;
 }
 
 const agents: Person[] = [
@@ -119,12 +143,23 @@ export const mockTickets: MockTicket[] = [
     slaDueAt: future(18),
     linkedAssetId: 'as-mbp-014',
     tags: ['vpn', 'new-hire'],
+    emailSubject:   '[#1024] Cannot connect to office VPN from new laptop',
+    emailFrom:      { name: customers[0]!.name, email: customers[0]!.email },
+    emailTo:        [{ name: 'IT Support', email: 'support@consomoafrica.com' }],
+    emailCc:        [{ name: 'IT Manager', email: 'it-manager@acmebank.ng' }],
+    inboundMailbox: { name: 'IT Support', email: 'support@consomoafrica.com' },
     conversations: [
       {
         id: 'm1',
         author: customers[0]!,
         authorType: 'customer',
-        body: 'Hi team, my new MacBook cannot connect to the VPN. Tried reinstalling Cisco AnyConnect twice.',
+        channel: 'email',
+        from:    { name: customers[0]!.name, email: customers[0]!.email },
+        to:      [{ name: 'IT Support', email: 'support@consomoafrica.com' }],
+        cc:      [{ name: 'IT Manager', email: 'it-manager@acmebank.ng' }],
+        subject: 'Cannot connect to office VPN from new laptop',
+        messageId: '<m1.1024@acmebank.ng>',
+        body: 'Hi team, my new MacBook cannot connect to the VPN. Tried reinstalling Cisco AnyConnect twice.\n\nKind regards,\nSarah',
         isInternal: false,
         createdAt: ago(42),
       },
@@ -132,7 +167,14 @@ export const mockTickets: MockTicket[] = [
         id: 'm2',
         author: agents[0]!,
         authorType: 'agent',
-        body: 'Hi Sarah, thanks for reporting. I can see your laptop in the asset register. Could you share a screenshot of the exact error?',
+        channel: 'email',
+        from:    { name: agents[0]!.name, email: agents[0]!.email },
+        to:      [{ name: customers[0]!.name, email: customers[0]!.email }],
+        cc:      [{ name: 'IT Manager', email: 'it-manager@acmebank.ng' }],
+        subject: 'Re: Cannot connect to office VPN from new laptop',
+        messageId: '<m2.1024@consomoafrica.com>',
+        inReplyTo: '<m1.1024@acmebank.ng>',
+        body: 'Hi Sarah, thanks for reporting. I can see your laptop in the asset register.\n\nCould you share a screenshot of the exact error message?\n\nBest,\nTunde',
         isInternal: false,
         createdAt: ago(28),
       },
@@ -140,7 +182,8 @@ export const mockTickets: MockTicket[] = [
         id: 'm3',
         author: agents[0]!,
         authorType: 'agent',
-        body: 'Note: this is the third VPN issue this week from the new MacBook batch. Need to check if cert provisioning is missing in the imaging script.',
+        channel: 'note',
+        body: 'Internal note: this is the third VPN issue this week from the new MacBook batch. Need to check if cert provisioning is missing in the imaging script.',
         isInternal: true,
         createdAt: ago(25),
       },
@@ -148,6 +191,16 @@ export const mockTickets: MockTicket[] = [
         id: 'm4',
         author: customers[0]!,
         authorType: 'customer',
+        channel: 'email',
+        from:    { name: customers[0]!.name, email: customers[0]!.email },
+        to:      [{ name: agents[0]!.name, email: agents[0]!.email }],
+        cc:      [{ name: 'IT Manager', email: 'it-manager@acmebank.ng' }],
+        subject: 'Re: Cannot connect to office VPN from new laptop',
+        messageId: '<m4.1024@acmebank.ng>',
+        inReplyTo: '<m2.1024@consomoafrica.com>',
+        attachments: [
+          { name: 'anyconnect-error.png', sizeKb: 248, mime: 'image/png' },
+        ],
         body: 'Attached the screenshot. The error is "AnyConnect was unable to establish a connection to the specified secure gateway".',
         isInternal: false,
         createdAt: ago(8),
@@ -2525,4 +2578,588 @@ export const mockAIMetrics: AIMetrics = {
     { day: 'Sun',   handled: 12, escalated: 3  },
     { day: 'Today', handled: 28, escalated: 7  },
   ],
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Smart Organisational Awareness — Onboarding
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Org structure ─────────────────────────────────────────────────────────────
+
+export interface OrgBranch {
+  id: string;
+  name: string;
+  city: string;
+  country: string;
+  headcount: number;
+  timezone: string;
+}
+
+export interface OrgDepartment {
+  id: string;
+  name: string;
+  head: string;
+  headcount: number;
+  /** Branch IDs this department has a presence in */
+  branchIds: string[];
+}
+
+export type SecurityLevel = 1 | 2 | 3 | 4 | 5;
+export type RoleLevel =
+  | 'intern'
+  | 'junior'
+  | 'mid'
+  | 'senior'
+  | 'lead'
+  | 'manager'
+  | 'director'
+  | 'c-suite';
+
+export interface ApprovalStep {
+  id: string;
+  role: string;
+  name: string;
+  /** If set, this step is only required when security level ≥ threshold */
+  minSecurityLevel?: SecurityLevel;
+}
+
+export type OnboardingTaskCategory =
+  | 'asset'
+  | 'software'
+  | 'access'
+  | 'training'
+  | 'security'
+  | 'admin';
+
+export interface OnboardingTaskTemplate {
+  id: string;
+  category: OnboardingTaskCategory;
+  title: string;
+  assignedTeam: string;
+  /** Days relative to start date (negative = must finish before day 1) */
+  dueDaysFromStart: number;
+  /** Can be triggered automatically via an integration */
+  canAutomate: boolean;
+  automationNote?: string;
+}
+
+export interface OrgRoleTemplate {
+  id: string;
+  title: string;
+  level: RoleLevel;
+  departmentId: string;
+  securityLevel: SecurityLevel;
+  requiredAssets: string[];
+  requiredSoftware: string[];
+  requiredAccess: string[];
+  requiredTraining: string[];
+  approvalChain: ApprovalStep[];
+  tasks: OnboardingTaskTemplate[];
+  estimatedSetupDays: number;
+}
+
+// ── Onboarding instance ───────────────────────────────────────────────────────
+
+export type OnboardingStatus =
+  | 'pending-approval'
+  | 'approved'
+  | 'in-progress'
+  | 'blocked'
+  | 'completed';
+
+export type OnboardingTaskStatus = 'pending' | 'in-progress' | 'done' | 'blocked';
+
+export interface OnboardingTaskItem {
+  id: string;
+  category: OnboardingTaskCategory;
+  title: string;
+  assignedTeam: string;
+  status: OnboardingTaskStatus;
+  dueDate: string;
+  canAutomate: boolean;
+  automationNote?: string;
+  completedAt?: string;
+  notes?: string;
+}
+
+export interface OnboardingApproval {
+  id: string;
+  approverName: string;
+  approverRole: string;
+  status: 'pending' | 'approved' | 'rejected';
+  requestedAt: string;
+  respondedAt?: string;
+  notes?: string;
+}
+
+export interface OnboardingRequest {
+  id: string;
+  employeeName: string;
+  employeeEmail: string;
+  roleId: string;
+  roleTitle: string;
+  departmentId: string;
+  departmentName: string;
+  branchId: string;
+  branchName: string;
+  startDate: string;
+  managerName: string;
+  status: OnboardingStatus;
+  createdBy: string;
+  createdAt: string;
+  tasks: OnboardingTaskItem[];
+  approvals: OnboardingApproval[];
+}
+
+export interface OrgMetrics {
+  activeOnboardings: number;
+  completingThisWeek: number;
+  pendingApprovals: number;
+  avgCompletionDays: number;
+  completedThisMonth: number;
+  blockedCount: number;
+}
+
+// ── Branches ──────────────────────────────────────────────────────────────────
+
+export const orgBranches: OrgBranch[] = [
+  { id: 'br-lagos',    name: 'Lagos HQ',       city: 'Lagos',     country: 'Nigeria',      headcount: 142, timezone: 'Africa/Lagos' },
+  { id: 'br-ikeja',    name: 'Ikeja Branch',   city: 'Ikeja',     country: 'Nigeria',      headcount: 38,  timezone: 'Africa/Lagos' },
+  { id: 'br-nairobi',  name: 'Nairobi Office', city: 'Nairobi',   country: 'Kenya',        headcount: 27,  timezone: 'Africa/Nairobi' },
+  { id: 'br-dakar',    name: 'Dakar Office',   city: 'Dakar',     country: 'Senegal',      headcount: 14,  timezone: 'Africa/Dakar' },
+  { id: 'br-capetown', name: 'Cape Town',      city: 'Cape Town', country: 'South Africa', headcount: 11,  timezone: 'Africa/Johannesburg' },
+];
+
+// ── Departments ───────────────────────────────────────────────────────────────
+
+export const orgDepartments: OrgDepartment[] = [
+  { id: 'dept-eng',      name: 'Engineering',       head: 'Emeka Osei',      headcount: 24, branchIds: ['br-lagos'] },
+  { id: 'dept-product',  name: 'Product',            head: 'Nadia Kimani',    headcount: 8,  branchIds: ['br-lagos'] },
+  { id: 'dept-cs',       name: 'Customer Success',   head: 'Adaeze Nwosu',    headcount: 31, branchIds: ['br-lagos', 'br-nairobi'] },
+  { id: 'dept-sales',    name: 'Sales',              head: 'Kwame Mensah',    headcount: 22, branchIds: ['br-lagos', 'br-nairobi', 'br-dakar'] },
+  { id: 'dept-finance',  name: 'Finance',            head: 'Amara Diallo',    headcount: 9,  branchIds: ['br-lagos'] },
+  { id: 'dept-hr',       name: 'People & HR',        head: 'Fatima Suleiman', headcount: 6,  branchIds: ['br-lagos'] },
+  { id: 'dept-it',       name: 'IT Operations',      head: 'Tunde Bakare',    headcount: 14, branchIds: ['br-lagos', 'br-ikeja', 'br-nairobi', 'br-dakar', 'br-capetown'] },
+  { id: 'dept-security', name: 'Security Ops',       head: 'Ibrahim Al-Amin', headcount: 7,  branchIds: ['br-lagos'] },
+  { id: 'dept-marketing',name: 'Marketing',          head: 'Chisom Eze',      headcount: 11, branchIds: ['br-lagos'] },
+];
+
+// ── Role templates ────────────────────────────────────────────────────────────
+
+export const orgRoleTemplates: OrgRoleTemplate[] = [
+  // ── Software Engineer ──────────────────────────────────────────────────────
+  {
+    id: 'role-swe',
+    title: 'Software Engineer',
+    level: 'mid',
+    departmentId: 'dept-eng',
+    securityLevel: 3,
+    requiredAssets: ['MacBook Pro 14" M3 Pro', 'Dell UltraSharp 27" Monitor', 'Magic Keyboard', 'Magic Mouse', 'USB-C Hub'],
+    requiredSoftware: ['GitHub (org member)', 'Jira (Engineering board)', 'Slack (Engineering channels)', 'Figma (viewer)', '1Password (Engineering vault)', 'AWS CLI (IAM user)', 'VS Code'],
+    requiredAccess: ['GitHub org', 'AWS dev account', 'Staging environment', 'VPN certificate', 'Internal docs (Notion)'],
+    requiredTraining: ['Security Awareness (mandatory)', 'Engineering Onboarding', 'GitHub workflow standards', 'AWS fundamentals'],
+    estimatedSetupDays: 3,
+    approvalChain: [
+      { id: 'ap-hr',   role: 'HR Admin',            name: 'Fatima Suleiman' },
+      { id: 'ap-em',   role: 'Engineering Manager',  name: 'Emeka Osei' },
+      { id: 'ap-ciso', role: 'CISO',                 name: 'Ibrahim Al-Amin', minSecurityLevel: 3 },
+    ],
+    tasks: [
+      { id: 'swe-t1',  category: 'asset',    title: 'Order & configure MacBook Pro 14" M3 Pro',           assignedTeam: 'IT Operations',    dueDaysFromStart: -5, canAutomate: false },
+      { id: 'swe-t2',  category: 'asset',    title: 'Prepare monitor + peripherals kit',                  assignedTeam: 'IT Operations',    dueDaysFromStart: -5, canAutomate: false },
+      { id: 'swe-t3',  category: 'admin',    title: 'Create Microsoft 365 account & mailbox',             assignedTeam: 'IT Operations',    dueDaysFromStart: -3, canAutomate: true,  automationNote: 'Via Microsoft Graph API + AD provisioning' },
+      { id: 'swe-t4',  category: 'software', title: 'Add to GitHub org + assign to Engineering team',     assignedTeam: 'IT Operations',    dueDaysFromStart: -2, canAutomate: true,  automationNote: 'Via GitHub API — org invite sent automatically' },
+      { id: 'swe-t5',  category: 'software', title: 'Create Jira account + assign Engineering project',   assignedTeam: 'IT Operations',    dueDaysFromStart: -2, canAutomate: true,  automationNote: 'Via Jira REST API' },
+      { id: 'swe-t6',  category: 'access',   title: 'Provision AWS IAM user + attach dev policy',         assignedTeam: 'IT Operations',    dueDaysFromStart: -2, canAutomate: true,  automationNote: 'Via AWS API — requires CISO approval first' },
+      { id: 'swe-t7',  category: 'access',   title: 'Generate & push VPN certificate via Jamf',           assignedTeam: 'IT Operations',    dueDaysFromStart: -1, canAutomate: true,  automationNote: 'Via Jamf MDM certificate payload' },
+      { id: 'swe-t8',  category: 'software', title: 'Create 1Password account + add to Engineering vault',assignedTeam: 'IT Operations',    dueDaysFromStart: -1, canAutomate: false },
+      { id: 'swe-t9',  category: 'admin',    title: 'Collect signed employment contract & NDA',           assignedTeam: 'People & HR',      dueDaysFromStart:  0, canAutomate: false },
+      { id: 'swe-t10', category: 'training', title: 'Assign Security Awareness course (mandatory)',       assignedTeam: 'People & HR',      dueDaysFromStart:  1, canAutomate: true,  automationNote: 'Auto-enrolled in LMS on day 1' },
+      { id: 'swe-t11', category: 'training', title: 'Engineering onboarding session with tech lead',      assignedTeam: 'Engineering',      dueDaysFromStart:  1, canAutomate: false },
+      { id: 'swe-t12', category: 'security', title: 'Enable MFA on all accounts (mandatory)',             assignedTeam: 'IT Operations',    dueDaysFromStart:  1, canAutomate: false },
+      { id: 'swe-t13', category: 'training', title: 'AWS fundamentals self-paced course',                 assignedTeam: 'Engineering',      dueDaysFromStart:  5, canAutomate: true,  automationNote: 'Auto-assigned via LMS' },
+      { id: 'swe-t14', category: 'admin',    title: '30-day check-in with Engineering Manager',           assignedTeam: 'Engineering',      dueDaysFromStart: 30, canAutomate: false },
+    ],
+  },
+
+  // ── Customer Success Manager ───────────────────────────────────────────────
+  {
+    id: 'role-csm',
+    title: 'Customer Success Manager',
+    level: 'mid',
+    departmentId: 'dept-cs',
+    securityLevel: 2,
+    requiredAssets: ['MacBook Air 15" M2', 'Bose QuietComfort Headset', 'iPhone 15'],
+    requiredSoftware: ['Salesforce (CS licence)', 'Topiadesk (agent seat)', 'Slack (CS channels)', 'Zoom Pro', 'HubSpot (view access)'],
+    requiredAccess: ['Salesforce CS workspace', 'Topiadesk agent portal', 'CS performance dashboard', 'Customer NPS data (read)'],
+    requiredTraining: ['Customer Service Excellence', 'Product Knowledge (Level 1)', 'GDPR & Data Handling', 'CRM workflow guide'],
+    estimatedSetupDays: 2,
+    approvalChain: [
+      { id: 'ap-hr',   role: 'HR Admin',             name: 'Fatima Suleiman' },
+      { id: 'ap-csh',  role: 'CS Head',              name: 'Adaeze Nwosu' },
+    ],
+    tasks: [
+      { id: 'csm-t1', category: 'asset',    title: 'Order MacBook Air 15" M2',                          assignedTeam: 'IT Operations',  dueDaysFromStart: -4, canAutomate: false },
+      { id: 'csm-t2', category: 'asset',    title: 'Set up Bose headset + iPhone 15 (corporate SIM)',   assignedTeam: 'IT Operations',  dueDaysFromStart: -2, canAutomate: false },
+      { id: 'csm-t3', category: 'admin',    title: 'Create Microsoft 365 account & mailbox',            assignedTeam: 'IT Operations',  dueDaysFromStart: -2, canAutomate: true, automationNote: 'Via AD provisioning' },
+      { id: 'csm-t4', category: 'software', title: 'Provision Topiadesk agent seat',                    assignedTeam: 'IT Operations',  dueDaysFromStart: -1, canAutomate: true, automationNote: 'Via Topiadesk admin API' },
+      { id: 'csm-t5', category: 'software', title: 'Salesforce CS licence assignment + profile setup',  assignedTeam: 'IT Operations',  dueDaysFromStart: -1, canAutomate: true, automationNote: 'Via Salesforce API' },
+      { id: 'csm-t6', category: 'access',   title: 'Grant CS performance dashboard access',             assignedTeam: 'IT Operations',  dueDaysFromStart: -1, canAutomate: false },
+      { id: 'csm-t7', category: 'admin',    title: 'Collect signed employment contract',                assignedTeam: 'People & HR',    dueDaysFromStart:  0, canAutomate: false },
+      { id: 'csm-t8', category: 'training', title: 'Product Knowledge Level 1 (self-paced)',            assignedTeam: 'People & HR',    dueDaysFromStart:  1, canAutomate: true, automationNote: 'Auto-enrolled in LMS' },
+      { id: 'csm-t9', category: 'training', title: 'GDPR & data handling certification',                assignedTeam: 'People & HR',    dueDaysFromStart:  3, canAutomate: true, automationNote: 'Auto-enrolled in LMS' },
+      { id: 'csm-t10',category: 'security', title: 'Enable MFA on all accounts',                       assignedTeam: 'IT Operations',  dueDaysFromStart:  1, canAutomate: false },
+      { id: 'csm-t11',category: 'admin',    title: '30-day performance check-in with CS Head',          assignedTeam: 'Customer Success',dueDaysFromStart: 30, canAutomate: false },
+    ],
+  },
+
+  // ── Finance Analyst ───────────────────────────────────────────────────────
+  {
+    id: 'role-fin',
+    title: 'Finance Analyst',
+    level: 'senior',
+    departmentId: 'dept-finance',
+    securityLevel: 4,
+    requiredAssets: ['MacBook Pro 14" M3 Pro', 'Dell Monitor ×2', 'YubiKey 5C (hardware token)', 'Laptop lock cable'],
+    requiredSoftware: ['QuickBooks Online (accountant)', 'Microsoft Excel (M365)', 'DocuSign (signer)', 'Slack (Finance channel)', '1Password (Finance vault)'],
+    requiredAccess: ['Finance ERP (read-only → full after 30 days)', 'Accounting database', 'Payroll system (view)', 'DocuSign organisation', 'Audit log access'],
+    requiredTraining: ['AML/CFT Awareness (mandatory)', 'GDPR — Finance data', 'Finance Systems Orientation', 'Expense Policy & Approvals'],
+    estimatedSetupDays: 4,
+    approvalChain: [
+      { id: 'ap-hr',         role: 'HR Admin',       name: 'Fatima Suleiman' },
+      { id: 'ap-finhead',    role: 'Finance Head',   name: 'Amara Diallo' },
+      { id: 'ap-compliance', role: 'Compliance',     name: 'Ibrahim Al-Amin', minSecurityLevel: 4 },
+      { id: 'ap-cfo',        role: 'CFO',            name: 'Daniel Oshinubi', minSecurityLevel: 4 },
+    ],
+    tasks: [
+      { id: 'fin-t1', category: 'asset',    title: 'Order MacBook Pro 14" + dual monitors',             assignedTeam: 'IT Operations', dueDaysFromStart: -5, canAutomate: false },
+      { id: 'fin-t2', category: 'security', title: 'Issue YubiKey hardware token (register serial)',    assignedTeam: 'IT Operations', dueDaysFromStart: -3, canAutomate: false },
+      { id: 'fin-t3', category: 'admin',    title: 'Create Microsoft 365 account',                     assignedTeam: 'IT Operations', dueDaysFromStart: -3, canAutomate: true, automationNote: 'Via AD provisioning' },
+      { id: 'fin-t4', category: 'software', title: 'QuickBooks Online accountant seat',                 assignedTeam: 'IT Operations', dueDaysFromStart: -2, canAutomate: false },
+      { id: 'fin-t5', category: 'access',   title: 'Finance ERP read-only access provisioning',        assignedTeam: 'IT Operations', dueDaysFromStart: -2, canAutomate: false },
+      { id: 'fin-t6', category: 'access',   title: 'DocuSign organisation access',                     assignedTeam: 'IT Operations', dueDaysFromStart: -1, canAutomate: true, automationNote: 'Via DocuSign API' },
+      { id: 'fin-t7', category: 'security', title: 'Register YubiKey on all accounts (mandatory)',     assignedTeam: 'IT Operations', dueDaysFromStart:  1, canAutomate: false },
+      { id: 'fin-t8', category: 'admin',    title: 'Sign NDA + confidentiality agreement',             assignedTeam: 'People & HR',   dueDaysFromStart:  0, canAutomate: false },
+      { id: 'fin-t9', category: 'training', title: 'AML/CFT awareness certification (mandatory)',      assignedTeam: 'People & HR',   dueDaysFromStart:  1, canAutomate: true, automationNote: 'Auto-enrolled in LMS' },
+      { id: 'fin-t10',category: 'training', title: 'Finance systems orientation (3-day programme)',    assignedTeam: 'Finance',       dueDaysFromStart:  1, canAutomate: false },
+      { id: 'fin-t11',category: 'access',   title: 'Upgrade ERP to full write access (after 30 days)', assignedTeam: 'IT Operations', dueDaysFromStart: 30, canAutomate: false },
+    ],
+  },
+
+  // ── IT Support Engineer ───────────────────────────────────────────────────
+  {
+    id: 'role-it-eng',
+    title: 'IT Support Engineer',
+    level: 'mid',
+    departmentId: 'dept-it',
+    securityLevel: 4,
+    requiredAssets: ['MacBook Pro 14" M3 Pro', 'Corporate iPhone 15', 'IT toolkit bag', 'Network cable tester'],
+    requiredSoftware: ['Topiadesk (admin seat)', 'Jamf Pro admin console', 'Active Directory tools', 'Wireshark', 'Slack (IT Operations channel)', '1Password (IT vault)'],
+    requiredAccess: ['Active Directory admin', 'Jamf MDM admin console', 'Network monitoring dashboard', 'Office CCTV system', 'VPN admin', 'All-office printer management'],
+    requiredTraining: ['Security Ops Fundamentals', 'Topiadesk Administration', 'Jamf Certified Tech (path)', 'Network+ certification (path)'],
+    estimatedSetupDays: 3,
+    approvalChain: [
+      { id: 'ap-hr',     role: 'HR Admin',     name: 'Fatima Suleiman' },
+      { id: 'ap-ithead', role: 'IT Manager',   name: 'Tunde Bakare' },
+      { id: 'ap-ciso',   role: 'CISO',         name: 'Ibrahim Al-Amin', minSecurityLevel: 4 },
+    ],
+    tasks: [
+      { id: 'it-t1', category: 'asset',    title: 'Configure MacBook Pro 14" with IT admin image',        assignedTeam: 'IT Operations', dueDaysFromStart: -4, canAutomate: false },
+      { id: 'it-t2', category: 'asset',    title: 'Provision corporate iPhone 15 + SIM',                  assignedTeam: 'IT Operations', dueDaysFromStart: -3, canAutomate: false },
+      { id: 'it-t3', category: 'admin',    title: 'Create Microsoft 365 admin account',                   assignedTeam: 'IT Operations', dueDaysFromStart: -3, canAutomate: true,  automationNote: 'Via AD provisioning with admin tier' },
+      { id: 'it-t4', category: 'access',   title: 'Active Directory admin account provisioning',          assignedTeam: 'IT Operations', dueDaysFromStart: -2, canAutomate: false },
+      { id: 'it-t5', category: 'access',   title: 'Jamf Pro admin console access',                       assignedTeam: 'IT Operations', dueDaysFromStart: -2, canAutomate: false },
+      { id: 'it-t6', category: 'software', title: 'Topiadesk admin seat + configure helpdesk queues',    assignedTeam: 'IT Operations', dueDaysFromStart: -1, canAutomate: true,  automationNote: 'Via Topiadesk admin API' },
+      { id: 'it-t7', category: 'access',   title: 'VPN admin access + network monitoring dashboard',     assignedTeam: 'IT Operations', dueDaysFromStart: -1, canAutomate: false },
+      { id: 'it-t8', category: 'security', title: 'Register YubiKey + enable MFA on all admin accounts', assignedTeam: 'IT Operations', dueDaysFromStart:  1, canAutomate: false },
+      { id: 'it-t9', category: 'training', title: 'Topiadesk administration training (internal)',         assignedTeam: 'IT Operations', dueDaysFromStart:  1, canAutomate: false },
+      { id: 'it-t10',category: 'training', title: 'Security Ops Fundamentals (self-paced)',              assignedTeam: 'People & HR',   dueDaysFromStart:  2, canAutomate: true,  automationNote: 'Auto-enrolled in LMS' },
+      { id: 'it-t11',category: 'admin',    title: 'On-call rota briefing with IT Manager',              assignedTeam: 'IT Operations', dueDaysFromStart:  3, canAutomate: false },
+    ],
+  },
+
+  // ── DevOps Engineer ───────────────────────────────────────────────────────
+  {
+    id: 'role-devops',
+    title: 'DevOps Engineer',
+    level: 'senior',
+    departmentId: 'dept-eng',
+    securityLevel: 5,
+    requiredAssets: ['MacBook Pro 16" M3 Max', 'Dell UltraSharp 32" Monitor ×2', 'YubiKey 5C ×2 (primary + backup)', 'Laptop security cable'],
+    requiredSoftware: ['AWS (admin access)', 'Terraform Cloud', 'GitHub Actions (admin)', 'Datadog', 'PagerDuty (on-call)', 'Kubernetes (kubectl)', 'Slack (Engineering + NOC channels)'],
+    requiredAccess: ['AWS Production account', 'AWS Staging account', 'GitHub admin', 'Kubernetes cluster (all namespaces)', 'CI/CD pipeline (admin)', 'On-call roster', 'Incident management system'],
+    requiredTraining: ['Advanced Security Ops', 'AWS Solutions Architect (certification path)', 'Incident Response Playbooks', 'On-call procedures & escalation policy'],
+    estimatedSetupDays: 5,
+    approvalChain: [
+      { id: 'ap-hr',   role: 'HR Admin',             name: 'Fatima Suleiman' },
+      { id: 'ap-em',   role: 'Engineering Manager',  name: 'Emeka Osei' },
+      { id: 'ap-ciso', role: 'CISO',                 name: 'Ibrahim Al-Amin', minSecurityLevel: 4 },
+      { id: 'ap-cto',  role: 'CTO',                  name: 'Daniel Oshinubi', minSecurityLevel: 5 },
+    ],
+    tasks: [
+      { id: 'dv-t1',  category: 'asset',    title: 'Order MacBook Pro 16" M3 Max (high-spec build)',      assignedTeam: 'IT Operations',  dueDaysFromStart: -7, canAutomate: false },
+      { id: 'dv-t2',  category: 'asset',    title: 'Issue dual YubiKey tokens (register + backup)',       assignedTeam: 'IT Operations',  dueDaysFromStart: -5, canAutomate: false },
+      { id: 'dv-t3',  category: 'admin',    title: 'Create Microsoft 365 account',                       assignedTeam: 'IT Operations',  dueDaysFromStart: -4, canAutomate: true,  automationNote: 'Via AD provisioning' },
+      { id: 'dv-t4',  category: 'access',   title: 'AWS production + staging IAM accounts',              assignedTeam: 'IT Operations',  dueDaysFromStart: -3, canAutomate: true,  automationNote: 'Via AWS API — CTO & CISO approval required' },
+      { id: 'dv-t5',  category: 'access',   title: 'GitHub admin role on Engineering org',               assignedTeam: 'IT Operations',  dueDaysFromStart: -3, canAutomate: true,  automationNote: 'Via GitHub API' },
+      { id: 'dv-t6',  category: 'software', title: 'Datadog organisation access (admin)',                assignedTeam: 'IT Operations',  dueDaysFromStart: -2, canAutomate: false },
+      { id: 'dv-t7',  category: 'software', title: 'PagerDuty account + assign to on-call schedule',    assignedTeam: 'IT Operations',  dueDaysFromStart: -2, canAutomate: true,  automationNote: 'Via PagerDuty API' },
+      { id: 'dv-t8',  category: 'access',   title: 'Kubernetes cluster access (all namespaces)',         assignedTeam: 'IT Operations',  dueDaysFromStart: -2, canAutomate: false },
+      { id: 'dv-t9',  category: 'security', title: 'Register both YubiKeys on all accounts',            assignedTeam: 'IT Operations',  dueDaysFromStart:  1, canAutomate: false },
+      { id: 'dv-t10', category: 'training', title: 'Incident Response Playbooks walkthrough',            assignedTeam: 'Engineering',    dueDaysFromStart:  2, canAutomate: false },
+      { id: 'dv-t11', category: 'training', title: 'AWS Solutions Architect — enrol in certification',  assignedTeam: 'People & HR',    dueDaysFromStart:  5, canAutomate: true,  automationNote: 'Auto-enrolled in training platform' },
+      { id: 'dv-t12', category: 'admin',    title: 'On-call briefing + first shadow shift',             assignedTeam: 'Engineering',    dueDaysFromStart:  7, canAutomate: false },
+    ],
+  },
+
+  // ── Marketing Specialist ──────────────────────────────────────────────────
+  {
+    id: 'role-mktg',
+    title: 'Marketing Specialist',
+    level: 'junior',
+    departmentId: 'dept-marketing',
+    securityLevel: 1,
+    requiredAssets: ['MacBook Air 15" M2', 'Dell Monitor 27"'],
+    requiredSoftware: ['Adobe Creative Cloud', 'Slack (Marketing channel)', 'HubSpot (Marketing Hub)', 'Canva Pro', 'Notion (team workspace)', 'Google Analytics'],
+    requiredAccess: ['Social media account manager', 'HubSpot Marketing Hub', 'Brand asset library (Google Drive)', 'Google Analytics', 'Content calendar'],
+    requiredTraining: ['Brand Guidelines & Voice', 'GDPR for Marketing', 'Social Media Policy', 'Content Calendar & Publishing process'],
+    estimatedSetupDays: 2,
+    approvalChain: [
+      { id: 'ap-hr',   role: 'HR Admin',           name: 'Fatima Suleiman' },
+      { id: 'ap-mktg', role: 'Marketing Manager',  name: 'Chisom Eze' },
+    ],
+    tasks: [
+      { id: 'mk-t1', category: 'asset',    title: 'Order MacBook Air 15" M2 + monitor',              assignedTeam: 'IT Operations', dueDaysFromStart: -3, canAutomate: false },
+      { id: 'mk-t2', category: 'admin',    title: 'Create Microsoft 365 account',                   assignedTeam: 'IT Operations', dueDaysFromStart: -2, canAutomate: true,  automationNote: 'Via AD provisioning' },
+      { id: 'mk-t3', category: 'software', title: 'Adobe Creative Cloud licence assignment',        assignedTeam: 'IT Operations', dueDaysFromStart: -1, canAutomate: false },
+      { id: 'mk-t4', category: 'software', title: 'HubSpot Marketing Hub user invite',             assignedTeam: 'IT Operations', dueDaysFromStart: -1, canAutomate: true,  automationNote: 'Via HubSpot API' },
+      { id: 'mk-t5', category: 'access',   title: 'Brand asset library + content calendar access', assignedTeam: 'IT Operations', dueDaysFromStart: -1, canAutomate: false },
+      { id: 'mk-t6', category: 'admin',    title: 'Collect signed employment contract',            assignedTeam: 'People & HR',   dueDaysFromStart:  0, canAutomate: false },
+      { id: 'mk-t7', category: 'training', title: 'Brand Guidelines & Voice (self-paced)',         assignedTeam: 'Marketing',     dueDaysFromStart:  1, canAutomate: true,  automationNote: 'Auto-enrolled via LMS' },
+      { id: 'mk-t8', category: 'training', title: 'GDPR for Marketing certification',             assignedTeam: 'People & HR',   dueDaysFromStart:  2, canAutomate: true,  automationNote: 'Auto-enrolled via LMS' },
+      { id: 'mk-t9', category: 'security', title: 'Enable MFA on corporate accounts',             assignedTeam: 'IT Operations', dueDaysFromStart:  1, canAutomate: false },
+    ],
+  },
+
+  // ── Sales Executive ───────────────────────────────────────────────────────
+  {
+    id: 'role-sales',
+    title: 'Sales Executive',
+    level: 'mid',
+    departmentId: 'dept-sales',
+    securityLevel: 2,
+    requiredAssets: ['MacBook Air 15" M2', 'Corporate iPhone 15', 'Business cards (printed)'],
+    requiredSoftware: ['Salesforce Sales Cloud (full licence)', 'Slack (Sales channel)', 'Zoom Pro', 'LinkedIn Sales Navigator', 'DocuSign (sender)', 'HubSpot (CRM sync)'],
+    requiredAccess: ['Salesforce sales pipeline', 'Pricing calculator tool', 'Contract template library', 'Commission tracking portal'],
+    requiredTraining: ['Sales Methodology (MEDDIC)', 'Product Training Level 2', 'Compliance & Business Ethics', 'GDPR — customer data handling'],
+    estimatedSetupDays: 2,
+    approvalChain: [
+      { id: 'ap-hr',    role: 'HR Admin',       name: 'Fatima Suleiman' },
+      { id: 'ap-sales', role: 'Sales Manager',  name: 'Kwame Mensah' },
+    ],
+    tasks: [
+      { id: 'sl-t1', category: 'asset',    title: 'Order MacBook Air 15" + corporate iPhone 15',      assignedTeam: 'IT Operations', dueDaysFromStart: -4, canAutomate: false },
+      { id: 'sl-t2', category: 'admin',    title: 'Create Microsoft 365 account',                    assignedTeam: 'IT Operations', dueDaysFromStart: -2, canAutomate: true, automationNote: 'Via AD provisioning' },
+      { id: 'sl-t3', category: 'software', title: 'Salesforce Sales Cloud licence + profile setup',  assignedTeam: 'IT Operations', dueDaysFromStart: -2, canAutomate: true, automationNote: 'Via Salesforce API' },
+      { id: 'sl-t4', category: 'software', title: 'LinkedIn Sales Navigator seat assignment',        assignedTeam: 'IT Operations', dueDaysFromStart: -1, canAutomate: false },
+      { id: 'sl-t5', category: 'access',   title: 'Pricing calculator + contract template access',  assignedTeam: 'IT Operations', dueDaysFromStart: -1, canAutomate: false },
+      { id: 'sl-t6', category: 'admin',    title: 'Order business cards (2-day print turnaround)',   assignedTeam: 'People & HR',   dueDaysFromStart: -3, canAutomate: false },
+      { id: 'sl-t7', category: 'training', title: 'MEDDIC sales methodology training',              assignedTeam: 'Sales',         dueDaysFromStart:  1, canAutomate: false },
+      { id: 'sl-t8', category: 'training', title: 'Product Training Level 2 (self-paced)',          assignedTeam: 'People & HR',   dueDaysFromStart:  2, canAutomate: true, automationNote: 'Auto-enrolled via LMS' },
+      { id: 'sl-t9', category: 'security', title: 'Enable MFA on Salesforce + corporate accounts',  assignedTeam: 'IT Operations', dueDaysFromStart:  1, canAutomate: false },
+      { id: 'sl-t10',category: 'admin',    title: '30-day pipeline review with Sales Manager',      assignedTeam: 'Sales',         dueDaysFromStart: 30, canAutomate: false },
+    ],
+  },
+
+  // ── Product Manager ────────────────────────────────────────────────────────
+  {
+    id: 'role-pm',
+    title: 'Product Manager',
+    level: 'senior',
+    departmentId: 'dept-product',
+    securityLevel: 2,
+    requiredAssets: ['MacBook Pro 14" M3 Pro', 'iPad Pro 11" (user research)', 'Dell Monitor 27"'],
+    requiredSoftware: ['Jira (product admin)', 'Figma (editor licence)', 'Notion (team workspace)', 'Slack (Product + all-hands channels)', 'Amplitude (analytics)', 'Linear'],
+    requiredAccess: ['Jira all projects (admin)', 'Figma organisation', 'Analytics dashboard (all products)', 'Roadmap tool', 'Customer interview recordings'],
+    requiredTraining: ['Product Management Methodology', 'Data Privacy & GDPR', 'Customer Research Ethics', 'Technical Fundamentals for PMs'],
+    estimatedSetupDays: 3,
+    approvalChain: [
+      { id: 'ap-hr',   role: 'HR Admin',          name: 'Fatima Suleiman' },
+      { id: 'ap-cpo',  role: 'Head of Product',   name: 'Nadia Kimani' },
+    ],
+    tasks: [
+      { id: 'pm-t1', category: 'asset',    title: 'Order MacBook Pro 14" + iPad Pro + monitor',    assignedTeam: 'IT Operations', dueDaysFromStart: -5, canAutomate: false },
+      { id: 'pm-t2', category: 'admin',    title: 'Create Microsoft 365 account',                 assignedTeam: 'IT Operations', dueDaysFromStart: -3, canAutomate: true, automationNote: 'Via AD provisioning' },
+      { id: 'pm-t3', category: 'software', title: 'Jira admin access + product project setup',   assignedTeam: 'IT Operations', dueDaysFromStart: -2, canAutomate: true, automationNote: 'Via Jira REST API' },
+      { id: 'pm-t4', category: 'software', title: 'Figma editor licence + add to org',           assignedTeam: 'IT Operations', dueDaysFromStart: -2, canAutomate: true, automationNote: 'Via Figma API' },
+      { id: 'pm-t5', category: 'access',   title: 'Amplitude analytics organisation access',     assignedTeam: 'IT Operations', dueDaysFromStart: -1, canAutomate: false },
+      { id: 'pm-t6', category: 'access',   title: 'Roadmap tool admin + customer research vault', assignedTeam: 'IT Operations', dueDaysFromStart: -1, canAutomate: false },
+      { id: 'pm-t7', category: 'admin',    title: 'Collect signed employment contract',          assignedTeam: 'People & HR',   dueDaysFromStart:  0, canAutomate: false },
+      { id: 'pm-t8', category: 'training', title: 'Product onboarding with Head of Product',    assignedTeam: 'Product',       dueDaysFromStart:  1, canAutomate: false },
+      { id: 'pm-t9', category: 'training', title: 'Customer Research Ethics (self-paced)',       assignedTeam: 'People & HR',   dueDaysFromStart:  3, canAutomate: true, automationNote: 'Auto-enrolled in LMS' },
+      { id: 'pm-t10',category: 'security', title: 'Enable MFA on all accounts',                 assignedTeam: 'IT Operations', dueDaysFromStart:  1, canAutomate: false },
+    ],
+  },
+];
+
+// ── Active onboarding instances ───────────────────────────────────────────────
+
+export const mockOnboardings: OnboardingRequest[] = [
+  // John Adesanya — Software Engineer — in progress (day 3)
+  {
+    id: 'onb-001',
+    employeeName: 'John Adesanya',
+    employeeEmail: 'john.adesanya@consomoafrica.com',
+    roleId: 'role-swe',
+    roleTitle: 'Software Engineer',
+    departmentId: 'dept-eng',
+    departmentName: 'Engineering',
+    branchId: 'br-lagos',
+    branchName: 'Lagos HQ',
+    startDate: inDays(0),
+    managerName: 'Emeka Osei',
+    status: 'in-progress',
+    createdBy: 'Fatima Suleiman',
+    createdAt: ago(5 * 24 * 60),
+    approvals: [
+      { id: 'a-001-1', approverName: 'Fatima Suleiman', approverRole: 'HR Admin',            status: 'approved', requestedAt: ago(5 * 24 * 60), respondedAt: ago(4 * 24 * 60 + 30) },
+      { id: 'a-001-2', approverName: 'Emeka Osei',      approverRole: 'Engineering Manager', status: 'approved', requestedAt: ago(4 * 24 * 60), respondedAt: ago(3 * 24 * 60 + 60) },
+      { id: 'a-001-3', approverName: 'Ibrahim Al-Amin', approverRole: 'CISO',                status: 'approved', requestedAt: ago(3 * 24 * 60), respondedAt: ago(2 * 24 * 60 + 90), notes: 'AWS IAM policy reviewed — dev only, no prod access.' },
+    ],
+    tasks: [
+      { id: 'onb001-t1',  category: 'asset',    title: 'Order & configure MacBook Pro 14" M3 Pro',            assignedTeam: 'IT Operations',  status: 'done',        dueDate: inDays(-5), canAutomate: false, completedAt: ago(4 * 24 * 60) },
+      { id: 'onb001-t2',  category: 'asset',    title: 'Prepare monitor + peripherals kit',                   assignedTeam: 'IT Operations',  status: 'done',        dueDate: inDays(-5), canAutomate: false, completedAt: ago(3 * 24 * 60) },
+      { id: 'onb001-t3',  category: 'admin',    title: 'Create Microsoft 365 account & mailbox',              assignedTeam: 'IT Operations',  status: 'done',        dueDate: inDays(-3), canAutomate: true,  automationNote: 'Via Microsoft Graph API', completedAt: ago(3 * 24 * 60) },
+      { id: 'onb001-t4',  category: 'software', title: 'Add to GitHub org + assign to Engineering team',      assignedTeam: 'IT Operations',  status: 'done',        dueDate: inDays(-2), canAutomate: true,  automationNote: 'Via GitHub API', completedAt: ago(2 * 24 * 60) },
+      { id: 'onb001-t5',  category: 'software', title: 'Create Jira account + assign Engineering project',    assignedTeam: 'IT Operations',  status: 'done',        dueDate: inDays(-2), canAutomate: true,  automationNote: 'Via Jira REST API', completedAt: ago(2 * 24 * 60) },
+      { id: 'onb001-t6',  category: 'access',   title: 'Provision AWS IAM user + attach dev policy',          assignedTeam: 'IT Operations',  status: 'in-progress', dueDate: inDays(-2), canAutomate: true,  automationNote: 'Awaiting Jamf cert push' },
+      { id: 'onb001-t7',  category: 'access',   title: 'Generate & push VPN certificate via Jamf',            assignedTeam: 'IT Operations',  status: 'in-progress', dueDate: inDays(-1), canAutomate: true,  automationNote: 'Jamf cert payload queued' },
+      { id: 'onb001-t8',  category: 'software', title: 'Create 1Password account + add to Engineering vault', assignedTeam: 'IT Operations',  status: 'pending',     dueDate: inDays(-1), canAutomate: false },
+      { id: 'onb001-t9',  category: 'admin',    title: 'Collect signed employment contract & NDA',            assignedTeam: 'People & HR',    status: 'done',        dueDate: inDays(0),  canAutomate: false, completedAt: ago(60) },
+      { id: 'onb001-t10', category: 'training', title: 'Assign Security Awareness course (mandatory)',        assignedTeam: 'People & HR',    status: 'pending',     dueDate: inDays(1),  canAutomate: true,  automationNote: 'Auto-enrolled in LMS' },
+      { id: 'onb001-t11', category: 'training', title: 'Engineering onboarding session with tech lead',       assignedTeam: 'Engineering',    status: 'pending',     dueDate: inDays(1),  canAutomate: false },
+      { id: 'onb001-t12', category: 'security', title: 'Enable MFA on all accounts (mandatory)',              assignedTeam: 'IT Operations',  status: 'pending',     dueDate: inDays(1),  canAutomate: false },
+      { id: 'onb001-t13', category: 'training', title: 'AWS fundamentals self-paced course',                  assignedTeam: 'Engineering',    status: 'pending',     dueDate: inDays(5),  canAutomate: true },
+      { id: 'onb001-t14', category: 'admin',    title: '30-day check-in with Engineering Manager',            assignedTeam: 'Engineering',    status: 'pending',     dueDate: inDays(30), canAutomate: false },
+    ],
+  },
+
+  // Amina Garba — Customer Success Manager — pending approval
+  {
+    id: 'onb-002',
+    employeeName: 'Amina Garba',
+    employeeEmail: 'amina.garba@consomoafrica.com',
+    roleId: 'role-csm',
+    roleTitle: 'Customer Success Manager',
+    departmentId: 'dept-cs',
+    departmentName: 'Customer Success',
+    branchId: 'br-nairobi',
+    branchName: 'Nairobi Office',
+    startDate: inDays(7),
+    managerName: 'Adaeze Nwosu',
+    status: 'pending-approval',
+    createdBy: 'Fatima Suleiman',
+    createdAt: ago(24 * 60),
+    approvals: [
+      { id: 'a-002-1', approverName: 'Fatima Suleiman', approverRole: 'HR Admin',  status: 'approved', requestedAt: ago(24 * 60), respondedAt: ago(20 * 60) },
+      { id: 'a-002-2', approverName: 'Adaeze Nwosu',    approverRole: 'CS Head',   status: 'pending',  requestedAt: ago(20 * 60) },
+    ],
+    tasks: [
+      { id: 'onb002-t1',  category: 'asset',    title: 'Order MacBook Air 15" M2',                           assignedTeam: 'IT Operations',   status: 'pending', dueDate: inDays(3),  canAutomate: false },
+      { id: 'onb002-t2',  category: 'asset',    title: 'Set up Bose headset + iPhone 15 (corporate SIM)',    assignedTeam: 'IT Operations',   status: 'pending', dueDate: inDays(5),  canAutomate: false },
+      { id: 'onb002-t3',  category: 'admin',    title: 'Create Microsoft 365 account & mailbox',             assignedTeam: 'IT Operations',   status: 'pending', dueDate: inDays(5),  canAutomate: true },
+      { id: 'onb002-t4',  category: 'software', title: 'Provision Topiadesk agent seat',                     assignedTeam: 'IT Operations',   status: 'pending', dueDate: inDays(6),  canAutomate: true },
+      { id: 'onb002-t5',  category: 'software', title: 'Salesforce CS licence assignment + profile setup',   assignedTeam: 'IT Operations',   status: 'pending', dueDate: inDays(6),  canAutomate: true },
+      { id: 'onb002-t6',  category: 'access',   title: 'Grant CS performance dashboard access',              assignedTeam: 'IT Operations',   status: 'pending', dueDate: inDays(6),  canAutomate: false },
+      { id: 'onb002-t7',  category: 'admin',    title: 'Collect signed employment contract',                 assignedTeam: 'People & HR',     status: 'pending', dueDate: inDays(7),  canAutomate: false },
+      { id: 'onb002-t8',  category: 'training', title: 'Product Knowledge Level 1 (self-paced)',             assignedTeam: 'People & HR',     status: 'pending', dueDate: inDays(8),  canAutomate: true },
+      { id: 'onb002-t9',  category: 'training', title: 'GDPR & data handling certification',                 assignedTeam: 'People & HR',     status: 'pending', dueDate: inDays(10), canAutomate: true },
+      { id: 'onb002-t10', category: 'security', title: 'Enable MFA on all accounts',                        assignedTeam: 'IT Operations',   status: 'pending', dueDate: inDays(8),  canAutomate: false },
+      { id: 'onb002-t11', category: 'admin',    title: '30-day performance check-in with CS Head',           assignedTeam: 'Customer Success',status: 'pending', dueDate: inDays(37), canAutomate: false },
+    ],
+  },
+
+  // Emeka Nwosu — DevOps Engineer — in progress (early stage)
+  {
+    id: 'onb-003',
+    employeeName: 'Emeka Nwosu',
+    employeeEmail: 'emeka.nwosu@consomoafrica.com',
+    roleId: 'role-devops',
+    roleTitle: 'DevOps Engineer',
+    departmentId: 'dept-eng',
+    departmentName: 'Engineering',
+    branchId: 'br-lagos',
+    branchName: 'Lagos HQ',
+    startDate: inDays(14),
+    managerName: 'Emeka Osei',
+    status: 'approved',
+    createdBy: 'Fatima Suleiman',
+    createdAt: ago(3 * 24 * 60),
+    approvals: [
+      { id: 'a-003-1', approverName: 'Fatima Suleiman', approverRole: 'HR Admin',            status: 'approved', requestedAt: ago(3 * 24 * 60), respondedAt: ago(2 * 24 * 60 + 20) },
+      { id: 'a-003-2', approverName: 'Emeka Osei',      approverRole: 'Engineering Manager', status: 'approved', requestedAt: ago(2 * 24 * 60), respondedAt: ago(1 * 24 * 60 + 40) },
+      { id: 'a-003-3', approverName: 'Ibrahim Al-Amin', approverRole: 'CISO',                status: 'approved', requestedAt: ago(1 * 24 * 60), respondedAt: ago(8 * 60), notes: 'Dual YubiKey mandatory. Production access restricted to 90-day review.' },
+      { id: 'a-003-4', approverName: 'Daniel Oshinubi', approverRole: 'CTO',                 status: 'pending',  requestedAt: ago(6 * 60) },
+    ],
+    tasks: [
+      { id: 'onb003-t1',  category: 'asset',    title: 'Order MacBook Pro 16" M3 Max (high-spec)',             assignedTeam: 'IT Operations', status: 'in-progress', dueDate: inDays(7),  canAutomate: false, notes: 'Ordered — delivery expected in 5 days' },
+      { id: 'onb003-t2',  category: 'asset',    title: 'Issue dual YubiKey tokens (primary + backup)',         assignedTeam: 'IT Operations', status: 'pending',     dueDate: inDays(9),  canAutomate: false },
+      { id: 'onb003-t3',  category: 'admin',    title: 'Create Microsoft 365 account',                        assignedTeam: 'IT Operations', status: 'pending',     dueDate: inDays(10), canAutomate: true },
+      { id: 'onb003-t4',  category: 'access',   title: 'AWS production + staging IAM accounts',               assignedTeam: 'IT Operations', status: 'blocked',     dueDate: inDays(11), canAutomate: true,  notes: 'Waiting for CTO final approval' },
+      { id: 'onb003-t5',  category: 'access',   title: 'GitHub admin role on Engineering org',                assignedTeam: 'IT Operations', status: 'pending',     dueDate: inDays(11), canAutomate: true },
+      { id: 'onb003-t6',  category: 'software', title: 'Datadog organisation access (admin)',                 assignedTeam: 'IT Operations', status: 'pending',     dueDate: inDays(12), canAutomate: false },
+      { id: 'onb003-t7',  category: 'software', title: 'PagerDuty account + on-call schedule',               assignedTeam: 'IT Operations', status: 'pending',     dueDate: inDays(12), canAutomate: true },
+      { id: 'onb003-t8',  category: 'access',   title: 'Kubernetes cluster access (all namespaces)',          assignedTeam: 'IT Operations', status: 'blocked',     dueDate: inDays(12), canAutomate: false, notes: 'Awaiting CTO approval before granting' },
+      { id: 'onb003-t9',  category: 'security', title: 'Register both YubiKeys on all accounts',             assignedTeam: 'IT Operations', status: 'pending',     dueDate: inDays(15), canAutomate: false },
+      { id: 'onb003-t10', category: 'training', title: 'Incident Response Playbooks walkthrough',            assignedTeam: 'Engineering',   status: 'pending',     dueDate: inDays(16), canAutomate: false },
+      { id: 'onb003-t11', category: 'training', title: 'AWS Solutions Architect — enrol in certification',   assignedTeam: 'People & HR',   status: 'pending',     dueDate: inDays(19), canAutomate: true },
+      { id: 'onb003-t12', category: 'admin',    title: 'On-call briefing + first shadow shift',              assignedTeam: 'Engineering',   status: 'pending',     dueDate: inDays(21), canAutomate: false },
+    ],
+  },
+
+  // Sade Fashola — Finance Analyst — completed
+  {
+    id: 'onb-004',
+    employeeName: 'Sade Fashola',
+    employeeEmail: 'sade.fashola@consomoafrica.com',
+    roleId: 'role-fin',
+    roleTitle: 'Finance Analyst',
+    departmentId: 'dept-finance',
+    departmentName: 'Finance',
+    branchId: 'br-lagos',
+    branchName: 'Lagos HQ',
+    startDate: inDays(-14),
+    managerName: 'Amara Diallo',
+    status: 'completed',
+    createdBy: 'Fatima Suleiman',
+    createdAt: ago(20 * 24 * 60),
+    approvals: [
+      { id: 'a-004-1', approverName: 'Fatima Suleiman', approverRole: 'HR Admin',       status: 'approved', requestedAt: ago(20 * 24 * 60), respondedAt: ago(19 * 24 * 60) },
+      { id: 'a-004-2', approverName: 'Amara Diallo',    approverRole: 'Finance Head',   status: 'approved', requestedAt: ago(19 * 24 * 60), respondedAt: ago(18 * 24 * 60) },
+      { id: 'a-004-3', approverName: 'Ibrahim Al-Amin', approverRole: 'Compliance',     status: 'approved', requestedAt: ago(18 * 24 * 60), respondedAt: ago(17 * 24 * 60 + 90) },
+      { id: 'a-004-4', approverName: 'Daniel Oshinubi', approverRole: 'CFO',            status: 'approved', requestedAt: ago(17 * 24 * 60), respondedAt: ago(16 * 24 * 60 + 30), notes: 'ERP write access to be enabled at 30-day mark.' },
+    ],
+    tasks: [
+      { id: 'onb004-t1',  category: 'asset',    title: 'Order MacBook Pro 14" + dual monitors',           assignedTeam: 'IT Operations', status: 'done', dueDate: inDays(-19), canAutomate: false, completedAt: ago(18 * 24 * 60) },
+      { id: 'onb004-t2',  category: 'security', title: 'Issue YubiKey hardware token',                   assignedTeam: 'IT Operations', status: 'done', dueDate: inDays(-17), canAutomate: false, completedAt: ago(16 * 24 * 60) },
+      { id: 'onb004-t3',  category: 'admin',    title: 'Create Microsoft 365 account',                   assignedTeam: 'IT Operations', status: 'done', dueDate: inDays(-17), canAutomate: true,  completedAt: ago(16 * 24 * 60) },
+      { id: 'onb004-t4',  category: 'software', title: 'QuickBooks Online accountant seat',              assignedTeam: 'IT Operations', status: 'done', dueDate: inDays(-16), canAutomate: false, completedAt: ago(15 * 24 * 60) },
+      { id: 'onb004-t5',  category: 'access',   title: 'Finance ERP read-only access provisioning',     assignedTeam: 'IT Operations', status: 'done', dueDate: inDays(-16), canAutomate: false, completedAt: ago(15 * 24 * 60) },
+      { id: 'onb004-t6',  category: 'access',   title: 'DocuSign organisation access',                  assignedTeam: 'IT Operations', status: 'done', dueDate: inDays(-15), canAutomate: true,  completedAt: ago(14 * 24 * 60) },
+      { id: 'onb004-t7',  category: 'security', title: 'Register YubiKey on all accounts',              assignedTeam: 'IT Operations', status: 'done', dueDate: inDays(-13), canAutomate: false, completedAt: ago(13 * 24 * 60) },
+      { id: 'onb004-t8',  category: 'admin',    title: 'Sign NDA + confidentiality agreement',          assignedTeam: 'People & HR',   status: 'done', dueDate: inDays(-14), canAutomate: false, completedAt: ago(14 * 24 * 60) },
+      { id: 'onb004-t9',  category: 'training', title: 'AML/CFT awareness certification',               assignedTeam: 'People & HR',   status: 'done', dueDate: inDays(-13), canAutomate: true,  completedAt: ago(12 * 24 * 60) },
+      { id: 'onb004-t10', category: 'training', title: 'Finance systems orientation (3-day programme)', assignedTeam: 'Finance',       status: 'done', dueDate: inDays(-13), canAutomate: false, completedAt: ago(11 * 24 * 60) },
+      { id: 'onb004-t11', category: 'access',   title: 'Upgrade ERP to full write access',             assignedTeam: 'IT Operations', status: 'done', dueDate: inDays(16),  canAutomate: false, completedAt: ago(1 * 24 * 60) },
+    ],
+  },
+];
+
+export const mockOrgMetrics: OrgMetrics = {
+  activeOnboardings:   3,
+  completingThisWeek:  1,
+  pendingApprovals:    2,
+  avgCompletionDays:   3.2,
+  completedThisMonth:  7,
+  blockedCount:        1,
 };

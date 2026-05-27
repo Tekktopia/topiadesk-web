@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 export function Topbar() {
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between border-b border-border/50 bg-white/80 px-4 backdrop-blur-xl">
+    <header className="flex h-12 shrink-0 items-center justify-between border-b border-border/60 bg-card/70 px-4 backdrop-blur-xl">
       {/* Search */}
       <div className="relative w-72">
         <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />

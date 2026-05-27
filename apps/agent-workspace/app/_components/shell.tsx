@@ -4,7 +4,7 @@ import { Topbar } from './topbar';
 
 export function Shell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F1F5FA]">
+    <div className="flex h-screen overflow-hidden bg-canvas">
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Topbar />

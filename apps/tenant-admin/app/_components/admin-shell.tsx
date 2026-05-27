@@ -109,7 +109,7 @@ const SECTIONS: NavSection[] = [
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F1F5FA]">
+    <div className="flex h-screen overflow-hidden bg-canvas">
       <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar onToggleMobile={() => setMobileOpen((v) => !v)} />
@@ -138,27 +138,27 @@ function Sidebar({
       )}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/[0.06] bg-[#0B1120] transition-transform lg:static lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-border/70 sidebar-cream transition-transform lg:static lg:translate-x-0',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         )}
       >
         {/* Logo / brand */}
-        <div className="flex h-14 items-center gap-3 border-b border-white/[0.07] px-4">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-orange to-orange-light text-xl shadow-lg shadow-orange/20">
+        <div className="flex h-14 items-center gap-3 border-b border-border/60 px-4">
+          <div className="grid h-9 w-9 place-items-center rounded-xl bg-navy text-xl">
             {TENANT.emoji}
           </div>
           <div className="min-w-0 flex-1 leading-tight">
-            <p className="truncate text-sm font-semibold text-gray-100">
+            <p className="truncate text-sm font-semibold text-foreground">
               {TENANT.name}
             </p>
-            <p className="truncate text-[10px] uppercase tracking-[0.18em] text-gray-500">
+            <p className="truncate text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
               Admin · {TENANT.plan}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="grid h-7 w-7 place-items-center rounded-md text-gray-600 hover:bg-white/10 hover:text-gray-200 lg:hidden"
+            className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:bg-cream-deep/50 hover:text-foreground lg:hidden"
             aria-label="Close menu"
           >
             <X className="h-4 w-4" />
@@ -169,7 +169,7 @@ function Sidebar({
         <nav className="flex-1 overflow-y-auto px-3 py-3">
           {SECTIONS.map((section) => (
             <div key={section.label} className="mb-4">
-              <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-600">
+              <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 {section.label}
               </p>
               <ul className="space-y-0.5">
@@ -184,18 +184,18 @@ function Sidebar({
                         href={item.href}
                         onClick={onClose}
                         className={cn(
-                          'group flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm font-medium transition-all',
+                          'group flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm font-medium transition-all',
                           active
-                            ? 'bg-orange/10 text-orange'
-                            : 'text-gray-400 hover:bg-white/[0.05] hover:text-gray-100',
+                            ? 'nav-pill-active text-foreground'
+                            : 'text-foreground/70 hover:bg-cream-deep/40 hover:text-foreground',
                         )}
                       >
                         <Icon
                           className={cn(
                             'h-4 w-4 shrink-0',
                             active
-                              ? 'text-orange'
-                              : 'text-gray-600 group-hover:text-gray-300',
+                              ? 'text-coral'
+                              : 'text-muted-foreground group-hover:text-foreground',
                           )}
                         />
                         {item.label}
@@ -209,10 +209,10 @@ function Sidebar({
         </nav>
 
         {/* Footer links */}
-        <div className="border-t border-white/[0.07] p-3 text-[11px]">
+        <div className="border-t border-border/60 p-3 text-[11px]">
           <Link
             href="https://app.topiadesk.com"
-            className="flex items-center justify-between rounded-md p-2 text-gray-600 hover:bg-white/[0.05] hover:text-gray-300"
+            className="flex items-center justify-between rounded-md p-2 text-muted-foreground hover:bg-cream-deep/40 hover:text-foreground"
           >
             <span className="inline-flex items-center gap-2">
               <ExternalLink className="h-3 w-3" />
@@ -221,7 +221,7 @@ function Sidebar({
           </Link>
           <Link
             href="https://docs.topiadesk.com"
-            className="flex items-center justify-between rounded-md p-2 text-gray-600 hover:bg-white/[0.05] hover:text-gray-300"
+            className="flex items-center justify-between rounded-md p-2 text-muted-foreground hover:bg-cream-deep/40 hover:text-foreground"
           >
             <span className="inline-flex items-center gap-2">
               <HelpCircle className="h-3 w-3" />
@@ -236,7 +236,7 @@ function Sidebar({
 
 function Topbar({ onToggleMobile }: { onToggleMobile: () => void }) {
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/50 bg-white/80 px-4 backdrop-blur-xl lg:px-6">
+    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/60 bg-card/70 px-4 backdrop-blur-xl lg:px-6">
       <button
         type="button"
         onClick={onToggleMobile}
@@ -269,8 +269,8 @@ function Topbar({ onToggleMobile }: { onToggleMobile: () => void }) {
             type="button"
             className="flex items-center gap-2 rounded-lg p-1 pr-2 transition-colors hover:bg-muted"
           >
-            <Avatar className="h-7 w-7 ring-2 ring-orange/20">
-              <AvatarFallback className="bg-gradient-to-br from-orange to-orange-light text-[11px] font-bold text-white">
+            <Avatar className="h-7 w-7">
+              <AvatarFallback className="bg-coral text-[11px] font-bold text-white">
                 {initials(CURRENT_ADMIN.name)}
               </AvatarFallback>
             </Avatar>

@@ -207,7 +207,7 @@ export default function DeviceDetailPage() {
   return (
     <div className="space-y-5 p-5">
       {/* Gradient header */}
-      <div className="relative -mx-5 -mt-5 mb-1 overflow-hidden bg-gradient-to-br from-blue-700 to-blue-800 px-5 py-5">
+      <div className="relative -mx-5 -mt-5 mb-1 overflow-hidden bg-navy px-5 py-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative">
@@ -395,7 +395,7 @@ export default function DeviceDetailPage() {
                     label="Memory usage (%)"
                     data={memSensor.sparkline}
                     unit="%"
-                    color={memSensor.value > 85 ? 'text-red-500' : memSensor.value > 70 ? 'text-amber-500' : 'text-violet-500'}
+                    color={memSensor.value > 85 ? 'text-red-500' : memSensor.value > 70 ? 'text-amber-500' : 'text-coral'}
                     thresholdPct={85}
                   />
                 )}

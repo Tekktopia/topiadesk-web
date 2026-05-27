@@ -44,7 +44,7 @@ const TYPE_META: Record<AnnouncementType, {
   info:        { icon: Info,          label: 'Info',        iconColor: 'text-blue-500',   badgeCls: 'bg-blue-100 text-blue-700',    bannerCls: 'border-blue-200 bg-blue-50 dark:bg-blue-950/30' },
   warning:     { icon: AlertTriangle, label: 'Warning',     iconColor: 'text-amber-500',  badgeCls: 'bg-amber-100 text-amber-700',  bannerCls: 'border-amber-200 bg-amber-50 dark:bg-amber-950/30' },
   maintenance: { icon: Wrench,        label: 'Maintenance', iconColor: 'text-slate-500',  badgeCls: 'bg-slate-100 text-slate-700',  bannerCls: 'border-slate-200 bg-slate-50 dark:bg-slate-900/30' },
-  feature:     { icon: Bell,          label: 'Feature',     iconColor: 'text-violet-500', badgeCls: 'bg-violet-100 text-violet-700',bannerCls: 'border-violet-200 bg-violet-50 dark:bg-violet-950/30' },
+  feature:     { icon: Bell,          label: 'Feature',     iconColor: 'text-coral', badgeCls: 'bg-coral/12 text-coral-dark',bannerCls: 'border-coral/25 bg-coral/8 dark:bg-violet-950/30' },
 };
 
 const STATUS_META: Record<AnnouncementStatus, { variant: 'success' | 'warning' | 'secondary' | 'danger'; label: string }> = {
@@ -55,7 +55,7 @@ const STATUS_META: Record<AnnouncementStatus, { variant: 'success' | 'warning' |
 };
 
 const PLAN_STYLES: Record<TenantPlan, string> = {
-  enterprise: 'bg-violet-100 text-violet-700',
+  enterprise: 'bg-coral/12 text-coral-dark',
   business:   'bg-blue-100 text-blue-700',
   starter:    'bg-slate-100 text-slate-700',
 };
@@ -91,7 +91,7 @@ export default function AnnouncementsPage() {
   return (
     <div className="space-y-5 p-6">
       {/* Gradient header */}
-      <div className="relative -mx-6 -mt-6 mb-1 overflow-hidden bg-gradient-to-br from-emerald-600 to-emerald-700 px-6 py-5">
+      <div className="relative -mx-6 -mt-6 mb-1 overflow-hidden bg-navy px-6 py-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
@@ -100,7 +100,7 @@ export default function AnnouncementsPage() {
             <h1 className="font-display text-2xl font-bold tracking-tight text-white">Announcements</h1>
             <p className="mt-0.5 text-sm text-white/70">Broadcast messages to tenants by plan or globally.</p>
           </div>
-          <Button size="sm" className="bg-white text-emerald-700 hover:bg-white/90">
+          <Button size="sm" className="bg-coral text-white hover:bg-white/90">
             <Plus className="h-3.5 w-3.5" />New announcement
           </Button>
         </div>

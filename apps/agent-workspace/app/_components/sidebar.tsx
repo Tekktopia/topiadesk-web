@@ -31,9 +31,9 @@ import {
   ShieldCheck,
   Star,
   Ticket,
+  UserPlus,
   Users,
   Workflow,
-  Zap,
 } from 'lucide-react';
 import {
   Avatar,
@@ -74,10 +74,11 @@ const NAV_SECTIONS: NavSection[] = [
     label: 'Workspace',
     defaultOpen: true,
     links: [
-      { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-      { href: '/tickets', label: 'Tickets', icon: Ticket, badge: 47 },
-      { href: '/assets/dashboard', label: 'Assets', icon: Boxes },
-      { href: '/contacts', label: 'Contacts', icon: Users },
+      { href: '/',                 label: 'Dashboard',  icon: LayoutDashboard },
+      { href: '/tickets',          label: 'Tickets',    icon: Ticket, badge: 47 },
+      { href: '/assets/dashboard', label: 'Assets',     icon: Boxes  },
+      { href: '/contacts',         label: 'Contacts',   icon: Users  },
+      { href: '/onboarding',       label: 'Onboarding', icon: UserPlus },
     ],
   },
   {
@@ -122,7 +123,7 @@ const NAV_SECTIONS: NavSection[] = [
     label: 'Insights',
     defaultOpen: false,
     links: [
-      { href: '/reports', label: 'Reports',      icon: BarChart3 },
+      { href: '/reports', label: 'Reports',        icon: BarChart3 },
       { href: '/csat',    label: 'CSAT & quality', icon: Star },
     ],
   },
@@ -158,7 +159,7 @@ const CURRENT_USER = {
 
 export function Sidebar() {
   return (
-    <aside className="hidden w-64 shrink-0 flex-col border-r border-white/[0.06] bg-[#0B1120] md:flex">
+    <aside className="hidden w-64 shrink-0 flex-col border-r border-border/70 sidebar-cream md:flex">
       <TenantSwitcher />
       <NewButton />
       <NavSections />
@@ -173,20 +174,20 @@ function TenantSwitcher() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="flex h-14 items-center gap-2.5 border-b border-white/[0.07] px-3 text-left transition-colors hover:bg-white/[0.04]"
+          className="flex h-14 items-center gap-2.5 border-b border-border/60 px-3 text-left transition-colors hover:bg-cream-deep/40"
         >
-          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 text-sm shadow-lg shadow-blue-500/30">
+          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-navy text-sm text-white">
             {CURRENT_TENANT.emoji}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-gray-100">
+            <p className="truncate text-sm font-semibold text-foreground">
               {CURRENT_TENANT.name}
             </p>
-            <p className="truncate font-mono text-[10px] text-gray-500">
+            <p className="truncate font-mono text-[10px] text-muted-foreground">
               {CURRENT_TENANT.subdomain}.topiadesk.com
             </p>
           </div>
-          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-gray-600" />
+          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64">
@@ -231,7 +232,7 @@ function NewButton() {
     <div className="px-3 pb-2 pt-3">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button className="w-full justify-center bg-gradient-to-r from-blue-600 to-blue-500 shadow-md shadow-blue-600/30 hover:from-blue-500 hover:to-blue-400">
+          <Button className="w-full justify-center bg-navy text-white hover:bg-navy-mid">
             <Plus className="h-4 w-4" />
             New
             <ChevronDown className="h-3 w-3 opacity-70" />
@@ -290,31 +291,24 @@ function NavSections() {
 function PinnedSection({ pathname }: { pathname: string }) {
   return (
     <div className="mb-4">
-      <p className="px-2 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-600">
+      <p className="px-2 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         Pinned views
       </p>
       <ul className="space-y-0.5">
         {PINNED_VIEWS.map((v) => {
-          const active =
-            pathname + (typeof window !== 'undefined' ? window.location.search : '') === v.href;
           return (
             <li key={v.href}>
               <Link
                 href={v.href}
-                className={cn(
-                  'group flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm transition-all',
-                  active
-                    ? 'bg-blue-500/10 text-blue-300'
-                    : 'text-gray-400 hover:bg-white/[0.05] hover:text-gray-200',
-                )}
+                className="group flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm text-foreground/70 transition-colors hover:bg-cream-deep/50 hover:text-foreground"
               >
                 <span className="flex items-center gap-2">
                   <span
                     className={cn(
                       'h-1.5 w-1.5 shrink-0 rounded-full',
-                      v.tone === 'danger'  && 'bg-red-400',
-                      v.tone === 'warning' && 'bg-amber-400',
-                      !v.tone             && 'bg-gray-600',
+                      v.tone === 'danger'  && 'bg-red-500',
+                      v.tone === 'warning' && 'bg-amber-500',
+                      !v.tone              && 'bg-muted-foreground/40',
                     )}
                   />
                   {v.label}
@@ -323,10 +317,10 @@ function PinnedSection({ pathname }: { pathname: string }) {
                   className={cn(
                     'rounded px-1.5 py-0.5 text-[10px] font-semibold tabular-nums',
                     v.tone === 'danger'
-                      ? 'bg-red-500/15 text-red-400'
+                      ? 'bg-red-50 text-red-600'
                       : v.tone === 'warning'
-                        ? 'bg-amber-500/15 text-amber-400'
-                        : 'text-gray-600',
+                        ? 'bg-amber-50 text-amber-700'
+                        : 'text-muted-foreground',
                   )}
                 >
                   {v.count}
@@ -353,7 +347,7 @@ function Section({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-600 transition-colors hover:text-gray-400"
+        className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
       >
         {section.label}
         <ChevronDown
@@ -373,19 +367,17 @@ function Section({
                 <Link
                   href={item.href}
                   className={cn(
-                    'group flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-all',
+                    'group flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm font-medium transition-all',
                     active
-                      ? 'bg-blue-500/12 text-blue-300'
-                      : 'text-gray-400 hover:bg-white/[0.05] hover:text-gray-100',
+                      ? 'nav-pill-active text-foreground'
+                      : 'text-foreground/70 hover:bg-cream-deep/40 hover:text-foreground',
                   )}
                 >
                   <span className="flex items-center gap-2.5">
                     <Icon
                       className={cn(
                         'h-4 w-4 shrink-0',
-                        active
-                          ? 'text-blue-400'
-                          : 'text-gray-600 group-hover:text-gray-300',
+                        active ? 'text-coral' : 'text-muted-foreground group-hover:text-foreground',
                       )}
                     />
                     {item.label}
@@ -399,16 +391,7 @@ function Section({
                             ? 'warning'
                             : 'secondary'
                       }
-                      className={cn(
-                        'h-4 min-w-[1.25rem] border px-1.5 text-[10px]',
-                        active
-                          ? 'border-blue-400/20 bg-blue-400/15 text-blue-300'
-                          : item.badgeVariant === 'danger'
-                            ? 'border-red-500/20 bg-red-500/15 text-red-400'
-                            : item.badgeVariant === 'warning'
-                              ? 'border-amber-500/20 bg-amber-500/15 text-amber-400'
-                              : 'border-white/10 bg-white/8 text-gray-500',
-                      )}
+                      className="h-4 min-w-5 px-1.5 text-[10px]"
                     >
                       {item.badge}
                     </Badge>
@@ -425,14 +408,14 @@ function Section({
 
 function UserBox() {
   return (
-    <div className="border-t border-white/[0.07] p-3">
-      <div className="mb-2 flex items-center justify-around rounded-lg bg-white/[0.04] p-1.5">
+    <div className="border-t border-border/60 p-3">
+      <div className="mb-2 flex items-center justify-around rounded-lg bg-cream-deep/50 p-1.5">
         <Tooltip>
           <TooltipTrigger asChild>
             <button
               type="button"
               aria-label="Search"
-              className="grid h-7 w-7 place-items-center rounded-md text-gray-600 transition-colors hover:bg-white/10 hover:text-gray-200"
+              className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
             >
               <Search className="h-3.5 w-3.5" />
             </button>
@@ -444,7 +427,7 @@ function UserBox() {
             <button
               type="button"
               aria-label="Inbox"
-              className="grid h-7 w-7 place-items-center rounded-md text-gray-600 transition-colors hover:bg-white/10 hover:text-gray-200"
+              className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
             >
               <Inbox className="h-3.5 w-3.5" />
             </button>
@@ -456,7 +439,7 @@ function UserBox() {
             <button
               type="button"
               aria-label="Help"
-              className="grid h-7 w-7 place-items-center rounded-md text-gray-600 transition-colors hover:bg-white/10 hover:text-gray-200"
+              className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
             >
               <LifeBuoy className="h-3.5 w-3.5" />
             </button>
@@ -468,7 +451,7 @@ function UserBox() {
             <button
               type="button"
               aria-label="Settings"
-              className="grid h-7 w-7 place-items-center rounded-md text-gray-600 transition-colors hover:bg-white/10 hover:text-gray-200"
+              className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
             >
               <Cog className="h-3.5 w-3.5" />
             </button>
@@ -481,11 +464,11 @@ function UserBox() {
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className="flex w-full items-center gap-2 rounded-md p-1 transition-colors hover:bg-white/[0.06]"
+            className="flex w-full items-center gap-2 rounded-md p-1 transition-colors hover:bg-cream-deep/50"
           >
             <div className="relative">
-              <Avatar className="h-8 w-8 ring-2 ring-blue-500/20">
-                <AvatarFallback className="bg-blue-600 text-xs font-semibold text-white">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-coral text-xs font-semibold text-white">
                   {CURRENT_USER.name
                     .split(' ')
                     .map((p) => p[0])
@@ -494,19 +477,19 @@ function UserBox() {
                 </AvatarFallback>
               </Avatar>
               <span
-                className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-[#0B1120]"
+                className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-cream"
                 aria-label="Available"
               />
             </div>
             <div className="min-w-0 flex-1 text-left">
-              <p className="truncate text-xs font-semibold text-gray-200">
+              <p className="truncate text-xs font-semibold text-foreground">
                 {CURRENT_USER.name}
               </p>
-              <p className="truncate text-[10px] text-gray-500">
+              <p className="truncate text-[10px] text-muted-foreground">
                 {CURRENT_USER.role}
               </p>
             </div>
-            <ChevronsUpDown className="h-3 w-3 shrink-0 text-gray-600" />
+            <ChevronsUpDown className="h-3 w-3 shrink-0 text-muted-foreground" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">

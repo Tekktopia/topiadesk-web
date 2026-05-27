@@ -61,7 +61,7 @@ export default function BillingDetailPage(props: { params: Promise<{ id: string 
   return (
     <div className="space-y-5 p-6">
       {/* ── Gradient header ── */}
-      <div className="relative -mx-6 -mt-6 mb-1 overflow-hidden bg-linear-to-br from-emerald-600 to-emerald-700 px-6 py-5">
+      <div className="relative -mx-6 -mt-6 mb-1 overflow-hidden bg-navy px-6 py-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative">
@@ -98,7 +98,7 @@ export default function BillingDetailPage(props: { params: Promise<{ id: string 
                     <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Mark paid
                   </Button>
                 )}
-                <Button size="sm" className="bg-white text-emerald-700 hover:bg-white/90">
+                <Button size="sm" className="bg-coral text-white hover:bg-coral-dark">
                   <Download className="mr-1.5 h-3.5 w-3.5" /> Download PDF
                 </Button>
               </div>

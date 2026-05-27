@@ -84,7 +84,7 @@ export default function AgentDetailPage(props: { params: Promise<{ id: string }>
 
   const statCards = [
     { label: 'Tickets resolved',  value: agent.ticketsResolved, icon: Ticket,    color: 'bg-blue-50 text-blue-600'    },
-    { label: 'This month',         value: 18,                    icon: BarChart3,  color: 'bg-purple-50 text-purple-600' },
+    { label: 'This month',         value: 18,                    icon: BarChart3,  color: 'bg-coral/8 text-coral' },
     { label: 'Avg CSAT',           value: '4.6 / 5',             icon: CheckCircle2, color: 'bg-emerald-50 text-emerald-600' },
     { label: 'Avg response time',  value: '38 min',              icon: Clock,      color: 'bg-amber-50 text-amber-600'  },
   ];
@@ -92,7 +92,7 @@ export default function AgentDetailPage(props: { params: Promise<{ id: string }>
   return (
     <div className="space-y-0">
       {/* ── Gradient header ── */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-orange-500 to-orange-600 px-6 py-5">
+      <div className="relative overflow-hidden bg-navy px-6 py-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
         <div className="relative">

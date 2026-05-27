@@ -409,7 +409,7 @@ function TrainingCard({ config }: { config: AIAgentConfig }) {
       <CardContent className="p-5">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Brain className="h-4 w-4 text-violet-600" />
+            <Brain className="h-4 w-4 text-coral" />
             <h2 className="font-semibold text-base">Training</h2>
           </div>
           <Badge variant="secondary" className="text-[11px]">
@@ -419,9 +419,9 @@ function TrainingCard({ config }: { config: AIAgentConfig }) {
 
         <div className="space-y-4">
           {/* Status */}
-          <div className="flex items-center gap-3 rounded-lg bg-violet-50 border border-violet-100 p-3">
+          <div className="flex items-center gap-3 rounded-lg bg-coral/8 border border-coral/15 p-3">
             {training ? (
-              <Loader2 className="h-5 w-5 animate-spin text-violet-500 shrink-0" />
+              <Loader2 className="h-5 w-5 animate-spin text-coral shrink-0" />
             ) : (
               <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
             )}
@@ -448,7 +448,7 @@ function TrainingCard({ config }: { config: AIAgentConfig }) {
                   className={cn(
                     'flex flex-col items-start rounded-lg border p-2.5 text-left transition-colors',
                     source === s.value
-                      ? 'border-violet-300 bg-violet-50 text-violet-800'
+                      ? 'border-violet-300 bg-coral/8 text-violet-800'
                       : 'border-border hover:bg-muted/40',
                   )}
                 >
@@ -502,7 +502,7 @@ const INTEGRATION_CATEGORY_COLOR: Record<string, string> = {
   identity:    'bg-blue-50 text-blue-700 border-blue-200',
   itsm:        'bg-orange-50 text-orange-700 border-orange-200',
   comms:       'bg-emerald-50 text-emerald-700 border-emerald-200',
-  productivity:'bg-violet-50 text-violet-700 border-violet-200',
+  productivity:'bg-coral/8 text-coral-dark border-coral/25',
 };
 
 function IntegrationsCard({
@@ -704,7 +704,7 @@ function WeeklyChart({ metrics }: { metrics: AIMetrics }) {
 function StatsSidebar({ metrics }: { metrics: AIMetrics }) {
   const stats = [
     { icon: <Sparkles className="h-3.5 w-3.5" />,       label: 'Auto-handled',      value: metrics.autoResolved.toLocaleString(),       color: 'text-blue-600' },
-    { icon: <Pencil className="h-3.5 w-3.5" />,         label: 'Suggested to agent', value: metrics.suggested.toLocaleString(),           color: 'text-violet-600' },
+    { icon: <Pencil className="h-3.5 w-3.5" />,         label: 'Suggested to agent', value: metrics.suggested.toLocaleString(),           color: 'text-coral' },
     { icon: <ShieldAlert className="h-3.5 w-3.5" />,    label: 'Escalated',          value: metrics.escalated.toLocaleString(),           color: 'text-amber-600' },
     { icon: <CircleSlash className="h-3.5 w-3.5" />,    label: 'Agent overrode',     value: metrics.overridden.toLocaleString(),          color: 'text-red-500' },
     { icon: <Star className="h-3.5 w-3.5" />,           label: 'AI CSAT score',      value: `${metrics.csatScore}/5`,                     color: 'text-emerald-600' },
@@ -736,7 +736,7 @@ const ACTION_META: Record<
   { label: string; color: string; dotColor: string }
 > = {
   'auto-handled': { label: 'Auto-handled', color: 'text-blue-600',   dotColor: 'bg-blue-400' },
-  'suggested':    { label: 'Suggested',    color: 'text-violet-600', dotColor: 'bg-violet-400' },
+  'suggested':    { label: 'Suggested',    color: 'text-coral', dotColor: 'bg-violet-400' },
   'escalated':    { label: 'Escalated',    color: 'text-amber-600',  dotColor: 'bg-amber-400' },
   'overridden':   { label: 'Overridden',   color: 'text-red-500',    dotColor: 'bg-red-400' },
 };

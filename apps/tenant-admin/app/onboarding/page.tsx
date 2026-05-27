@@ -108,7 +108,7 @@ export default function OnboardingPage() {
       <div className="flex min-h-screen items-center justify-center bg-background p-6">
         <div className="w-full max-w-md space-y-6 text-center">
           <div className="flex justify-center">
-            <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-xl shadow-orange-200">
+            <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-navy shadow-xl shadow-orange-200">
               <Rocket className="h-9 w-9 text-white" />
               <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white">
                 <CheckCircle2 className="h-3.5 w-3.5" />
@@ -147,7 +147,7 @@ export default function OnboardingPage() {
       {/* Top bar */}
       <header className="flex items-center justify-between border-b border-border bg-background px-6 py-4">
         <div className="flex items-center gap-3">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-orange-400 to-orange-600">
+          <div className="grid h-8 w-8 place-items-center rounded-lg bg-navy">
             <span className="font-display text-sm font-black text-white">T</span>
           </div>
           <span className="font-display text-base font-bold tracking-tight text-foreground">Topiadesk Setup</span>

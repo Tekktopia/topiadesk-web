@@ -31,7 +31,7 @@ function triggerColor(t: AutomationTrigger) {
     case 'ticket_updated':  return 'bg-indigo-50 text-indigo-700 border-indigo-200';
     case 'sla_warning':     return 'bg-amber-50 text-amber-700 border-amber-200';
     case 'sla_breached':    return 'bg-red-50 text-red-700 border-red-200';
-    case 'ticket_idle':     return 'bg-purple-50 text-purple-700 border-purple-200';
+    case 'ticket_idle':     return 'bg-coral/8 text-coral-dark border-coral/25';
     case 'customer_replied':return 'bg-emerald-50 text-emerald-700 border-emerald-200';
     case 'agent_assigned':  return 'bg-cyan-50 text-cyan-700 border-cyan-200';
   }
@@ -42,7 +42,7 @@ function actionColor(a: AutomationAction) {
     case 'assign_agent':
     case 'assign_group':   return 'text-blue-600';
     case 'set_priority':   return 'text-amber-600';
-    case 'set_status':     return 'text-purple-600';
+    case 'set_status':     return 'text-coral';
     case 'add_tag':        return 'text-cyan-600';
     case 'send_email':     return 'text-emerald-600';
     case 'add_note':       return 'text-muted-foreground';
@@ -107,7 +107,7 @@ export default function AutomationsPage() {
               {counts.active} active · {counts.inactive} inactive · {totalRuns.toLocaleString()} total runs
             </p>
           </div>
-          <Button size="sm" className="bg-white text-blue-700 hover:bg-white/90">
+          <Button size="sm" className="bg-coral text-white hover:bg-white/90">
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             New automation
           </Button>

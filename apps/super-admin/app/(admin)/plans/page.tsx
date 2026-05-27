@@ -17,7 +17,7 @@ import type { TenantPlan } from '@/lib/mock-data';
 const PLAN_ACCENT: Record<TenantPlan, { border: string; badge: string; btn: string }> = {
   starter:    { border: 'border-slate-200',   badge: 'bg-slate-100 text-slate-700',     btn: 'text-slate-700' },
   business:   { border: 'border-blue-200',    badge: 'bg-blue-100 text-blue-700',       btn: 'text-blue-700' },
-  enterprise: { border: 'border-violet-200',  badge: 'bg-violet-100 text-violet-700',   btn: 'text-violet-700' },
+  enterprise: { border: 'border-coral/25',  badge: 'bg-coral/12 text-coral-dark',   btn: 'text-coral-dark' },
 };
 
 export default function PlansPage() {
@@ -26,7 +26,7 @@ export default function PlansPage() {
   return (
     <div className="space-y-5 p-6">
       {/* Gradient header */}
-      <div className="relative -mx-6 -mt-6 mb-1 overflow-hidden bg-gradient-to-br from-emerald-600 to-emerald-700 px-6 py-5">
+      <div className="relative -mx-6 -mt-6 mb-1 overflow-hidden bg-navy px-6 py-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
@@ -35,7 +35,7 @@ export default function PlansPage() {
             <h1 className="font-display text-2xl font-bold tracking-tight text-white">Plans & Pricing</h1>
             <p className="mt-0.5 text-sm text-white/70">Manage subscription tiers, feature entitlements, and limits.</p>
           </div>
-          <Button size="sm" className="bg-white text-emerald-700 hover:bg-white/90">Add plan</Button>
+          <Button size="sm" className="bg-coral text-white hover:bg-white/90">Add plan</Button>
         </div>
       </div>
 

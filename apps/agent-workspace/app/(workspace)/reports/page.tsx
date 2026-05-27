@@ -162,7 +162,7 @@ export default function ReportsPage() {
                   className={cn(
                     'rounded-md px-3 py-1 text-xs font-semibold transition-all',
                     period === p
-                      ? 'bg-white text-blue-700 shadow-sm'
+                      ? 'bg-coral text-white shadow-sm'
                       : 'text-white/70 hover:text-white',
                   )}
                 >

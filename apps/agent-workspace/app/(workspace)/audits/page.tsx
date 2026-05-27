@@ -94,7 +94,7 @@ export default function AuditsPage() {
               {counts.in_progress} in progress · {counts.overdue} overdue · {counts.scheduled} scheduled
             </p>
           </div>
-          <Button size="sm" className="bg-white text-blue-700 hover:bg-white/90">
+          <Button size="sm" className="bg-coral text-white hover:bg-white/90">
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             New audit
           </Button>

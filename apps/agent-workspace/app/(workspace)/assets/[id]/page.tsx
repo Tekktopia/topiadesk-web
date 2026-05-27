@@ -42,7 +42,7 @@ function eventIcon(type: AssetEventType) {
     case 'unassigned':    return <User className="h-3.5 w-3.5 text-muted-foreground" />;
     case 'repaired':      return <CheckCircle2 className="h-3.5 w-3.5 text-amber-500" />;
     case 'audited':       return <ClipboardCheck className="h-3.5 w-3.5 text-blue-500" />;
-    case 'ticket_linked': return <Ticket className="h-3.5 w-3.5 text-purple-500" />;
+    case 'ticket_linked': return <Ticket className="h-3.5 w-3.5 text-coral" />;
     case 'warranty_noted': return <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />;
   }
 }
@@ -97,7 +97,7 @@ export default function AssetDetailPage(props: { params: Promise<{ id: string }>
                 <Button size="sm" className="border border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white" variant="outline">
                   <Ticket className="mr-1.5 h-3.5 w-3.5" /> Link ticket
                 </Button>
-                <Button size="sm" className="bg-white text-blue-700 hover:bg-white/90">
+                <Button size="sm" className="bg-coral text-white hover:bg-white/90">
                   <Edit3 className="mr-1.5 h-3.5 w-3.5" /> Edit asset
                 </Button>
               </div>

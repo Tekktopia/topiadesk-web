@@ -1,36 +1,32 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentType } from 'react';
 import {
-  ArrowDown,
-  ArrowUp,
-  Bookmark,
+  AlertTriangle,
+  ArrowUpRight,
+  Bell,
   Bot,
-  ChevronDown,
-  ChevronRight,
+  CheckCircle2,
+  Clock,
   Code,
   Database,
-  Download,
   Filter,
   Globe,
-  Group,
   Inbox,
-  LayoutGrid,
   Mail,
   MessageSquare,
   MonitorSmartphone,
   MoreHorizontal,
+  Pause,
   Phone,
   Plus,
   Reply,
-  Rows3,
   Search,
   Smartphone,
-  Sparkles,
+  Star,
   Tag,
-  Trash2,
   UserPlus,
   X,
 } from 'lucide-react';
@@ -39,1634 +35,763 @@ import {
   AvatarFallback,
   Badge,
   Button,
-  Checkbox,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  EmptyState,
-  Input,
-  PriorityIndicator,
   Skeleton,
-  StatusPill,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
   cn,
 } from '@topiadesk/ui';
 import { useTickets } from '@/lib/queries';
-import { agentDirectory, mockAISuggestions } from '@/lib/mock-data';
-import { PendingBadge } from '@/app/_components/pending-badge';
+import { mockAISuggestions } from '@/lib/mock-data';
 import type {
   MockTicket,
-  Person,
   TicketChannel,
   TicketPriority,
   TicketStatus,
 } from '@/lib/mock-data';
-import { absoluteDateTime, initials, relativeTime } from '@/lib/format';
+import { initials, relativeTime } from '@/lib/format';
+
+// ─── Helpers / meta ──────────────────────────────────────────────────────────
+
+const CURRENT_AGENT_ID = 'a1';
 
 interface View {
   id: string;
   label: string;
   icon: ComponentType<{ className?: string }>;
-  source: 'system' | 'personal' | 'shared';
+  /** When set, becomes a coral active dot on the row */
+  tone?: 'default' | 'danger' | 'warning' | 'success';
   filter: (t: MockTicket) => boolean;
 }
 
-const CURRENT_AGENT_ID = 'a1';
-
 const VIEWS: View[] = [
-  {
-    id: 'all',
-    label: 'All open',
-    icon: Inbox,
-    source: 'system',
-    filter: (t) => !['resolved', 'closed', 'spam'].includes(t.status),
-  },
-  {
-    id: 'my-open',
-    label: 'My open',
-    icon: Mail,
-    source: 'system',
-    filter: (t) =>
-      t.assignee?.id === CURRENT_AGENT_ID &&
-      !['resolved', 'closed', 'spam'].includes(t.status),
-  },
-  {
-    id: 'unassigned',
-    label: 'Unassigned',
-    icon: UserPlus,
-    source: 'system',
-    filter: (t) => !t.assignee,
-  },
-  {
-    id: 'attention',
-    label: 'Needs attention',
-    icon: Sparkles,
-    source: 'system',
-    filter: (t) =>
-      t.slaStatus === 'breached' ||
-      t.slaStatus === 'at_risk' ||
-      t.status === 'escalated',
-  },
-  {
-    id: 'high-priority',
-    label: 'High priority',
-    icon: Bookmark,
-    source: 'system',
-    filter: (t) => t.priority === 'high' || t.priority === 'urgent',
-  },
-  {
-    id: 'vip',
-    label: 'VIP requesters',
-    icon: Sparkles,
-    source: 'personal',
-    filter: (t) => t.tags.includes('vip'),
-  },
-  {
-    id: 'resolved',
-    label: 'Resolved this week',
-    icon: Inbox,
-    source: 'shared',
-    filter: (t) => t.status === 'resolved',
-  },
+  { id: 'open',       label: 'Open',         icon: Inbox,         filter: (t) => !['resolved','closed'].includes(t.status) },
+  { id: 'awaiting',   label: 'Awaiting',     icon: Clock,         filter: (t) => t.status === 'pending' || t.status === 'on_hold' },
+  { id: 'snoozed',    label: 'Snoozed',      icon: Pause,         filter: (t) => t.status === 'on_hold' },
+  { id: 'overdue',    label: 'Overdue SLA',  icon: AlertTriangle, tone: 'danger', filter: (t) => t.slaStatus === 'breached' || t.slaStatus === 'at_risk' },
+  { id: 'mine',       label: 'Assigned to me', icon: Star,        filter: (t) => t.assignee?.id === CURRENT_AGENT_ID && !['resolved','closed'].includes(t.status) },
+  { id: 'unassigned', label: 'Unassigned',   icon: UserPlus,      filter: (t) => !t.assignee },
+  { id: 'resolved',   label: 'Resolved',     icon: CheckCircle2,  tone: 'success', filter: (t) => t.status === 'resolved' },
 ];
 
-const STATUS_OPTIONS: TicketStatus[] = [
-  'new',
-  'open',
-  'in_progress',
-  'pending',
-  'on_hold',
-  'escalated',
-  'resolved',
-  'closed',
-];
-
-const PRIORITY_OPTIONS: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
-
-const CHANNEL_OPTIONS: TicketChannel[] = [
-  'email',
-  'portal',
-  'whatsapp',
-  'voice',
-  'sms',
-  'widget',
-  'api',
-];
-
-const CHANNEL_META: Record<TicketChannel, { label: string; icon: ComponentType<{ className?: string }> }> = {
-  email: { label: 'Email', icon: Mail },
-  portal: { label: 'Customer portal', icon: Globe },
-  whatsapp: { label: 'WhatsApp', icon: Smartphone },
-  voice: { label: 'Voice call', icon: Phone },
-  sms: { label: 'SMS', icon: MessageSquare },
-  widget: { label: 'Web widget', icon: MonitorSmartphone },
-  api: { label: 'API', icon: Code },
+const CHANNEL_META: Record<TicketChannel, { label: string; icon: ComponentType<{ className?: string }>; color: string }> = {
+  email:     { label: 'Email',      icon: Mail,              color: 'text-blue-500'   },
+  portal:    { label: 'Portal',     icon: Globe,             color: 'text-indigo-500' },
+  whatsapp:  { label: 'WhatsApp',   icon: Smartphone,        color: 'text-emerald-500'},
+  voice:     { label: 'Voice',      icon: Phone,             color: 'text-amber-500'  },
+  sms:       { label: 'SMS',        icon: MessageSquare,     color: 'text-violet-500' },
+  widget:    { label: 'Widget',     icon: MonitorSmartphone, color: 'text-rose-500'   },
+  api:       { label: 'API',        icon: Code,              color: 'text-slate-500'  },
 };
 
-const STATUS_LABEL: Record<TicketStatus, string> = {
-  new: 'New',
-  open: 'Open',
-  in_progress: 'In progress',
-  pending: 'Pending',
-  on_hold: 'On hold',
-  escalated: 'Escalated',
-  resolved: 'Resolved',
-  closed: 'Closed',
+const STATUS_META: Record<TicketStatus, { label: string; cls: string; dot: string }> = {
+  new:         { label: 'New',         cls: 'bg-blue-50 text-blue-700 border-blue-200',          dot: 'bg-blue-500'   },
+  open:        { label: 'Open',        cls: 'bg-coral/8 text-coral-dark border-coral/20',        dot: 'bg-coral'      },
+  in_progress: { label: 'In progress', cls: 'bg-amber-50 text-amber-700 border-amber-200',       dot: 'bg-amber-500'  },
+  pending:     { label: 'Pending',     cls: 'bg-slate-50 text-slate-700 border-slate-200',       dot: 'bg-slate-400'  },
+  on_hold:     { label: 'On hold',     cls: 'bg-purple-50 text-purple-700 border-purple-200',    dot: 'bg-purple-400' },
+  escalated:   { label: 'Escalated',   cls: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500'    },
+  resolved:    { label: 'Resolved',    cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500'},
+  closed:      { label: 'Closed',      cls: 'bg-muted text-muted-foreground border-border',      dot: 'bg-muted-foreground'},
 };
 
-const PRIORITY_LABEL: Record<TicketPriority, string> = {
-  low: 'Low',
-  medium: 'Medium',
-  high: 'High',
-  urgent: 'Urgent',
+const PRIORITY_META: Record<TicketPriority, { label: string; color: string; ring: string }> = {
+  urgent: { label: 'Urgent', color: 'text-red-600',    ring: 'ring-red-200'    },
+  high:   { label: 'High',   color: 'text-orange-600', ring: 'ring-orange-200' },
+  medium: { label: 'Medium', color: 'text-amber-600',  ring: 'ring-amber-200'  },
+  low:    { label: 'Low',    color: 'text-slate-500',  ring: 'ring-slate-200'  },
 };
 
-type SortKey = 'updated' | 'priority' | 'created' | 'sla';
-type Density = 'compact' | 'comfortable';
-type GroupKey = 'none' | 'status' | 'priority' | 'assignee' | 'channel';
-
-const PAGE_SIZE = 25;
-
-export default function TicketsPage() {
-  const { data: tickets, isLoading, isOfflineCached } = useTickets();
-
-  const [viewId, setViewId] = useState<string>('all');
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<Set<TicketStatus>>(new Set());
-  const [priorityFilter, setPriorityFilter] = useState<Set<TicketPriority>>(new Set());
-  const [assigneeFilter, setAssigneeFilter] = useState<Set<string>>(new Set());
-  const [channelFilter, setChannelFilter] = useState<Set<TicketChannel>>(new Set());
-
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [previewId, setPreviewId] = useState<string | null>(null);
-  const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' }>({
-    key: 'updated',
-    dir: 'desc',
-  });
-  const [density, setDensity] = useState<Density>('comfortable');
-  const [groupBy, setGroupBy] = useState<GroupKey>('none');
-  const [page, setPage] = useState(1);
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
-
-  const activeView = VIEWS.find((v) => v.id === viewId) ?? VIEWS[0]!;
-
-  const viewCounts = useMemo(() => {
-    const map: Record<string, number> = {};
-    for (const v of VIEWS) map[v.id] = 0;
-    for (const t of tickets ?? []) {
-      for (const v of VIEWS) if (v.filter(t)) map[v.id] = (map[v.id] ?? 0) + 1;
-    }
-    return map;
-  }, [tickets]);
-
-  const filtered = useMemo(() => {
-    const list = (tickets ?? []).filter(activeView.filter);
-    return list
-      .filter((t) => {
-        if (statusFilter.size > 0 && !statusFilter.has(t.status)) return false;
-        if (priorityFilter.size > 0 && !priorityFilter.has(t.priority)) return false;
-        if (channelFilter.size > 0 && !channelFilter.has(t.channel)) return false;
-        if (assigneeFilter.size > 0) {
-          if (assigneeFilter.has('__unassigned__')) {
-            if (t.assignee && !assigneeFilter.has(t.assignee.id)) return false;
-            if (!t.assignee) {
-              // include unassigned (allowed)
-            } else if (!assigneeFilter.has(t.assignee.id)) {
-              return false;
-            }
-          } else {
-            if (!t.assignee || !assigneeFilter.has(t.assignee.id)) return false;
-          }
-        }
-        if (search) {
-          const q = search.toLowerCase();
-          const hay = [
-            t.subject,
-            t.number,
-            t.requester.name,
-            t.requester.email,
-            t.category,
-            ...t.tags,
-          ]
-            .join(' ')
-            .toLowerCase();
-          if (!hay.includes(q)) return false;
-        }
-        return true;
-      })
-      .sort((a, b) => {
-        const dir = sort.dir === 'asc' ? 1 : -1;
-        if (sort.key === 'updated') {
-          return (
-            (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()) *
-            dir
-          );
-        }
-        if (sort.key === 'created') {
-          return (
-            (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) *
-            dir
-          );
-        }
-        if (sort.key === 'sla') {
-          return (
-            (new Date(a.slaDueAt).getTime() - new Date(b.slaDueAt).getTime()) *
-            dir
-          );
-        }
-        const order: Record<string, number> = {
-          urgent: 4,
-          high: 3,
-          medium: 2,
-          low: 1,
-        };
-        return ((order[a.priority] ?? 0) - (order[b.priority] ?? 0)) * dir;
-      });
-  }, [
-    tickets,
-    activeView,
-    search,
-    statusFilter,
-    priorityFilter,
-    assigneeFilter,
-    channelFilter,
-    sort,
-  ]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
-  const pageStart = (safePage - 1) * PAGE_SIZE;
-  const pageRows = groupBy === 'none' ? filtered.slice(pageStart, pageStart + PAGE_SIZE) : filtered;
-
-  const grouped = useMemo(() => groupTickets(pageRows, groupBy), [pageRows, groupBy]);
-
-  const allSelected =
-    pageRows.length > 0 && pageRows.every((t) => selected.has(t.id));
-  const someSelected =
-    pageRows.some((t) => selected.has(t.id)) && !allSelected;
-
-  function clearAllFilters() {
-    setStatusFilter(new Set());
-    setPriorityFilter(new Set());
-    setAssigneeFilter(new Set());
-    setChannelFilter(new Set());
-    setSearch('');
-  }
-
-  function toggleSelectAll() {
-    if (allSelected) setSelected(new Set());
-    else setSelected(new Set(pageRows.map((t) => t.id)));
-  }
-
-  function toggleRow(id: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  function flipSort(key: SortKey) {
-    setSort((prev) =>
-      prev.key === key
-        ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
-        : { key, dir: 'desc' },
-    );
-  }
-
-  function toggleGroup(key: string) {
-    setCollapsedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  }
-
-  const previewTicket = previewId
-    ? filtered.find((t) => t.id === previewId) ?? null
-    : null;
-
-  const activeFilterCount =
-    statusFilter.size +
-    priorityFilter.size +
-    assigneeFilter.size +
-    channelFilter.size +
-    (search ? 1 : 0);
-
-  return (
-    <div className="grid h-full min-h-[calc(100vh-3.5rem)] grid-cols-1 md:grid-cols-[220px_1fr] xl:grid-cols-[220px_1fr_380px]">
-      <ViewsRail
-        viewId={viewId}
-        onViewChange={(id) => {
-          setViewId(id);
-          setSelected(new Set());
-          setPreviewId(null);
-          setPage(1);
-        }}
-        counts={viewCounts}
-      />
-
-      <div className="flex min-w-0 flex-col border-l">
-        <ListHeader
-          activeView={activeView}
-          total={tickets?.length ?? 0}
-          showing={filtered.length}
-          search={search}
-          setSearch={(v) => {
-            setSearch(v);
-            setPage(1);
-          }}
-          density={density}
-          setDensity={setDensity}
-          groupBy={groupBy}
-          setGroupBy={(g) => {
-            setGroupBy(g);
-            setPage(1);
-          }}
-          isOfflineCached={isOfflineCached}
-        />
-
-        <FilterBar
-          statusFilter={statusFilter}
-          setStatusFilter={(s) => {
-            setStatusFilter(s);
-            setPage(1);
-          }}
-          priorityFilter={priorityFilter}
-          setPriorityFilter={(s) => {
-            setPriorityFilter(s);
-            setPage(1);
-          }}
-          assigneeFilter={assigneeFilter}
-          setAssigneeFilter={(s) => {
-            setAssigneeFilter(s);
-            setPage(1);
-          }}
-          channelFilter={channelFilter}
-          setChannelFilter={(s) => {
-            setChannelFilter(s);
-            setPage(1);
-          }}
-        />
-
-        {activeFilterCount > 0 && (
-          <ActiveFiltersBar
-            search={search}
-            setSearch={setSearch}
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-            priorityFilter={priorityFilter}
-            setPriorityFilter={setPriorityFilter}
-            assigneeFilter={assigneeFilter}
-            setAssigneeFilter={setAssigneeFilter}
-            channelFilter={channelFilter}
-            setChannelFilter={setChannelFilter}
-            onClear={clearAllFilters}
-          />
-        )}
-
-        {selected.size > 0 && (
-          <BulkActionBar
-            count={selected.size}
-            onClear={() => setSelected(new Set())}
-          />
-        )}
-
-        <div className="flex-1 overflow-auto">
-          {isLoading ? (
-            <div className="p-4">
-              <Skeleton className="h-96" />
-            </div>
-          ) : filtered.length === 0 ? (
-            <EmptyState
-              icon={Inbox}
-              title="No tickets match your filters"
-              description="Try clearing filters or switching views."
-              className="m-6"
-              action={
-                <Button variant="outline" size="sm" onClick={clearAllFilters}>
-                  Clear all filters
-                </Button>
-              }
-            />
-          ) : (
-            <Table>
-              <TableHeader className="sticky top-0 z-10 bg-card">
-                <TableRow>
-                  <TableHead className="w-10 pl-4">
-                    <Checkbox
-                      checked={
-                        allSelected
-                          ? true
-                          : someSelected
-                            ? 'indeterminate'
-                            : false
-                      }
-                      onCheckedChange={toggleSelectAll}
-                      aria-label="Select all on this page"
-                    />
-                  </TableHead>
-                  <TableHead className="w-10" />
-                  <TableHead>Ticket</TableHead>
-                  <TableHead>Requester</TableHead>
-                  <TableHead>Status</TableHead>
-                  <SortableHead
-                    label="Priority"
-                    active={sort.key === 'priority'}
-                    dir={sort.dir}
-                    onClick={() => flipSort('priority')}
-                  />
-                  <SortableHead
-                    label="SLA"
-                    active={sort.key === 'sla'}
-                    dir={sort.dir}
-                    onClick={() => flipSort('sla')}
-                  />
-                  <TableHead>Assignee</TableHead>
-                  <SortableHead
-                    label="Updated"
-                    active={sort.key === 'updated'}
-                    dir={sort.dir}
-                    onClick={() => flipSort('updated')}
-                    className="w-28"
-                  />
-                  <TableHead className="w-10" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {groupBy === 'none'
-                  ? pageRows.map((t) => (
-                      <TicketRow
-                        key={t.id}
-                        ticket={t}
-                        selected={selected.has(t.id)}
-                        onToggle={() => toggleRow(t.id)}
-                        onPreview={() => setPreviewId(t.id)}
-                        isPreviewed={previewId === t.id}
-                        density={density}
-                      />
-                    ))
-                  : grouped.map((group) => (
-                      <GroupedSection
-                        key={group.key}
-                        group={group}
-                        collapsed={collapsedGroups.has(group.key)}
-                        onToggle={() => toggleGroup(group.key)}
-                        selected={selected}
-                        onRowToggle={toggleRow}
-                        onRowPreview={(id) => setPreviewId(id)}
-                        previewId={previewId}
-                        density={density}
-                      />
-                    ))}
-              </TableBody>
-            </Table>
-          )}
-        </div>
-
-        <Footer
-          total={filtered.length}
-          page={safePage}
-          totalPages={totalPages}
-          onPrev={() => setPage((p) => Math.max(1, p - 1))}
-          onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-          showPager={groupBy === 'none'}
-        />
-      </div>
-
-      <PreviewPane
-        ticket={previewTicket}
-        onClose={() => setPreviewId(null)}
-      />
-    </div>
-  );
+// Avatar color from name (deterministic)
+function avatarColor(name: string) {
+  const palette = ['bg-coral', 'bg-navy', 'bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-violet-500', 'bg-rose-500', 'bg-cyan-600'];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  return palette[hash % palette.length]!;
 }
 
-// ─── Views rail ──────────────────────────────────────────────────────────────
+// ─── Left rail ────────────────────────────────────────────────────────────────
 
-interface ViewsRailProps {
-  viewId: string;
-  onViewChange: (id: string) => void;
+function LeftRail({
+  activeView,
+  onSelect,
+  counts,
+  channelCounts,
+}: {
+  activeView: string;
+  onSelect: (id: string) => void;
   counts: Record<string, number>;
-}
-
-function ViewsRail({ viewId, onViewChange, counts }: ViewsRailProps) {
-  const groups: Array<{ label: string; views: View[] }> = [
-    { label: 'System', views: VIEWS.filter((v) => v.source === 'system') },
-    { label: 'Personal', views: VIEWS.filter((v) => v.source === 'personal') },
-    { label: 'Shared', views: VIEWS.filter((v) => v.source === 'shared') },
-  ];
-
+  channelCounts: Record<TicketChannel, number>;
+}) {
   return (
-    <aside className="hidden flex-col bg-[#0B1120] border-r border-white/[0.06] md:flex">
-      <div className="flex h-14 items-center justify-between border-b border-white/[0.06] px-3">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-500">
-          Views
-        </p>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              aria-label="Create view from current filters"
-              className="grid h-6 w-6 place-items-center rounded text-gray-500 hover:bg-white/[0.06] hover:text-gray-200"
-            >
-              <Plus className="h-3.5 w-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Save current as view</TooltipContent>
-        </Tooltip>
+    <aside className="hidden w-56 shrink-0 flex-col border-r border-border/60 bg-card/40 md:flex">
+      <div className="flex h-12 items-center justify-between px-4 border-b border-border/60">
+        <p className="text-sm font-semibold text-foreground">Inbox</p>
+        <button
+          type="button"
+          className="grid h-6 w-6 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+          aria-label="New view"
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </button>
       </div>
-      <div className="flex-1 space-y-3 overflow-y-auto p-2">
-        {groups.map((g) =>
-          g.views.length > 0 ? (
-            <div key={g.label}>
-              <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-600">
-                {g.label}
-              </p>
-              <ul className="space-y-0.5">
-                {g.views.map((v) => {
-                  const Icon = v.icon;
-                  const active = v.id === viewId;
-                  return (
-                    <li key={v.id}>
-                      <button
-                        type="button"
-                        onClick={() => onViewChange(v.id)}
-                        className={cn(
-                          'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
-                          active
-                            ? 'bg-blue-500/12 text-blue-300'
-                            : 'text-gray-400 hover:bg-white/[0.05] hover:text-gray-100',
-                        )}
-                      >
-                        <Icon
-                          className={cn(
-                            'h-3.5 w-3.5 shrink-0',
-                            active ? 'text-blue-400' : 'text-gray-500',
-                          )}
-                        />
-                        <span className="flex-1 truncate text-left">
-                          {v.label}
-                        </span>
-                        <span
-                          className={cn(
-                            'text-[11px] tabular-nums',
-                            active ? 'text-blue-300/80' : 'text-gray-600',
-                          )}
-                        >
-                          {counts[v.id] ?? 0}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ) : null,
-        )}
-      </div>
+
+      <nav className="flex-1 overflow-y-auto px-2 py-3">
+        {/* Views */}
+        <ul className="space-y-0.5">
+          {VIEWS.map((v) => {
+            const Icon = v.icon;
+            const active = activeView === v.id;
+            const count = counts[v.id] ?? 0;
+            return (
+              <li key={v.id}>
+                <button
+                  type="button"
+                  onClick={() => onSelect(v.id)}
+                  className={cn(
+                    'group flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-sm transition-all',
+                    active
+                      ? 'nav-pill-active text-foreground font-semibold'
+                      : 'text-foreground/70 hover:bg-cream-deep/40 hover:text-foreground',
+                  )}
+                >
+                  <span className="flex items-center gap-2.5">
+                    <Icon className={cn(
+                      'h-4 w-4 shrink-0',
+                      active
+                        ? v.tone === 'danger' ? 'text-red-500'
+                          : v.tone === 'success' ? 'text-emerald-500'
+                          : 'text-coral'
+                        : 'text-muted-foreground',
+                    )} />
+                    {v.label}
+                  </span>
+                  {count > 0 && (
+                    <span className={cn(
+                      'tabular-nums text-[11px] font-semibold',
+                      v.tone === 'danger' ? 'text-red-500' : 'text-muted-foreground',
+                    )}>
+                      {count}
+                    </span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* Channels */}
+        <div className="mt-6">
+          <p className="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Channels
+          </p>
+          <ul className="space-y-0.5">
+            {(Object.keys(CHANNEL_META) as TicketChannel[]).map((ch) => {
+              const meta = CHANNEL_META[ch];
+              const Icon = meta.icon;
+              const count = channelCounts[ch] ?? 0;
+              return (
+                <li key={ch}>
+                  <button
+                    type="button"
+                    onClick={() => onSelect(`channel:${ch}`)}
+                    className={cn(
+                      'group flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-sm transition-all',
+                      activeView === `channel:${ch}`
+                        ? 'nav-pill-active text-foreground font-semibold'
+                        : 'text-foreground/70 hover:bg-cream-deep/40 hover:text-foreground',
+                    )}
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <Icon className={cn('h-4 w-4 shrink-0', meta.color)} />
+                      {meta.label}
+                    </span>
+                    {count > 0 && (
+                      <span className="tabular-nums text-[11px] font-semibold text-muted-foreground">
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </nav>
     </aside>
   );
 }
 
-// ─── List header ─────────────────────────────────────────────────────────────
-
-interface ListHeaderProps {
-  activeView: View;
-  total: number;
-  showing: number;
-  search: string;
-  setSearch: (v: string) => void;
-  density: Density;
-  setDensity: (d: Density) => void;
-  groupBy: GroupKey;
-  setGroupBy: (g: GroupKey) => void;
-  isOfflineCached?: boolean;
-}
-
-function ListHeader({
-  activeView,
-  total,
-  showing,
-  search,
-  setSearch,
-  density,
-  setDensity,
-  groupBy,
-  setGroupBy,
-  isOfflineCached,
-}: ListHeaderProps) {
-  const Icon = activeView.icon;
-  return (
-    <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b bg-background/80 backdrop-blur-sm px-4">
-      <div className="flex items-center gap-3">
-        <Icon className="h-4 w-4 text-muted-foreground" />
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold leading-tight">
-              {activeView.label}
-            </h2>
-            {isOfflineCached && (
-              <span
-                className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700"
-                title="Showing cached data — you're offline"
-              >
-                <Database className="h-2.5 w-2.5" />
-                Cached
-              </span>
-            )}
-          </div>
-          <p className="text-[10px] text-muted-foreground">
-            {isOfflineCached
-              ? `${showing} tickets from local cache`
-              : `Showing ${showing} of ${total}`}
-          </p>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search this view"
-            className="h-8 w-56 pl-8 text-xs"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 text-xs">
-              <Group className="h-3.5 w-3.5" />
-              {groupBy === 'none' ? 'Group by' : `By ${groupBy}`}
-              <ChevronDown className="h-3 w-3 opacity-70" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuLabel>Group by</DropdownMenuLabel>
-            {(['none', 'status', 'priority', 'assignee', 'channel'] as GroupKey[]).map((g) => (
-              <DropdownMenuItem
-                key={g}
-                onSelect={() => setGroupBy(g)}
-              >
-                <Checkbox checked={groupBy === g} className="pointer-events-none" />
-                <span className="capitalize">{g === 'none' ? 'No grouping' : g}</span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 w-8 p-0"
-              onClick={() =>
-                setDensity(density === 'compact' ? 'comfortable' : 'compact')
-              }
-              aria-label="Toggle density"
-            >
-              {density === 'compact' ? (
-                <LayoutGrid className="h-3.5 w-3.5" />
-              ) : (
-                <Rows3 className="h-3.5 w-3.5" />
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {density === 'compact' ? 'Comfortable density' : 'Compact density'}
-          </TooltipContent>
-        </Tooltip>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 text-xs">
-              <Bookmark className="h-3.5 w-3.5" />
-              Save view
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Save current filters as a new view</TooltipContent>
-        </Tooltip>
-
-        <Button variant="outline" size="sm" className="h-8 text-xs">
-          <Download className="h-3.5 w-3.5" />
-          Export
-        </Button>
-        <Button size="sm" className="h-8 bg-gradient-to-r from-blue-600 to-blue-500 text-xs text-white shadow-blue-600/20 shadow-sm hover:from-blue-500 hover:to-blue-400">
-          <Plus className="h-3.5 w-3.5" />
-          New ticket
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-// ─── Filter bar ──────────────────────────────────────────────────────────────
-
-interface FilterBarProps {
-  statusFilter: Set<TicketStatus>;
-  setStatusFilter: (s: Set<TicketStatus>) => void;
-  priorityFilter: Set<TicketPriority>;
-  setPriorityFilter: (s: Set<TicketPriority>) => void;
-  assigneeFilter: Set<string>;
-  setAssigneeFilter: (s: Set<string>) => void;
-  channelFilter: Set<TicketChannel>;
-  setChannelFilter: (s: Set<TicketChannel>) => void;
-}
-
-function FilterBar({
-  statusFilter,
-  setStatusFilter,
-  priorityFilter,
-  setPriorityFilter,
-  assigneeFilter,
-  setAssigneeFilter,
-  channelFilter,
-  setChannelFilter,
-}: FilterBarProps) {
-  return (
-    <div className="flex shrink-0 flex-wrap items-center gap-2 border-b bg-muted/20 px-4 py-2">
-      <Filter className="h-3 w-3 text-muted-foreground" />
-      <FilterMenu<TicketStatus>
-        label="Status"
-        options={STATUS_OPTIONS}
-        labelFor={(s) => STATUS_LABEL[s]}
-        selected={statusFilter}
-        onSelectedChange={setStatusFilter}
-      />
-      <FilterMenu<TicketPriority>
-        label="Priority"
-        options={PRIORITY_OPTIONS}
-        labelFor={(p) => PRIORITY_LABEL[p]}
-        selected={priorityFilter}
-        onSelectedChange={setPriorityFilter}
-      />
-      <FilterMenu<string>
-        label="Assignee"
-        options={['__unassigned__', ...agentDirectory.map((a) => a.id)]}
-        labelFor={(id) =>
-          id === '__unassigned__'
-            ? 'Unassigned'
-            : agentDirectory.find((a) => a.id === id)?.name ?? id
-        }
-        selected={assigneeFilter}
-        onSelectedChange={setAssigneeFilter}
-      />
-      <FilterMenu<TicketChannel>
-        label="Channel"
-        options={CHANNEL_OPTIONS}
-        labelFor={(c) => CHANNEL_META[c].label}
-        selected={channelFilter}
-        onSelectedChange={setChannelFilter}
-      />
-    </div>
-  );
-}
-
-interface FilterMenuProps<T extends string> {
-  label: string;
-  options: T[];
-  labelFor: (opt: T) => string;
-  selected: Set<T>;
-  onSelectedChange: (next: Set<T>) => void;
-}
-
-function FilterMenu<T extends string>({
-  label,
-  options,
-  labelFor,
-  selected,
-  onSelectedChange,
-}: FilterMenuProps<T>) {
-  function toggle(opt: T) {
-    const next = new Set(selected);
-    if (next.has(opt)) next.delete(opt);
-    else next.add(opt);
-    onSelectedChange(next);
-  }
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            'inline-flex items-center gap-1 rounded-full border border-dashed border-input bg-card px-2.5 py-0.5 text-xs font-medium text-foreground transition-colors hover:bg-muted',
-            selected.size > 0 && 'border-solid border-primary/40 bg-primary/5 text-primary',
-          )}
-        >
-          {label}
-          {selected.size > 0 && (
-            <Badge
-              variant="secondary"
-              className="h-4 bg-primary/10 px-1.5 text-[9px] text-primary"
-            >
-              {selected.size}
-            </Badge>
-          )}
-          <ChevronDown className="h-3 w-3" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-56">
-        <DropdownMenuLabel>Filter by {label.toLowerCase()}</DropdownMenuLabel>
-        {options.map((opt) => (
-          <DropdownMenuItem
-            key={opt}
-            onSelect={(e) => {
-              e.preventDefault();
-              toggle(opt);
-            }}
-          >
-            <Checkbox checked={selected.has(opt)} className="pointer-events-none" />
-            {labelFor(opt)}
-          </DropdownMenuItem>
-        ))}
-        {selected.size > 0 && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => onSelectedChange(new Set())}>
-              Clear
-            </DropdownMenuItem>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-interface ActiveFiltersBarProps {
-  search: string;
-  setSearch: (v: string) => void;
-  statusFilter: Set<TicketStatus>;
-  setStatusFilter: (s: Set<TicketStatus>) => void;
-  priorityFilter: Set<TicketPriority>;
-  setPriorityFilter: (s: Set<TicketPriority>) => void;
-  assigneeFilter: Set<string>;
-  setAssigneeFilter: (s: Set<string>) => void;
-  channelFilter: Set<TicketChannel>;
-  setChannelFilter: (s: Set<TicketChannel>) => void;
-  onClear: () => void;
-}
-
-function ActiveFiltersBar(props: ActiveFiltersBarProps) {
-  const removeFromSet = <T extends string>(
-    set: Set<T>,
-    value: T,
-    setter: (s: Set<T>) => void,
-  ) => {
-    const next = new Set(set);
-    next.delete(value);
-    setter(next);
-  };
-  return (
-    <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-b bg-primary/[0.03] px-4 py-1.5 text-xs">
-      <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-        Active
-      </span>
-      {props.search && (
-        <ActiveChip
-          label={`Search: "${props.search}"`}
-          onRemove={() => props.setSearch('')}
-        />
-      )}
-      {[...props.statusFilter].map((s) => (
-        <ActiveChip
-          key={`s-${s}`}
-          label={`Status: ${STATUS_LABEL[s]}`}
-          onRemove={() => removeFromSet(props.statusFilter, s, props.setStatusFilter)}
-        />
-      ))}
-      {[...props.priorityFilter].map((p) => (
-        <ActiveChip
-          key={`p-${p}`}
-          label={`Priority: ${PRIORITY_LABEL[p]}`}
-          onRemove={() => removeFromSet(props.priorityFilter, p, props.setPriorityFilter)}
-        />
-      ))}
-      {[...props.assigneeFilter].map((id) => (
-        <ActiveChip
-          key={`a-${id}`}
-          label={`Assignee: ${
-            id === '__unassigned__'
-              ? 'Unassigned'
-              : agentDirectory.find((a) => a.id === id)?.name ?? id
-          }`}
-          onRemove={() => removeFromSet(props.assigneeFilter, id, props.setAssigneeFilter)}
-        />
-      ))}
-      {[...props.channelFilter].map((c) => (
-        <ActiveChip
-          key={`c-${c}`}
-          label={`Channel: ${CHANNEL_META[c].label}`}
-          onRemove={() => removeFromSet(props.channelFilter, c, props.setChannelFilter)}
-        />
-      ))}
-      <button
-        type="button"
-        onClick={props.onClear}
-        className="ml-1 text-xs font-medium text-muted-foreground hover:text-foreground"
-      >
-        Clear all
-      </button>
-    </div>
-  );
-}
-
-function ActiveChip({
-  label,
-  onRemove,
-}: {
-  label: string;
-  onRemove: () => void;
-}) {
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-      {label}
-      <button
-        type="button"
-        onClick={onRemove}
-        aria-label={`Remove ${label}`}
-        className="rounded-full hover:bg-primary/20"
-      >
-        <X className="h-3 w-3" />
-      </button>
-    </span>
-  );
-}
-
-// ─── Bulk actions ────────────────────────────────────────────────────────────
-
-function BulkActionBar({
-  count,
-  onClear,
-}: {
-  count: number;
-  onClear: () => void;
-}) {
-  return (
-    <div className="flex shrink-0 items-center gap-2 border-b bg-primary/5 px-4 py-2 text-sm">
-      <span className="font-medium text-foreground">{count} selected</span>
-      <Button variant="outline" size="sm" className="h-7 text-xs">
-        <UserPlus className="h-3 w-3" />
-        Assign
-      </Button>
-      <Button variant="outline" size="sm" className="h-7 text-xs">
-        <Tag className="h-3 w-3" />
-        Tag
-      </Button>
-      <Button variant="outline" size="sm" className="h-7 text-xs">
-        <Reply className="h-3 w-3" />
-        Reply with macro
-      </Button>
-      <Button variant="outline" size="sm" className="h-7 text-xs">
-        <Sparkles className="h-3 w-3" />
-        Run automation
-      </Button>
-      <Button variant="outline" size="sm" className="h-7 text-xs text-red-600">
-        <Trash2 className="h-3 w-3" />
-        Move to trash
-      </Button>
-      <button
-        type="button"
-        onClick={onClear}
-        className="ml-auto text-xs text-muted-foreground hover:text-foreground"
-      >
-        Clear selection
-      </button>
-    </div>
-  );
-}
-
-// ─── Sortable header ─────────────────────────────────────────────────────────
-
-interface SortableHeadProps {
-  label: string;
-  active: boolean;
-  dir?: 'asc' | 'desc';
-  onClick: () => void;
-  className?: string;
-}
-
-function SortableHead({
-  label,
-  active,
-  dir,
-  onClick,
-  className,
-}: SortableHeadProps) {
-  return (
-    <TableHead className={className}>
-      <button
-        type="button"
-        onClick={onClick}
-        className={cn(
-          'inline-flex items-center gap-1 transition-colors',
-          active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
-        )}
-      >
-        {label}
-        {active &&
-          (dir === 'asc' ? (
-            <ArrowUp className="h-3 w-3" />
-          ) : (
-            <ArrowDown className="h-3 w-3" />
-          ))}
-      </button>
-    </TableHead>
-  );
-}
-
-// ─── Grouped sections ────────────────────────────────────────────────────────
-
-interface TicketGroup {
-  key: string;
-  label: string;
-  tickets: MockTicket[];
-}
-
-function groupTickets(tickets: MockTicket[], groupBy: GroupKey): TicketGroup[] {
-  if (groupBy === 'none') return [];
-  const buckets = new Map<string, MockTicket[]>();
-  for (const t of tickets) {
-    let key: string;
-    if (groupBy === 'status') {
-      key = t.status;
-    } else if (groupBy === 'priority') {
-      key = t.priority;
-    } else if (groupBy === 'channel') {
-      key = t.channel;
-    } else {
-      key = t.assignee?.id ?? '__unassigned__';
-    }
-    const arr = buckets.get(key) ?? [];
-    arr.push(t);
-    buckets.set(key, arr);
-  }
-  return [...buckets.entries()]
-    .map(([key, arr]) => ({
-      key,
-      label: groupLabelFor(groupBy, key, arr),
-      tickets: arr,
-    }))
-    .sort((a, b) => {
-      if (groupBy === 'priority') {
-        const order: Record<string, number> = {
-          urgent: 1,
-          high: 2,
-          medium: 3,
-          low: 4,
-        };
-        return (order[a.key] ?? 9) - (order[b.key] ?? 9);
-      }
-      return a.label.localeCompare(b.label);
-    });
-}
-
-function groupLabelFor(groupBy: GroupKey, key: string, items: MockTicket[]): string {
-  if (groupBy === 'status') return STATUS_LABEL[key as TicketStatus] ?? key;
-  if (groupBy === 'priority') return PRIORITY_LABEL[key as TicketPriority] ?? key;
-  if (groupBy === 'channel') return CHANNEL_META[key as TicketChannel]?.label ?? key;
-  return items[0]?.assignee?.name ?? 'Unassigned';
-}
-
-interface GroupedSectionProps {
-  group: TicketGroup;
-  collapsed: boolean;
-  onToggle: () => void;
-  selected: Set<string>;
-  onRowToggle: (id: string) => void;
-  onRowPreview: (id: string) => void;
-  previewId: string | null;
-  density: Density;
-}
-
-function GroupedSection({
-  group,
-  collapsed,
-  onToggle,
-  selected,
-  onRowToggle,
-  onRowPreview,
-  previewId,
-  density,
-}: GroupedSectionProps) {
-  return (
-    <>
-      <TableRow className="bg-muted/30 hover:bg-muted/40">
-        <TableCell colSpan={10} className="py-2">
-          <button
-            type="button"
-            onClick={onToggle}
-            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-foreground"
-          >
-            <ChevronRight
-              className={cn(
-                'h-3 w-3 transition-transform',
-                !collapsed && 'rotate-90',
-              )}
-            />
-            {group.label}
-            <Badge variant="secondary" className="h-4 px-1.5 text-[9px]">
-              {group.tickets.length}
-            </Badge>
-          </button>
-        </TableCell>
-      </TableRow>
-      {!collapsed &&
-        group.tickets.map((t) => (
-          <TicketRow
-            key={t.id}
-            ticket={t}
-            selected={selected.has(t.id)}
-            onToggle={() => onRowToggle(t.id)}
-            onPreview={() => onRowPreview(t.id)}
-            isPreviewed={previewId === t.id}
-            density={density}
-          />
-        ))}
-    </>
-  );
-}
-
-// ─── Ticket row ──────────────────────────────────────────────────────────────
-
-interface TicketRowProps {
-  ticket: MockTicket;
-  selected: boolean;
-  onToggle: () => void;
-  onPreview: () => void;
-  isPreviewed: boolean;
-  density: Density;
-}
+// ─── Ticket row ───────────────────────────────────────────────────────────────
 
 function TicketRow({
   ticket,
   selected,
-  onToggle,
-  onPreview,
-  isPreviewed,
-  density,
-}: TicketRowProps) {
-  const compact = density === 'compact';
-  const ChannelIcon = CHANNEL_META[ticket.channel].icon;
+  onSelect,
+}: {
+  ticket: MockTicket;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const status   = STATUS_META[ticket.status];
+  const channel  = CHANNEL_META[ticket.channel];
+  const priority = PRIORITY_META[ticket.priority];
+  const ChIcon   = channel.icon;
   const hasSuggestion = mockAISuggestions.some(
     (s) => s.ticketId === ticket.id && s.status === 'pending',
   );
+
+  // Latest message snippet
+  const lastMsg = ticket.conversations[ticket.conversations.length - 1];
+  const snippet = lastMsg?.body ?? ticket.description;
+
   return (
-    <TableRow
-      onClick={onPreview}
+    <button
+      type="button"
+      onClick={onSelect}
       className={cn(
-        'group cursor-pointer',
-        selected && 'bg-primary/5',
-        isPreviewed && 'bg-primary/10',
+        'group relative flex w-full items-start gap-3 border-b border-border/40 px-5 py-3.5 text-left transition-colors',
+        selected ? 'bg-coral/5' : 'hover:bg-muted/40',
       )}
     >
-      <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
-        <Checkbox
-          checked={selected}
-          onCheckedChange={onToggle}
-          aria-label={`Select ${ticket.number}`}
-        />
-      </TableCell>
-      <TableCell className="w-10 text-center">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="inline-flex">
-              <ChannelIcon className="h-3.5 w-3.5 text-muted-foreground" />
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>{CHANNEL_META[ticket.channel].label}</TooltipContent>
-        </Tooltip>
-      </TableCell>
-      <TableCell className={cn(compact && 'py-2')}>
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-[11px] text-muted-foreground">
-            {ticket.number}
+      {/* Active indicator strip on selected row */}
+      {selected && <span className="absolute inset-y-0 left-0 w-0.5 bg-coral" />}
+
+      {/* Avatar */}
+      <div className="relative shrink-0">
+        <Avatar className="h-9 w-9">
+          <AvatarFallback className={cn(avatarColor(ticket.requester.name), 'text-[11px] font-semibold text-white')}>
+            {initials(ticket.requester.name)}
+          </AvatarFallback>
+        </Avatar>
+        <span className={cn(
+          'absolute -bottom-0.5 -right-0.5 grid h-4 w-4 place-items-center rounded-full bg-card ring-2 ring-card',
+        )}>
+          <ChIcon className={cn('h-2.5 w-2.5', channel.color)} />
+        </span>
+      </div>
+
+      {/* Content */}
+      <div className="min-w-0 flex-1">
+        {/* Top row: name + time */}
+        <div className="flex items-baseline justify-between gap-2">
+          <p className="truncate text-sm font-semibold text-foreground">
+            {ticket.requester.name}
+          </p>
+          <span className="shrink-0 text-[11px] text-muted-foreground tabular-nums">
+            {relativeTime(ticket.updatedAt)}
           </span>
+        </div>
+
+        {/* Subject */}
+        <p className="mt-0.5 truncate text-sm text-foreground/85">
+          {ticket.subject}
+        </p>
+
+        {/* Snippet */}
+        <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+          {snippet.replace(/\n/g, ' ').slice(0, 110)}
+        </p>
+
+        {/* Meta row: status + priority + tags + AI badge */}
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+          <span className={cn('inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold', status.cls)}>
+            <span className={cn('h-1 w-1 rounded-full', status.dot)} />
+            {status.label}
+          </span>
+          {(ticket.priority === 'high' || ticket.priority === 'urgent') && (
+            <span className={cn('inline-flex items-center gap-1 rounded-full bg-card border border-border px-1.5 py-0.5 text-[10px] font-medium', priority.color)}>
+              <span className={cn('h-1 w-1 rounded-full', ticket.priority === 'urgent' ? 'bg-red-500' : 'bg-orange-500')} />
+              {priority.label}
+            </span>
+          )}
           {ticket.slaStatus === 'breached' && (
-            <Badge variant="danger" className="h-4 px-1.5 text-[9px]">
-              Breached
-            </Badge>
+            <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold text-red-600">
+              <AlertTriangle className="h-2.5 w-2.5" />SLA breached
+            </span>
           )}
           {ticket.slaStatus === 'at_risk' && (
-            <Badge variant="warning" className="h-4 px-1.5 text-[9px]">
-              At risk
-            </Badge>
-          )}
-          {ticket.status === 'escalated' && (
-            <Badge variant="outline" className="h-4 px-1.5 text-[9px]">
-              Escalated
-            </Badge>
+            <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+              <Clock className="h-2.5 w-2.5" />SLA at risk
+            </span>
           )}
           {hasSuggestion && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="inline-flex items-center gap-0.5 rounded-full border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[9px] font-semibold text-violet-600">
-                  <Bot className="h-2.5 w-2.5" />
-                  AI
+                <span className="inline-flex items-center gap-1 rounded-full border border-coral/20 bg-coral/8 px-1.5 py-0.5 text-[10px] font-semibold text-coral-dark">
+                  <Bot className="h-2.5 w-2.5" />AI
                 </span>
               </TooltipTrigger>
-              <TooltipContent>AI suggestion ready — click to review</TooltipContent>
+              <TooltipContent>AI suggestion ready</TooltipContent>
             </Tooltip>
           )}
-        </div>
-        <div className="mt-0.5 flex items-center gap-1.5">
-          <p className="max-w-md truncate text-sm font-medium">
-            {ticket.subject}
-          </p>
-          <PendingBadge entityId={ticket.id} />
-        </div>
-        {!compact && ticket.tags.length > 0 && (
-          <div className="mt-1 flex flex-wrap items-center gap-1">
-            {ticket.tags.slice(0, 4).map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center gap-0.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
-              >
-                #{tag}
-              </span>
-            ))}
-            <span className="text-[10px] text-muted-foreground">
-              · {ticket.category}
+          {!ticket.assignee && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-dashed border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+              <UserPlus className="h-2.5 w-2.5" />Unassigned
             </span>
-          </div>
-        )}
-      </TableCell>
-      <TableCell className={cn(compact && 'py-2')}>
-        {compact ? (
-          <span className="text-xs">{ticket.requester.name}</span>
-        ) : (
-          <>
-            <div className="text-sm">{ticket.requester.name}</div>
-            <div className="text-[11px] text-muted-foreground">
-              {ticket.requester.email}
-            </div>
-          </>
-        )}
-      </TableCell>
-      <TableCell className={cn(compact && 'py-2')}>
-        <StatusPill status={ticket.status} />
-      </TableCell>
-      <TableCell className={cn(compact && 'py-2')}>
-        <PriorityIndicator priority={ticket.priority} />
-      </TableCell>
-      <TableCell className={cn(compact && 'py-2')}>
-        <SlaTimer ticket={ticket} />
-      </TableCell>
-      <TableCell className={cn(compact && 'py-2')}>
-        {ticket.assignee ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
-                  <AvatarFallback>
-                    {initials(ticket.assignee.name)}
-                  </AvatarFallback>
-                </Avatar>
-                {!compact && (
-                  <span className="text-xs">{ticket.assignee.name}</span>
-                )}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>{ticket.assignee.name}</TooltipContent>
-          </Tooltip>
-        ) : (
-          <span className="text-[11px] text-muted-foreground">Unassigned</span>
-        )}
-      </TableCell>
-      <TableCell
-        className={cn(
-          'whitespace-nowrap text-[11px] text-muted-foreground',
-          compact && 'py-2',
-        )}
-      >
-        {relativeTime(ticket.updatedAt)}
-      </TableCell>
-      <TableCell className="pr-3" onClick={(e) => e.stopPropagation()}>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              aria-label="Row actions"
-              className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover:opacity-100"
-            >
-              <MoreHorizontal className="h-3.5 w-3.5" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem>Assign to me</DropdownMenuItem>
-            <DropdownMenuItem>Reassign</DropdownMenuItem>
-            <DropdownMenuItem>Add tag</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Mark resolved</DropdownMenuItem>
-            <DropdownMenuItem>Mark spam</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </TableCell>
-    </TableRow>
+          )}
+        </div>
+      </div>
+    </button>
   );
 }
 
-// ─── SLA timer ───────────────────────────────────────────────────────────────
+// ─── Right preview pane ───────────────────────────────────────────────────────
 
-function SlaTimer({ ticket }: { ticket: MockTicket }) {
-  const due = new Date(ticket.slaDueAt).getTime();
-  const created = new Date(ticket.createdAt).getTime();
-  const now = Date.now();
-  const total = Math.max(due - created, 1);
-  const remainingMs = due - now;
-  const pct = Math.max(0, Math.min(100, (remainingMs / total) * 100));
-
-  let label: string;
-  if (remainingMs < 0) {
-    label = `${Math.abs(Math.round(remainingMs / 60_000))}m late`;
-  } else if (remainingMs < 60 * 60 * 1000) {
-    label = `${Math.round(remainingMs / 60_000)}m`;
-  } else if (remainingMs < 24 * 60 * 60 * 1000) {
-    label = `${Math.round(remainingMs / (60 * 60 * 1000))}h`;
-  } else {
-    label = `${Math.round(remainingMs / (24 * 60 * 60 * 1000))}d`;
+function PreviewPane({ ticket }: { ticket: MockTicket | null }) {
+  if (!ticket) {
+    return (
+      <div className="hidden flex-col items-center justify-center px-6 text-center xl:flex">
+        <div className="grid h-12 w-12 place-items-center rounded-full bg-muted/50">
+          <Inbox className="h-5 w-5 text-muted-foreground" />
+        </div>
+        <p className="mt-3 text-sm font-medium text-foreground">No ticket selected</p>
+        <p className="mt-0.5 max-w-xs text-xs text-muted-foreground">
+          Select a ticket from the list to preview it. Click through to open the full thread and reply.
+        </p>
+      </div>
+    );
   }
 
-  let tone: 'ok' | 'warning' | 'danger' = 'ok';
-  if (ticket.slaStatus === 'breached' || remainingMs < 0) tone = 'danger';
-  else if (ticket.slaStatus === 'at_risk' || pct < 30) tone = 'warning';
-
-  const fillClass =
-    tone === 'danger'
-      ? 'bg-red-500'
-      : tone === 'warning'
-        ? 'bg-amber-500'
-        : 'bg-emerald-500';
-  const textClass =
-    tone === 'danger'
-      ? 'text-red-600'
-      : tone === 'warning'
-        ? 'text-amber-600'
-        : 'text-muted-foreground';
+  const status   = STATUS_META[ticket.status];
+  const channel  = CHANNEL_META[ticket.channel];
+  const priority = PRIORITY_META[ticket.priority];
+  const ChIcon   = channel.icon;
+  const messageCount = ticket.conversations.length + 1;
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div className="flex items-center gap-2">
-          <div className="h-1 w-14 overflow-hidden rounded-full bg-muted">
-            <div
-              className={cn('h-full rounded-full', fillClass)}
-              style={{ width: `${pct}%` }}
-            />
+    <div className="flex h-full flex-col">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-2 border-b border-border/60 px-5 py-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+            <span className="font-mono">{ticket.number}</span>
+            <span className="h-0.5 w-0.5 rounded-full bg-muted-foreground/40" />
+            <ChIcon className={cn('h-3 w-3', channel.color)} />
+            <span>{channel.label}</span>
           </div>
-          <span
-            className={cn(
-              'font-mono text-[10px] tabular-nums font-medium',
-              textClass,
-            )}
-          >
-            {label}
-          </span>
+          <h3 className="mt-1 text-base font-semibold leading-snug text-foreground">
+            {ticket.subject}
+          </h3>
         </div>
-      </TooltipTrigger>
-      <TooltipContent>
-        Resolution due {absoluteDateTime(ticket.slaDueAt)}
-      </TooltipContent>
-    </Tooltip>
+        <Link
+          href={`/tickets/${ticket.id}`}
+          className="shrink-0 inline-flex h-7 items-center gap-1 rounded-full bg-navy px-3 text-[11px] font-semibold text-white hover:bg-navy-mid transition-colors"
+        >
+          Open <ArrowUpRight className="h-3 w-3" />
+        </Link>
+      </div>
+
+      {/* Quick stats */}
+      <div className="grid grid-cols-3 divide-x divide-border/60 border-b border-border/60">
+        <div className="px-4 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Status</p>
+          <div className="mt-1 flex items-center gap-1.5">
+            <span className={cn('h-1.5 w-1.5 rounded-full', status.dot)} />
+            <span className="text-sm font-medium text-foreground">{status.label}</span>
+          </div>
+        </div>
+        <div className="px-4 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Priority</p>
+          <p className={cn('mt-1 text-sm font-medium', priority.color)}>{priority.label}</p>
+        </div>
+        <div className="px-4 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Messages</p>
+          <p className="mt-1 text-sm font-medium text-foreground">{messageCount}</p>
+        </div>
+      </div>
+
+      {/* Customer */}
+      <div className="border-b border-border/60 px-5 py-4">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">Customer</p>
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10">
+            <AvatarFallback className={cn(avatarColor(ticket.requester.name), 'text-xs font-semibold text-white')}>
+              {initials(ticket.requester.name)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-foreground">{ticket.requester.name}</p>
+            <p className="truncate text-xs text-muted-foreground">{ticket.requester.email}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Properties */}
+      <div className="border-b border-border/60">
+        {[
+          { label: 'Assignee',  value: ticket.assignee?.name ?? '— Unassigned —' },
+          { label: 'Group',     value: ticket.group },
+          { label: 'Category',  value: ticket.category },
+          { label: 'Created',   value: relativeTime(ticket.createdAt) },
+          { label: 'Updated',   value: relativeTime(ticket.updatedAt) },
+        ].map((row) => (
+          <div key={row.label} className="flex items-center justify-between gap-4 border-b border-border/40 px-5 py-2 last:border-b-0">
+            <span className="text-xs text-muted-foreground">{row.label}</span>
+            <span className="truncate text-xs font-medium text-foreground">{row.value}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Tags */}
+      {ticket.tags.length > 0 && (
+        <div className="border-b border-border/60 px-5 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">Tags</p>
+          <div className="flex flex-wrap gap-1">
+            {ticket.tags.map((tag) => (
+              <span key={tag} className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[11px] text-foreground">
+                <Tag className="h-2.5 w-2.5 text-muted-foreground" />{tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Description preview */}
+      <div className="flex-1 overflow-y-auto px-5 py-4">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">Latest message</p>
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/85">
+          {(ticket.conversations[ticket.conversations.length - 1]?.body ?? ticket.description).slice(0, 400)}
+          {(ticket.conversations[ticket.conversations.length - 1]?.body ?? ticket.description).length > 400 ? '…' : ''}
+        </p>
+      </div>
+
+      {/* Quick actions */}
+      <div className="border-t border-border/60 bg-muted/20 px-5 py-3">
+        <div className="flex items-center gap-2">
+          <Link href={`/tickets/${ticket.id}`} className="flex-1">
+            <Button size="sm" className="w-full bg-navy text-white hover:bg-navy-mid">
+              <Reply className="h-3 w-3" />Reply
+            </Button>
+          </Link>
+          <Button size="sm" variant="outline" className="h-9 px-3">
+            <UserPlus className="h-3 w-3" />
+          </Button>
+          <Button size="sm" variant="outline" className="h-9 px-3">
+            <CheckCircle2 className="h-3 w-3" />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline" className="h-9 px-3">
+                <MoreHorizontal className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem><Pause className="h-3.5 w-3.5" />Snooze</DropdownMenuItem>
+              <DropdownMenuItem><Bell className="h-3.5 w-3.5" />Watch</DropdownMenuItem>
+              <DropdownMenuItem><Tag className="h-3.5 w-3.5" />Add tag</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-600">Mark as spam</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+    </div>
   );
 }
 
-// ─── Footer / pagination ─────────────────────────────────────────────────────
+// ─── Search bar ───────────────────────────────────────────────────────────────
 
-function Footer({
-  total,
-  page,
-  totalPages,
-  onPrev,
-  onNext,
-  showPager,
+function SearchBar({
+  value,
+  onChange,
+  onClear,
 }: {
-  total: number;
-  page: number;
-  totalPages: number;
-  onPrev: () => void;
-  onNext: () => void;
-  showPager: boolean;
+  value: string;
+  onChange: (s: string) => void;
+  onClear: () => void;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [focused, setFocused] = useState(false);
+
+  // Keyboard shortcuts: "/" or Cmd/Ctrl+K to focus, Esc to blur & clear.
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      const isTyping =
+        target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+
+      // Cmd/Ctrl+K — works even if typing
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        inputRef.current?.focus();
+        inputRef.current?.select();
+        return;
+      }
+      // "/" focuses search, only when not already typing
+      if (e.key === '/' && !isTyping) {
+        e.preventDefault();
+        inputRef.current?.focus();
+        return;
+      }
+      // Esc blurs and clears when focused
+      if (e.key === 'Escape' && document.activeElement === inputRef.current) {
+        if (value) onClear();
+        else inputRef.current?.blur();
+      }
+    }
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [value, onClear]);
+
   return (
-    <div className="flex shrink-0 items-center justify-between border-t bg-card px-4 py-2 text-xs text-muted-foreground">
-      <span>{total} tickets</span>
-      {showPager && (
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs"
-            disabled={page <= 1}
-            onClick={onPrev}
-          >
-            Previous
-          </Button>
-          <span className="px-2 tabular-nums">
-            Page {page} of {totalPages}
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs"
-            disabled={page >= totalPages}
-            onClick={onNext}
-          >
-            Next
-          </Button>
-        </div>
+    <div
+      className={cn(
+        'group relative flex h-9 w-80 items-center gap-2 rounded-full border bg-card pl-3.5 pr-1.5 transition-all duration-150',
+        focused
+          ? 'border-coral/40 shadow-[0_0_0_4px_rgba(255,107,74,0.10)] ring-0'
+          : value
+            ? 'border-border/80 bg-card'
+            : 'border-transparent bg-muted/45 hover:bg-muted/70 hover:border-border/40',
+      )}
+    >
+      <Search
+        className={cn(
+          'h-3.5 w-3.5 shrink-0 transition-colors',
+          focused ? 'text-coral' : value ? 'text-foreground' : 'text-muted-foreground',
+        )}
+      />
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        placeholder="Search tickets…"
+        spellCheck={false}
+        className={cn(
+          'h-full flex-1 bg-transparent text-sm text-foreground outline-none',
+          'placeholder:font-normal placeholder:text-muted-foreground/80',
+        )}
+      />
+      {value ? (
+        <button
+          type="button"
+          onClick={() => {
+            onClear();
+            inputRef.current?.focus();
+          }}
+          className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          aria-label="Clear search"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      ) : (
+        <kbd
+          className={cn(
+            'pointer-events-none hidden h-5 select-none items-center gap-0.5 rounded-md border border-border/70 bg-card px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:inline-flex',
+            focused && 'opacity-0',
+          )}
+          aria-hidden="true"
+        >
+          <span className="text-[11px] leading-none">⌘</span>K
+        </kbd>
       )}
     </div>
   );
 }
 
-// ─── Preview pane ────────────────────────────────────────────────────────────
+// ─── Top action bar ───────────────────────────────────────────────────────────
 
-function PreviewPane({
-  ticket,
-  onClose,
+function TopBar({
+  count,
+  isOfflineCached,
+  search,
+  onSearchChange,
+  onClearSearch,
+  sortKey,
+  onSortChange,
 }: {
-  ticket: MockTicket | null;
-  onClose: () => void;
+  count: number;
+  isOfflineCached?: boolean;
+  search: string;
+  onSearchChange: (s: string) => void;
+  onClearSearch: () => void;
+  sortKey: 'updated' | 'created' | 'priority';
+  onSortChange: (k: 'updated' | 'created' | 'priority') => void;
 }) {
-  if (!ticket) {
-    return (
-      <aside className="hidden flex-col items-center justify-center border-l bg-muted/20 p-6 text-center xl:flex">
-        <div className="grid h-12 w-12 place-items-center rounded-full bg-muted text-muted-foreground">
-          <Inbox className="h-5 w-5" />
-        </div>
-        <p className="mt-3 text-sm font-medium">Select a ticket</p>
-        <p className="mt-1 max-w-[240px] text-xs text-muted-foreground">
-          Click a row to preview it here without leaving the queue.
-        </p>
-      </aside>
-    );
-  }
-
-  const lastMessage = ticket.conversations[ticket.conversations.length - 1];
-  const ChannelIcon = CHANNEL_META[ticket.channel].icon;
+  const sortLabel = { updated: 'Last updated', created: 'Date created', priority: 'Priority' }[sortKey];
 
   return (
-    <aside className="hidden flex-col border-l bg-card xl:flex">
-      <div className="flex h-14 items-center justify-between border-b px-4">
-        <div className="flex items-center gap-2">
-          <ChannelIcon className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="font-mono text-xs text-muted-foreground">
-            {ticket.number}
+    <div className="shrink-0 border-b border-border/60 bg-card/50">
+      {/* Row 1: title · actions */}
+      <div className="flex h-12 items-center justify-between gap-2 px-5">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <h1 className="text-base font-bold tracking-tight text-foreground">Tickets</h1>
+          <span className="text-xs text-muted-foreground tabular-nums">
+            · {count.toLocaleString()}
           </span>
-          <StatusPill status={ticket.status} />
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close preview"
-          className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div className="flex-1 space-y-5 overflow-y-auto p-4">
-        <div>
-          <div className="flex items-start gap-2">
-            <h3 className="font-display text-base font-bold leading-tight">
-              {ticket.subject}
-            </h3>
-            <PendingBadge entityId={ticket.id} className="mt-0.5 shrink-0" />
-          </div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Opened by {ticket.requester.name} via{' '}
-            {CHANNEL_META[ticket.channel].label.toLowerCase()} ·{' '}
-            {relativeTime(ticket.createdAt)}
-          </p>
+          {isOfflineCached && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+              <Database className="h-2.5 w-2.5" />Cached
+            </span>
+          )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3 text-xs">
-          <Property
-            label="Priority"
-            value={<PriorityIndicator priority={ticket.priority} />}
-          />
-          <Property label="Category" value={ticket.category} />
-          <Property label="Group" value={ticket.group} />
-          <Property
-            label="Assignee"
-            value={
-              ticket.assignee ? (
-                <div className="flex items-center gap-1.5">
-                  <Avatar className="h-5 w-5">
-                    <AvatarFallback>
-                      {initials(ticket.assignee.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="truncate">{ticket.assignee.name}</span>
-                </div>
-              ) : (
-                <span className="text-muted-foreground">Unassigned</span>
-              )
-            }
-          />
-          <Property label="SLA" value={<SlaTimer ticket={ticket} />} />
-        </div>
+        <div className="flex items-center gap-1.5">
+          {/* Sort */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-7 rounded-full px-2.5 text-xs text-muted-foreground hover:text-foreground">
+                <Filter className="h-3 w-3" />
+                {sortLabel}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => onSortChange('updated')}>Last updated</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onSortChange('created')}>Date created</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onSortChange('priority')}>Priority</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-        <div className="space-y-2">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Description
-          </p>
-          <p className="line-clamp-4 text-xs text-foreground">
-            {ticket.description}
-          </p>
-        </div>
-
-        {lastMessage && (
-          <div className="space-y-2 rounded-md bg-muted/40 p-3">
-            <div className="flex items-center gap-2">
-              <Avatar className="h-6 w-6">
-                <AvatarFallback>
-                  {initials(lastMessage.author.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <p className="truncate text-xs font-medium">
-                  {lastMessage.author.name}
-                </p>
-                <p className="text-[10px] text-muted-foreground">
-                  {relativeTime(lastMessage.createdAt)} · Last message
-                </p>
-              </div>
-            </div>
-            <p className="line-clamp-3 text-xs text-muted-foreground">
-              {lastMessage.body}
-            </p>
-          </div>
-        )}
-
-        {ticket.tags.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Tags
-            </p>
-            <div className="flex flex-wrap gap-1">
-              {ticket.tags.map((tag) => (
-                <Badge key={tag} variant="outline" className="text-[10px]">
-                  #{tag}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-2 border-t p-3">
-        <Button asChild className="w-full">
-          <Link href={`/tickets/${ticket.id}`}>Open full ticket</Link>
-        </Button>
-        <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="sm">
-            <Reply className="h-3 w-3" />
-            Reply
-          </Button>
-          <Button variant="outline" size="sm">
-            <UserPlus className="h-3 w-3" />
-            Assign me
-          </Button>
+          {/* New */}
+          <Link href="/tickets/new">
+            <Button size="sm" className="h-7 rounded-full bg-coral px-3 text-xs text-white hover:bg-coral-dark">
+              <Plus className="h-3 w-3" />New
+            </Button>
+          </Link>
         </div>
       </div>
-    </aside>
-  );
-}
 
-function Property({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
-  return (
-    <div>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-        {label}
-      </p>
-      <div className="mt-0.5">{value}</div>
+      {/* Row 2: search */}
+      <div className="px-4 pb-2.5 pt-0.5">
+        <SearchBar value={search} onChange={onSearchChange} onClear={onClearSearch} />
+      </div>
     </div>
   );
 }
 
-// Re-export markers to keep types referenced.
-export type _Markers = Person;
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function TicketsPage() {
+  const { data: tickets, isLoading, isOfflineCached } = useTickets();
+
+  const [view,     setView]     = useState<string>('open');
+  const [search,   setSearch]   = useState('');
+  const [sortKey,  setSortKey]  = useState<'updated' | 'created' | 'priority'>('updated');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Counts for left rail
+  const viewCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const v of VIEWS) map[v.id] = 0;
+    for (const t of tickets ?? []) for (const v of VIEWS) if (v.filter(t)) map[v.id]!++;
+    return map;
+  }, [tickets]);
+
+  const channelCounts = useMemo(() => {
+    const map = {} as Record<TicketChannel, number>;
+    for (const t of tickets ?? []) map[t.channel] = (map[t.channel] ?? 0) + 1;
+    return map;
+  }, [tickets]);
+
+  // Filter + sort
+  const filtered = useMemo(() => {
+    let list = tickets ?? [];
+    if (view.startsWith('channel:')) {
+      const ch = view.split(':')[1] as TicketChannel;
+      list = list.filter((t) => t.channel === ch && !['resolved','closed'].includes(t.status));
+    } else {
+      const v = VIEWS.find((x) => x.id === view);
+      if (v) list = list.filter(v.filter);
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter((t) =>
+        [t.subject, t.number, t.requester.name, t.requester.email, t.category, ...t.tags]
+          .join(' ').toLowerCase().includes(q),
+      );
+    }
+    const sorted = [...list].sort((a, b) => {
+      if (sortKey === 'updated') return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      if (sortKey === 'created') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      const order = { urgent: 4, high: 3, medium: 2, low: 1 };
+      return (order[b.priority] ?? 0) - (order[a.priority] ?? 0);
+    });
+    return sorted;
+  }, [tickets, view, search, sortKey]);
+
+  const selected = filtered.find((t) => t.id === selectedId) ?? null;
+
+  return (
+    <div className="flex h-full min-h-[calc(100vh-3.5rem)]">
+      {/* Left rail: views + channels */}
+      <LeftRail
+        activeView={view}
+        onSelect={setView}
+        counts={viewCounts}
+        channelCounts={channelCounts}
+      />
+
+      {/* Center column: list */}
+      <div className="flex min-w-0 flex-1 flex-col xl:max-w-[480px] xl:border-r xl:border-border/60">
+        <TopBar
+          count={filtered.length}
+          isOfflineCached={isOfflineCached}
+          search={search}
+          onSearchChange={setSearch}
+          onClearSearch={() => setSearch('')}
+          sortKey={sortKey}
+          onSortChange={setSortKey}
+        />
+
+        <div className="flex-1 overflow-y-auto">
+          {isLoading ? (
+            <div className="space-y-2 p-5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-3 w-32" />
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-3/4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="grid h-12 w-12 place-items-center rounded-full bg-muted/50">
+                <Inbox className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <p className="mt-3 text-sm font-medium text-foreground">No tickets here</p>
+              <p className="mt-0.5 max-w-xs text-xs text-muted-foreground">
+                {search ? 'Try clearing the search or switching views.' : 'When customers reach out, their tickets will appear here.'}
+              </p>
+              {search && (
+                <Button size="sm" variant="outline" className="mt-3" onClick={() => setSearch('')}>
+                  Clear search
+                </Button>
+              )}
+            </div>
+          ) : (
+            <ul>
+              {filtered.map((t) => (
+                <li key={t.id}>
+                  <TicketRow
+                    ticket={t}
+                    selected={selectedId === t.id}
+                    onSelect={() => setSelectedId(t.id)}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {/* Right preview pane */}
+      <div className="hidden flex-1 xl:flex xl:flex-col">
+        <PreviewPane ticket={selected} />
+      </div>
+    </div>
+  );
+}

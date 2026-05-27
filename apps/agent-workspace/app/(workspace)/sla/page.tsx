@@ -82,7 +82,7 @@ export default function SLAPage() {
               {sla.data?.length ?? '—'} policies · {totalActive} active tickets · {avgCompliance}% avg compliance
             </p>
           </div>
-          <Button size="sm" className="bg-white text-blue-700 hover:bg-white/90">
+          <Button size="sm" className="bg-coral text-white hover:bg-white/90">
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             New policy
           </Button>

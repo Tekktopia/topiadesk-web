@@ -32,7 +32,7 @@ const CATEGORY_META: Record<
   { label: string; tone: string }
 > = {
   auth: { label: 'Auth', tone: 'bg-blue-100 text-blue-700' },
-  config: { label: 'Config', tone: 'bg-violet-100 text-violet-700' },
+  config: { label: 'Config', tone: 'bg-coral/12 text-coral-dark' },
   data: { label: 'Data', tone: 'bg-emerald-100 text-emerald-700' },
   security: { label: 'Security', tone: 'bg-amber-100 text-amber-700' },
 };
@@ -70,7 +70,7 @@ export default function AuditLogPage() {
   return (
     <div className="space-y-5">
       {/* Gradient header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-orange-500 to-orange-600 px-6 py-5">
+      <div className="relative overflow-hidden bg-navy px-6 py-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative flex flex-wrap items-center justify-between gap-4">

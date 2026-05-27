@@ -27,7 +27,7 @@ export function PWAInstallPrompt() {
         </button>
 
         <div className="flex items-start gap-3 pr-6">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 shadow-md">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-navy shadow-md">
             <span className="font-display text-lg font-black text-white">T</span>
           </div>
           <div className="flex-1 min-w-0">

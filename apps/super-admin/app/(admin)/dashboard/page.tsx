@@ -147,7 +147,7 @@ export default function DashboardPage() {
   const planDist = useMemo(() => {
     const all = tenants.data ?? [];
     return [
-      { label: 'Enterprise', count: all.filter((t) => t.plan === 'enterprise').length, color: 'bg-violet-500' },
+      { label: 'Enterprise', count: all.filter((t) => t.plan === 'enterprise').length, color: 'bg-coral/80' },
       { label: 'Business',   count: all.filter((t) => t.plan === 'business').length,   color: 'bg-blue-500' },
       { label: 'Starter',    count: all.filter((t) => t.plan === 'starter').length,    color: 'bg-emerald-500' },
     ];
@@ -156,7 +156,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Gradient header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-emerald-700 px-6 py-5">
+      <div className="relative overflow-hidden bg-navy px-6 py-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
@@ -169,7 +169,7 @@ export default function DashboardPage() {
             <Button size="sm" variant="outline" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white" asChild>
               <Link href="/tenants">View tenants</Link>
             </Button>
-            <Button size="sm" className="bg-white text-emerald-700 hover:bg-white/90" asChild>
+            <Button size="sm" className="bg-coral text-white hover:bg-white/90" asChild>
               <Link href="/billing">Revenue report</Link>
             </Button>
           </div>
@@ -219,7 +219,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <KpiCard label="Monthly Recurring Revenue"  value={fmt(m.totalMrr)}             sub={`ARR ${fmt(m.totalArr)}`}                  icon={DollarSign}  color="text-emerald-600" href="/billing" />
           <KpiCard label="Active Tenants"             value={m.activeTenants}             sub={`${m.trialingTenants} trialling`}           icon={Building2}   color="text-blue-600"   href="/tenants" />
-          <KpiCard label="Total Users"                value={m.totalUsers.toLocaleString()}sub="Across all tenants"                         icon={Users}       color="text-violet-600" href="/users" />
+          <KpiCard label="Total Users"                value={m.totalUsers.toLocaleString()}sub="Across all tenants"                         icon={Users}       color="text-coral" href="/users" />
           <KpiCard label="Tickets This Month"         value={m.totalTicketsThisMonth.toLocaleString()} sub="Across all tenants"             icon={TrendingUp}  color="text-orange-600" />
           <KpiCard label="Avg Rev / Account"          value={fmt(m.avgRevenuePerAccount)} sub="Active tenants only"                        icon={DollarSign}  color="text-emerald-600" />
           <KpiCard label="New Tenants (Month)"        value={m.newTenantsThisMonth}       sub={`${m.churnedThisMonth} churned`}            icon={ArrowUpRight} color="text-blue-600"  href="/tenants" />
@@ -313,7 +313,7 @@ export default function DashboardPage() {
                           <p className="text-[10px] text-muted-foreground">{t.owner.email} · {t.country}</p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <Badge variant="secondary" className={cn('text-[10px]', t.plan === 'enterprise' ? 'bg-violet-100 text-violet-700' : t.plan === 'business' ? 'bg-blue-100 text-blue-700' : '')}>
+                          <Badge variant="secondary" className={cn('text-[10px]', t.plan === 'enterprise' ? 'bg-coral/12 text-coral-dark' : t.plan === 'business' ? 'bg-blue-100 text-blue-700' : '')}>
                             {t.plan}
                           </Badge>
                           <span className="text-[10px] text-muted-foreground">{formatAgo(t.createdAt)}</span>
