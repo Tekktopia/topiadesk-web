@@ -57,28 +57,28 @@ export default function IntegrationsPage() {
   const available = filtered.filter((i) => i.status === 'available');
 
   return (
-    <div className="space-y-5 p-5 lg:p-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            Connect
-          </p>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
-            Integrations
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {adminIntegrations.filter((i) => i.status === 'connected').length}{' '}
-            connected ·{' '}
-            {adminIntegrations.filter((i) => i.status === 'available').length}{' '}
-            available · all integrations are tenant-scoped
-          </p>
+    <div className="space-y-5">
+      {/* Gradient header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-orange-500 to-orange-600 px-6 py-5">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">Connect</p>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-white">Integrations</h1>
+            <p className="mt-0.5 text-sm text-white/70">
+              {adminIntegrations.filter((i) => i.status === 'connected').length} connected ·{' '}
+              {adminIntegrations.filter((i) => i.status === 'available').length} available
+            </p>
+          </div>
+          <Button size="sm" className="bg-white text-orange-600 hover:bg-white/90">
+            <Sparkles className="h-3 w-3" />
+            Browse marketplace
+          </Button>
         </div>
-        <Button size="sm" variant="outline">
-          <Sparkles className="h-3 w-3" />
-          Browse marketplace
-        </Button>
-      </header>
+      </div>
 
+      <div className="px-5 pb-5 lg:px-6 lg:pb-6 space-y-5">
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -256,6 +256,7 @@ export default function IntegrationsPage() {
           />
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

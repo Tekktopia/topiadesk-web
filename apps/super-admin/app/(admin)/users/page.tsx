@@ -71,14 +71,19 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-5 p-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div className="space-y-1">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Super Admin</p>
-          <h1 className="font-display text-2xl font-bold tracking-tight">All Users</h1>
-          <p className="text-sm text-muted-foreground">{counts.total} users across all tenants · {counts.super_admin} super admins</p>
+      {/* Gradient header */}
+      <div className="relative -mx-6 -mt-6 mb-1 overflow-hidden bg-gradient-to-br from-emerald-600 to-emerald-700 px-6 py-5">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">Super Admin</p>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-white">All Users</h1>
+            <p className="mt-0.5 text-sm text-white/70">{counts.total} users across all tenants · {counts.super_admin} super admins</p>
+          </div>
+          <Button size="sm" className="bg-white text-emerald-700 hover:bg-white/90">Invite user</Button>
         </div>
-        <Button size="sm">Invite user</Button>
-      </header>
+      </div>
 
       {/* Summary */}
       <div className="flex flex-wrap gap-3 text-xs">

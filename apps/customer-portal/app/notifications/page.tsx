@@ -77,31 +77,33 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="bg-muted/20">
-      <div className="mx-auto max-w-4xl space-y-5 px-4 py-8 lg:px-8">
-        <header className="flex flex-wrap items-end justify-between gap-3">
+    <div className="bg-[#F1F5FA] min-h-screen">
+      {/* Dark hero */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#0B1529] to-[#0F2044]">
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="absolute -left-32 top-0 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
+        <div className="absolute right-0 bottom-0 h-48 w-48 rounded-full bg-blue-400/8 blur-3xl" />
+        <div className="relative mx-auto max-w-4xl px-4 py-10 lg:px-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Updates
-            </p>
-            <h1 className="font-display text-2xl font-bold tracking-tight">
-              Notifications
-            </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-300/70">Updates</p>
+            <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-white">Notifications</h1>
+            <p className="mt-2 text-sm text-white/60">
               {unreadCount} unread &middot; {items.length} total
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={markAllRead}>
+            <Button variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white" onClick={markAllRead}>
               <CheckCheck className="h-3 w-3" />
               Mark all read
             </Button>
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="ghost" size="sm" className="text-white/70 hover:bg-white/10 hover:text-white" asChild>
               <a href="#preferences">Preferences</a>
             </Button>
           </div>
-        </header>
+        </div>
+      </section>
 
+      <div className="mx-auto max-w-4xl space-y-5 px-4 py-8 lg:px-8">
         <Card>
           <div className="flex flex-wrap items-center gap-1 border-b p-2">
             {FILTERS.map((f) => (

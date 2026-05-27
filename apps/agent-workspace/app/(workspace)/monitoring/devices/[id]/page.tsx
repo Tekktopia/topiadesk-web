@@ -206,48 +206,50 @@ export default function DeviceDetailPage() {
 
   return (
     <div className="space-y-5 p-5">
-      {/* Breadcrumb + header */}
-      <div>
-        <Link href="/monitoring/devices" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-3 w-3" />Devices
-        </Link>
-
-        <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-muted">
-              <Icon className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="font-display text-2xl font-bold tracking-tight">{d.name}</h1>
-                {d.status === 'down' ? (
-                  <span className="relative flex h-2.5 w-2.5 mt-1">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
-                  </span>
-                ) : (
-                  <span className={cn('mt-1 h-2.5 w-2.5 rounded-full', meta.dot)} />
-                )}
-                <Badge variant={meta.badge}>{meta.label}</Badge>
-                <Badge variant="secondary">{TYPE_LABELS[d.type]}</Badge>
+      {/* Gradient header */}
+      <div className="relative -mx-5 -mt-5 mb-1 overflow-hidden bg-gradient-to-br from-blue-700 to-blue-800 px-5 py-5">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+        <div className="relative">
+          <Link href="/monitoring/devices" className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60 hover:text-white/90">
+            <ArrowLeft className="h-3 w-3" />Monitoring · Devices
+          </Link>
+          <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/10">
+                <Icon className="h-5 w-5 text-white/80" />
               </div>
-              <p className="mt-0.5 font-mono text-sm text-muted-foreground">{d.ip}{d.fqdn ? ` · ${d.fqdn}` : ''}</p>
-              {d.tags.length > 0 && (
-                <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                  <Tag className="h-3 w-3 text-muted-foreground" />
-                  {d.tags.map((t) => (
-                    <span key={t} className="rounded-full border bg-muted/60 px-2 py-0.5 text-[10px] text-muted-foreground">{t}</span>
-                  ))}
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="font-display text-2xl font-bold tracking-tight text-white">{d.name}</h1>
+                  {d.status === 'down' ? (
+                    <span className="relative flex h-2.5 w-2.5 mt-1">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+                    </span>
+                  ) : (
+                    <span className={cn('mt-1 h-2.5 w-2.5 rounded-full', meta.dot)} />
+                  )}
+                  <Badge variant={meta.badge}>{meta.label}</Badge>
+                  <Badge variant="secondary" className="bg-white/15 text-white border-0">{TYPE_LABELS[d.type]}</Badge>
                 </div>
-              )}
+                <p className="mt-0.5 font-mono text-sm text-white/60">{d.ip}{d.fqdn ? ` · ${d.fqdn}` : ''}</p>
+                {d.tags.length > 0 && (
+                  <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                    <Tag className="h-3 w-3 text-white/50" />
+                    {d.tags.map((t) => (
+                      <span key={t} className="rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-[10px] text-white/70">{t}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/monitoring/alerts">View alerts</Link>
-            </Button>
-            <Button variant="outline" size="sm">Pause monitoring</Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white" asChild>
+                <Link href="/monitoring/alerts">View alerts</Link>
+              </Button>
+              <Button variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white">Pause monitoring</Button>
+            </div>
           </div>
         </div>
       </div>

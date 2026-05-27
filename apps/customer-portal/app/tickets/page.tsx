@@ -92,27 +92,30 @@ export default function PortalTicketsPage() {
   }, [tabId, search]);
 
   return (
-    <div className="bg-muted/20">
-      <div className="mx-auto max-w-5xl px-4 py-8 lg:px-8">
-        <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Your support tickets
-            </p>
-            <h1 className="font-display text-2xl font-bold tracking-tight">
-              My tickets
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Track every conversation with the support team.
-            </p>
+    <div className="bg-[#F1F5FA] min-h-screen">
+      {/* Gradient hero */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#0B1529] to-[#0F2044]">
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="absolute -left-32 top-0 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
+        <div className="absolute right-0 bottom-0 h-48 w-48 rounded-full bg-blue-400/8 blur-3xl" />
+        <div className="relative mx-auto max-w-5xl px-4 py-10 lg:px-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-300/70">Your support tickets</p>
+              <h1 className="font-display text-2xl font-bold tracking-tight text-white">My tickets</h1>
+              <p className="mt-0.5 text-sm text-white/60">Track every conversation with the support team.</p>
+            </div>
+            <Button asChild size="sm" className="bg-gradient-to-r from-blue-600 to-blue-500 shadow-blue-600/20 shadow-sm text-white border-0 hover:from-blue-500 hover:to-blue-400">
+              <Link href="/submit">
+                <Plus className="h-3 w-3" />
+                New request
+              </Link>
+            </Button>
           </div>
-          <Button asChild size="sm">
-            <Link href="/submit">
-              <Plus className="h-3 w-3" />
-              New request
-            </Link>
-          </Button>
-        </header>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-5xl px-4 py-8 lg:px-8">
 
         <Card>
           <div className="flex flex-wrap items-center gap-2 border-b p-2">

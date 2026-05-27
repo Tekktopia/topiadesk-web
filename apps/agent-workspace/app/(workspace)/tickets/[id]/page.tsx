@@ -250,7 +250,7 @@ export default function TicketDetailPage() {
 
 function StatusBar({ ticket }: { ticket: MockTicket }) {
   return (
-    <div className="flex shrink-0 flex-wrap items-center gap-2 border-b bg-muted/30 px-5 py-2">
+    <div className="flex shrink-0 flex-wrap items-center gap-2 border-b bg-background/90 backdrop-blur-sm shadow-sm px-5 py-2.5">
       <InlineSelect label="Status" current={<StatusPill status={ticket.status} />} options={['New', 'Open', 'In progress', 'Pending', 'Resolved', 'Closed']} />
       <Separator orientation="vertical" className="h-5" />
       <InlineSelect label="Priority" current={<PriorityIndicator priority={ticket.priority} />} options={['Low', 'Medium', 'High', 'Urgent']} />

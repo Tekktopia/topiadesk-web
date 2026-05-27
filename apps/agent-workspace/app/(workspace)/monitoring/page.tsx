@@ -282,33 +282,35 @@ export default function NOCDashboardPage() {
 
 function PageHeader() {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-3">
-      <div className="space-y-1">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          Monitoring
-        </p>
-        <h1 className="font-display text-2xl font-bold tracking-tight">NOC Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
-          Network Operations Centre — live infrastructure health across all sites
-        </p>
+    <div className="relative -mx-5 -mt-5 mb-1 overflow-hidden bg-gradient-to-br from-blue-700 to-blue-800 px-5 py-5">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
+      <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+      <div className="relative flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">Monitoring</p>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-white">NOC Dashboard</h1>
+          <p className="mt-0.5 text-sm text-white/70">
+            Network Operations Centre — live infrastructure health across all sites
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline" className="border-white/20 bg-white/10 text-white text-[10px]">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            Live · updates every 60s
+          </Badge>
+          <Button variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white">
+            <RefreshCw className="h-3 w-3" />
+            Refresh
+          </Button>
+          <Button size="sm" className="bg-white text-blue-700 hover:bg-white/90" asChild>
+            <Link href="/monitoring/incidents">
+              <Activity className="h-3 w-3" />
+              New incident
+            </Link>
+          </Button>
+        </div>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge variant="outline" className="text-[10px]">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          Live · updates every 60s
-        </Badge>
-        <Button variant="outline" size="sm">
-          <RefreshCw className="h-3 w-3" />
-          Refresh
-        </Button>
-        <Button size="sm" asChild>
-          <Link href="/monitoring/incidents">
-            <Activity className="h-3 w-3" />
-            New incident
-          </Link>
-        </Button>
-      </div>
-    </header>
+    </div>
   );
 }
 

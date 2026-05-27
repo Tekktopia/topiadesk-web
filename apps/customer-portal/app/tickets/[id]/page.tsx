@@ -57,30 +57,30 @@ export default function PortalTicketDetailPage() {
   }
 
   return (
-    <div className="bg-muted/20">
-      <div className="mx-auto max-w-5xl px-4 py-8 lg:px-8">
-        <Link
-          href="/tickets"
-          className="mb-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-3 w-3" />
-          Back to my tickets
-        </Link>
-
-        <header className="mb-5 space-y-2">
+    <div className="bg-[#F1F5FA] min-h-screen">
+      {/* Dark header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#0B1529] to-[#0F2044]">
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="absolute -left-32 top-0 h-48 w-48 rounded-full bg-blue-500/10 blur-3xl" />
+        <div className="relative mx-auto max-w-5xl px-4 py-8 lg:px-8">
+          <Link
+            href="/tickets"
+            className="mb-3 inline-flex items-center gap-1 text-xs font-medium text-white/50 hover:text-white"
+          >
+            <ArrowLeft className="h-3 w-3" />
+            Back to my tickets
+          </Link>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-xs text-muted-foreground">
-              {ticket.number}
-            </span>
+            <span className="font-mono text-xs text-white/40">{ticket.number}</span>
             <PortalStatusBadge status={ticket.status} />
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline" className="border-white/20 text-white/70 text-[10px]">
               {ticket.category}
             </Badge>
           </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
+          <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-white">
             {ticket.subject}
           </h1>
-          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/50">
             <span className="inline-flex items-center gap-1">
               <Clock className="h-3 w-3" />
               Opened {relativeTime(ticket.createdAt)}
@@ -99,8 +99,10 @@ export default function PortalTicketDetailPage() {
               </>
             )}
           </p>
-        </header>
+        </div>
+      </div>
 
+      <div className="mx-auto max-w-5xl px-4 py-8 lg:px-8">
         <StatusTimeline ticket={ticket} />
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">

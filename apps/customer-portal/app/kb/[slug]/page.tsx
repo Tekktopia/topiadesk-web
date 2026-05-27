@@ -48,51 +48,60 @@ export default function KbArticlePage() {
     .slice(0, 4);
 
   return (
-    <div className="bg-muted/20">
-      <div className="mx-auto max-w-4xl px-4 py-8 lg:px-8">
-        <nav
-          aria-label="Breadcrumb"
-          className="mb-4 flex items-center gap-1 text-[11px] text-muted-foreground"
-        >
-          <Link href="/kb" className="hover:text-foreground">
-            Help centre
-          </Link>
-          {category && (
-            <>
-              <ChevronRight className="h-3 w-3" />
-              <Link
-                href={`/kb?category=${category.slug}`}
-                className="hover:text-foreground"
-              >
-                {category.label}
-              </Link>
-            </>
-          )}
-          <ChevronRight className="h-3 w-3" />
-          <span className="line-clamp-1 text-foreground">{article.title}</span>
-        </nav>
-
-        <article className="space-y-6">
-          <header className="space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              {category && (
-                <Badge variant="outline" className="text-[10px]">
+    <div className="bg-[#F1F5FA] min-h-screen">
+      {/* Dark header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#0B1529] to-[#0F2044]">
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="absolute -left-32 top-0 h-48 w-48 rounded-full bg-blue-500/10 blur-3xl" />
+        <div className="relative mx-auto max-w-4xl px-4 py-8 lg:px-8">
+          <nav
+            aria-label="Breadcrumb"
+            className="mb-4 flex items-center gap-1 text-[11px] text-white/50"
+          >
+            <Link href="/kb" className="hover:text-white">
+              Help centre
+            </Link>
+            {category && (
+              <>
+                <ChevronRight className="h-3 w-3" />
+                <Link
+                  href={`/kb?category=${category.slug}`}
+                  className="hover:text-white"
+                >
                   {category.label}
-                </Badge>
-              )}
-              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                <Clock className="h-3 w-3" />
-                Updated {shortDate(article.updatedAt)}
-              </span>
-              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                <Eye className="h-3 w-3" />
-                {article.views.toLocaleString()} views
-              </span>
-            </div>
-            <h1 className="font-display text-3xl font-bold tracking-tight">
-              {article.title}
-            </h1>
-            <p className="text-sm text-muted-foreground">{article.summary}</p>
+                </Link>
+              </>
+            )}
+            <ChevronRight className="h-3 w-3" />
+            <span className="line-clamp-1 text-white/80">{article.title}</span>
+          </nav>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {category && (
+              <Badge variant="outline" className="border-white/20 text-white/70 text-[10px]">
+                {category.label}
+              </Badge>
+            )}
+            <span className="inline-flex items-center gap-1 text-[11px] text-white/50">
+              <Clock className="h-3 w-3" />
+              Updated {shortDate(article.updatedAt)}
+            </span>
+            <span className="inline-flex items-center gap-1 text-[11px] text-white/50">
+              <Eye className="h-3 w-3" />
+              {article.views.toLocaleString()} views
+            </span>
+          </div>
+          <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-white">
+            {article.title}
+          </h1>
+          <p className="mt-2 text-sm text-white/60">{article.summary}</p>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-4xl px-4 py-8 lg:px-8">
+        <article className="space-y-6">
+          <header className="sr-only">
+            <h1>{article.title}</h1>
           </header>
 
           <Card>

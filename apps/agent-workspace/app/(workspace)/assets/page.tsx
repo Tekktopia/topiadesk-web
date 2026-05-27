@@ -298,32 +298,33 @@ function PageHeader({
   outOfWarranty: number;
 }) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          Infrastructure
-        </p>
-        <h1 className="font-display text-2xl font-bold tracking-tight">Assets</h1>
-        <p className="text-sm text-muted-foreground">
-          {total} assets · {expiringSoon} warranty expiring soon ·{' '}
-          {outOfWarranty} out of warranty
-        </p>
+    <div className="relative -mx-5 -mt-5 mb-1 overflow-hidden bg-gradient-to-br from-blue-700 to-blue-800 px-5 py-5">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
+      <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+      <div className="relative flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">Infrastructure</p>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-white">Assets</h1>
+          <p className="mt-0.5 text-sm text-white/70">
+            {total} assets · {expiringSoon} warranty expiring soon · {outOfWarranty} out of warranty
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white">
+            <Upload className="h-3 w-3" />
+            Import CSV
+          </Button>
+          <Button variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white">
+            <QrCode className="h-3 w-3" />
+            Scan
+          </Button>
+          <Button size="sm" className="bg-white text-blue-700 hover:bg-white/90">
+            <Plus className="h-3 w-3" />
+            Add asset
+          </Button>
+        </div>
       </div>
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm">
-          <Upload className="h-3 w-3" />
-          Import CSV
-        </Button>
-        <Button variant="outline" size="sm">
-          <QrCode className="h-3 w-3" />
-          Scan
-        </Button>
-        <Button size="sm">
-          <Plus className="h-3 w-3" />
-          Add asset
-        </Button>
-      </div>
-    </header>
+    </div>
   );
 }
 

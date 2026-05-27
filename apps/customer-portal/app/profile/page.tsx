@@ -62,21 +62,23 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="bg-muted/20">
-      <div className="mx-auto max-w-4xl space-y-6 px-4 py-8 lg:px-8">
-        <header>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            Profile
-          </p>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
-            Your profile
-          </h1>
-          <p className="text-sm text-muted-foreground">
+    <div className="bg-[#F1F5FA] min-h-screen">
+      {/* Dark hero */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#0B1529] to-[#0F2044]">
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="absolute -left-32 top-0 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
+        <div className="absolute right-0 bottom-0 h-48 w-48 rounded-full bg-blue-400/8 blur-3xl" />
+        <div className="relative mx-auto max-w-4xl px-4 py-10 lg:px-8">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-300/70">Profile</p>
+          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-white">Your profile</h1>
+          <p className="mt-2 text-sm text-white/60">
             Manage how the support team sees you. Member since{' '}
             {shortDate(CURRENT_CUSTOMER.joinedAt)}.
           </p>
-        </header>
+        </div>
+      </section>
 
+      <div className="mx-auto max-w-4xl space-y-6 px-4 py-8 lg:px-8">
         <Card>
           <CardHeader className="border-b py-3">
             <CardTitle className="flex items-center gap-2 text-sm">

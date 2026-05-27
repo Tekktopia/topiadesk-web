@@ -44,19 +44,19 @@ export default function TenantSettingsPage() {
   }
 
   return (
-    <div className="space-y-5 p-5 lg:p-6">
-      <header>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          Workspace
-        </p>
-        <h1 className="font-display text-2xl font-bold tracking-tight">
-          Tenant settings
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          General configuration that applies across this Topiadesk tenant.
-        </p>
-      </header>
+    <div className="space-y-5">
+      {/* Gradient header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-orange-500 to-orange-600 px-6 py-5">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+        <div className="relative">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">Workspace</p>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-white">Tenant settings</h1>
+          <p className="mt-0.5 text-sm text-white/70">General configuration that applies across this Topiadesk tenant.</p>
+        </div>
+      </div>
 
+      <div className="px-5 pb-5 lg:px-6 lg:pb-6 space-y-5">
       <form
         onSubmit={handleSave}
         className="space-y-5"
@@ -247,6 +247,7 @@ export default function TenantSettingsPage() {
           />
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

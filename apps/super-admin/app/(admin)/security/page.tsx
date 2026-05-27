@@ -118,16 +118,21 @@ export default function SecurityPage() {
 
   return (
     <div className="space-y-5 p-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div className="space-y-1">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Super Admin</p>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Security</h1>
-          <p className="text-sm text-muted-foreground">Monitor threats, suspicious activity, and IP blocklist across all tenants.</p>
+      {/* Gradient header */}
+      <div className="relative -mx-6 -mt-6 mb-1 overflow-hidden bg-gradient-to-br from-emerald-600 to-emerald-700 px-6 py-5">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">Super Admin</p>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-white">Security</h1>
+            <p className="mt-0.5 text-sm text-white/70">Monitor threats, suspicious activity, and IP blocklist across all tenants.</p>
+          </div>
+          <Button variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white" onClick={() => setShowBlocklist(!showBlocklist)}>
+            <Ban className="h-3.5 w-3.5" />IP Blocklist ({BLOCKED_IPS.length})
+          </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setShowBlocklist(!showBlocklist)}>
-          <Ban className="h-3.5 w-3.5" />IP Blocklist ({BLOCKED_IPS.length})
-        </Button>
-      </header>
+      </div>
 
       {/* Alert: open critical / high events */}
       {counts.critical > 0 && (

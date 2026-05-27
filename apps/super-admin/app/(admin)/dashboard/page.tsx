@@ -154,14 +154,29 @@ export default function DashboardPage() {
   }, [tenants.data]);
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <header>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Super Admin</p>
-        <h1 className="font-display text-2xl font-bold tracking-tight">Platform Overview</h1>
-        <p className="text-sm text-muted-foreground">Real-time snapshot of all tenants, revenue, and infrastructure.</p>
-      </header>
+    <div className="space-y-6">
+      {/* Gradient header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-emerald-700 px-6 py-5">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">Super Admin</p>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-white">Platform Overview</h1>
+            <p className="mt-0.5 text-sm text-white/70">Real-time snapshot of all tenants, revenue, and infrastructure.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white" asChild>
+              <Link href="/tenants">View tenants</Link>
+            </Button>
+            <Button size="sm" className="bg-white text-emerald-700 hover:bg-white/90" asChild>
+              <Link href="/billing">Revenue report</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
 
+      <div className="space-y-6 px-6 pb-6">
       {/* System alert banner */}
       {degraded.length > 0 && (
         <div className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900 dark:bg-amber-950/30">
@@ -360,6 +375,7 @@ export default function DashboardPage() {
             }
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   );

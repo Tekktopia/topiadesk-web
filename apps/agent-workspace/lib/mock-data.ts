@@ -1696,3 +1696,602 @@ export const warrantyAlerts: WarrantyAlert[] = [
     assignedTo: 'Joshua Adekunle',
   },
 ];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reports & Analytics
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface VolumePoint {
+  label: string; // "May 1"
+  created: number;
+  resolved: number;
+}
+
+export interface AgentStat {
+  id: string;
+  name: string;
+  avatar: string; // initials
+  resolved: number;
+  avgFirstResponseMin: number;
+  avgResolutionHours: number;
+  csatScore: number;
+  slaBreached: number;
+}
+
+export interface CategoryStat {
+  category: string;
+  count: number;
+  pct: number;
+}
+
+export interface ChannelStat {
+  channel: string;
+  count: number;
+  pct: number;
+}
+
+export interface ReportSummary {
+  totalCreated: number;
+  totalResolved: number;
+  resolutionRate: number; // 0–100
+  avgFirstResponseMin: number;
+  avgResolutionHours: number;
+  csatScore: number;
+  slaComplianceRate: number; // 0–100
+  periodLabel: string;
+}
+
+const days = ['May 1','May 2','May 3','May 4','May 5','May 6','May 7','May 8',
+  'May 9','May 10','May 11','May 12','May 13','May 14','May 15','May 16',
+  'May 17','May 18','May 19','May 20','May 21','May 22','May 23','May 24',
+  'May 25','May 26','May 27'];
+
+export const ticketVolumeData: VolumePoint[] = days.map((label, i) => ({
+  label,
+  created:  [12,9,15,11,8,4,3,14,18,16,13,10,7,5,2,20,17,15,12,9,6,3,19,22,18,14,16][i]!,
+  resolved: [10,8,12,9,7,3,2,11,16,14,11,9,6,4,2,17,15,13,10,8,5,2,17,20,16,12,14][i]!,
+}));
+
+export const agentStats: AgentStat[] = [
+  { id: 'a1', name: 'Tunde Bakare',    avatar: 'TB', resolved: 82, avgFirstResponseMin: 8,  avgResolutionHours: 3.2, csatScore: 4.8, slaBreached: 1 },
+  { id: 'a2', name: 'Adaeze Nwosu',   avatar: 'AN', resolved: 74, avgFirstResponseMin: 11, avgResolutionHours: 4.1, csatScore: 4.6, slaBreached: 2 },
+  { id: 'a3', name: 'Kwame Mensah',   avatar: 'KM', resolved: 68, avgFirstResponseMin: 14, avgResolutionHours: 5.0, csatScore: 4.4, slaBreached: 3 },
+  { id: 'a4', name: 'Fatima Suleiman',avatar: 'FS', resolved: 55, avgFirstResponseMin: 18, avgResolutionHours: 6.2, csatScore: 4.2, slaBreached: 4 },
+  { id: 'a5', name: 'Chinedu Okafor', avatar: 'CO', resolved: 49, avgFirstResponseMin: 22, avgResolutionHours: 7.5, csatScore: 4.0, slaBreached: 5 },
+];
+
+export const categorySummary: CategoryStat[] = [
+  { category: 'Network / VPN',   count: 58, pct: 22 },
+  { category: 'Hardware',        count: 42, pct: 16 },
+  { category: 'Software',        count: 39, pct: 15 },
+  { category: 'Access Request',  count: 34, pct: 13 },
+  { category: 'Security',        count: 28, pct: 11 },
+  { category: 'Email',           count: 22, pct: 8  },
+  { category: 'Other',           count: 39, pct: 15 },
+];
+
+export const channelSummary: ChannelStat[] = [
+  { channel: 'Email',    count: 98,  pct: 37 },
+  { channel: 'Portal',   count: 78,  pct: 30 },
+  { channel: 'WhatsApp', count: 42,  pct: 16 },
+  { channel: 'Voice',    count: 26,  pct: 10 },
+  { channel: 'Widget',   count: 13,  pct: 5  },
+  { channel: 'Other',    count: 5,   pct: 2  },
+];
+
+export const reportSummary: ReportSummary = {
+  totalCreated: 262,
+  totalResolved: 231,
+  resolutionRate: 88,
+  avgFirstResponseMin: 12,
+  avgResolutionHours: 4.8,
+  csatScore: 4.6,
+  slaComplianceRate: 94,
+  periodLabel: 'May 1 – 27, 2026',
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CSAT & Quality
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type CSATRating = 1 | 2 | 3 | 4 | 5;
+
+export interface CSATSurvey {
+  id: string;
+  ticketNumber: string;
+  subject: string;
+  rating: CSATRating;
+  comment?: string;
+  customer: string;
+  agent: string;
+  submittedAt: string;
+  category: string;
+}
+
+export interface CSATMetrics {
+  avgScore: number;
+  totalResponses: number;
+  responsePct: number; // % of resolved tickets that got a response
+  dist: { rating: CSATRating; count: number; pct: number }[];
+  trend: { label: string; score: number }[];
+}
+
+export const csatSurveys: CSATSurvey[] = [
+  { id: 'cs-001', ticketNumber: '#1024', subject: 'VPN issue on new MacBook', rating: 5, comment: 'Tunde was super fast and solved the issue in one call. Very professional!', customer: 'Sarah Okonkwo', agent: 'Tunde Bakare', submittedAt: ago(5), category: 'Network / VPN' },
+  { id: 'cs-002', ticketNumber: '#1017', subject: 'AV system in room 4B', rating: 4, comment: 'Fixed quickly, though I had to follow up once.', customer: 'Lerato Mokoena', agent: 'Adaeze Nwosu', submittedAt: ago(55), category: 'AV / Meeting Rooms' },
+  { id: 'cs-003', ticketNumber: '#1009', subject: 'Zoom Phone audio cuts', rating: 5, comment: 'Excellent support. Issue is gone.', customer: 'Grace Maathai', agent: 'Adaeze Nwosu', submittedAt: ago(90), category: 'Telephony' },
+  { id: 'cs-004', ticketNumber: '#1011', subject: 'Phishing email response', rating: 5, comment: 'Handled the incident very professionally. Fast response saved us.', customer: 'Daniel Mwangi', agent: 'Fatima Suleiman', submittedAt: ago(140), category: 'Security' },
+  { id: 'cs-005', ticketNumber: '#1022', subject: 'Q3 reporting workspace access', rating: 3, comment: 'Took 3 days for a simple access request. Process needs improvement.', customer: 'Joshua Adekunle', agent: 'Kwame Mensah', submittedAt: ago(200), category: 'Access Request' },
+  { id: 'cs-006', ticketNumber: '#1010', subject: 'Shared mailbox for AP team', rating: 4, comment: '', customer: 'Emmanuel Diallo', agent: 'Chinedu Okafor', submittedAt: ago(410), category: 'Email' },
+  { id: 'cs-007', ticketNumber: '#1018', subject: 'Slack notifications muted', rating: 5, comment: 'Super fast. One message and it was done!', customer: 'Emmanuel Diallo', agent: 'Chinedu Okafor', submittedAt: ago(370), category: 'Software' },
+  { id: 'cs-008', ticketNumber: '#1015', subject: 'New starter onboarding', rating: 2, comment: 'The laptop was not ready on day 1. New joiner had to wait until 3pm. Needs improvement.', customer: 'Joshua Adekunle', agent: 'Tunde Bakare', submittedAt: ago(70), category: 'Onboarding' },
+  { id: 'cs-009', ticketNumber: '#1007', subject: 'Mobile app splash screen', rating: 4, comment: 'Resolved quickly once assigned.', customer: 'Marcus Botha', agent: 'Kwame Mensah', submittedAt: ago(25), category: 'Mobile' },
+  { id: 'cs-010', ticketNumber: '#1008', subject: 'Two-factor reset', rating: 5, comment: 'Handled securely and quickly. No complaints.', customer: 'Lerato Mokoena', agent: 'Kwame Mensah', submittedAt: ago(38), category: 'Identity' },
+];
+
+export const csatMetrics: CSATMetrics = {
+  avgScore: 4.6,
+  totalResponses: 213,
+  responsePct: 68,
+  dist: [
+    { rating: 5, count: 128, pct: 60 },
+    { rating: 4, count: 51,  pct: 24 },
+    { rating: 3, count: 21,  pct: 10 },
+    { rating: 2, count: 9,   pct: 4  },
+    { rating: 1, count: 4,   pct: 2  },
+  ],
+  trend: [
+    { label: 'Jan', score: 4.2 },
+    { label: 'Feb', score: 4.3 },
+    { label: 'Mar', score: 4.5 },
+    { label: 'Apr', score: 4.4 },
+    { label: 'May', score: 4.6 },
+  ],
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Contacts / CRM-lite
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ContactStatus = 'active' | 'inactive' | 'vip';
+
+export interface MockContact {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  company: string;
+  department?: string;
+  title?: string;
+  status: ContactStatus;
+  totalTickets: number;
+  openTickets: number;
+  lastTicketAt?: string;
+  createdAt: string;
+  location: string;
+  tags: string[];
+}
+
+export const mockContacts: MockContact[] = [
+  { id: 'con-001', name: 'Sarah Okonkwo',    email: 'sarah.o@acmebank.ng',           phone: '+234 801 234 5678', company: 'AcmeBank',        department: 'Technology',    title: 'IT Manager',          status: 'vip',      totalTickets: 14, openTickets: 1, lastTicketAt: ago(8),   createdAt: ago(365 * 24 * 60), location: 'Lagos, NG',   tags: ['vip', 'banking'] },
+  { id: 'con-002', name: 'Daniel Mwangi',    email: 'd.mwangi@safarihold.co.ke',     phone: '+254 712 345 678',  company: 'SafariHold',      department: 'Operations',    title: 'Operations Lead',     status: 'active',   totalTickets: 9,  openTickets: 0, lastTicketAt: ago(140), createdAt: ago(280 * 24 * 60), location: 'Nairobi, KE', tags: ['operations'] },
+  { id: 'con-003', name: 'Aisha Ibrahim',    email: 'aisha.i@northfield.ng',         phone: '+234 802 345 6789', company: 'Northfield Ltd',  department: 'Finance',       title: 'Finance Director',    status: 'active',   totalTickets: 7,  openTickets: 1, lastTicketAt: ago(180), createdAt: ago(200 * 24 * 60), location: 'Abuja, NG',   tags: ['finance'] },
+  { id: 'con-004', name: 'Marcus Botha',     email: 'marcus@kasi-pay.co.za',         phone: '+27 82 345 6789',   company: 'KasiPay',         department: 'Engineering',   title: 'CTO',                 status: 'vip',      totalTickets: 11, openTickets: 1, lastTicketAt: ago(12),  createdAt: ago(320 * 24 * 60), location: 'Cape Town, ZA', tags: ['vip', 'fintech'] },
+  { id: 'con-005', name: 'Lerato Mokoena',   email: 'lerato@kasi-pay.co.za',         phone: '+27 83 456 7890',   company: 'KasiPay',         department: 'Customer Success', title: 'CS Lead',            status: 'active',   totalTickets: 6,  openTickets: 0, lastTicketAt: ago(55),  createdAt: ago(260 * 24 * 60), location: 'Johannesburg, ZA', tags: ['fintech'] },
+  { id: 'con-006', name: 'Joshua Adekunle',  email: 'josh@flairtech.ng',             phone: '+234 803 456 7890', company: 'FlairTech',       department: 'HR',            title: 'HR Manager',          status: 'active',   totalTickets: 8,  openTickets: 2, lastTicketAt: ago(15),  createdAt: ago(180 * 24 * 60), location: 'Lagos, NG',   tags: ['hr'] },
+  { id: 'con-007', name: 'Grace Maathai',    email: 'grace@safarihold.co.ke',        phone: '+254 723 456 789',  company: 'SafariHold',      department: 'IT',            title: 'IT Support',          status: 'active',   totalTickets: 5,  openTickets: 1, lastTicketAt: ago(90),  createdAt: ago(150 * 24 * 60), location: 'Nairobi, KE', tags: [] },
+  { id: 'con-008', name: 'Emmanuel Diallo',  email: 'emm@dakarlink.sn',              phone: '+221 77 123 4567',  company: 'DakarLink',       department: 'Administration',title: 'Admin Manager',       status: 'active',   totalTickets: 4,  openTickets: 0, lastTicketAt: ago(410), createdAt: ago(100 * 24 * 60), location: 'Dakar, SN',   tags: [] },
+  { id: 'con-009', name: 'Nkechi Obi',       email: 'nkechi.obi@safenest.ng',        phone: '+234 804 567 8901', company: 'SafeNest',        department: 'Operations',    title: 'Operations Manager',  status: 'inactive', totalTickets: 2,  openTickets: 0, lastTicketAt: ago(3600),createdAt: ago(400 * 24 * 60), location: 'Port Harcourt, NG', tags: [] },
+  { id: 'con-010', name: 'Amara Sesay',      email: 'amara@westlink.sl',             phone: '+232 79 123 456',   company: 'WestLink',        department: 'Technology',    title: 'Tech Lead',           status: 'active',   totalTickets: 3,  openTickets: 1, lastTicketAt: ago(48 * 60), createdAt: ago(90 * 24 * 60), location: 'Freetown, SL', tags: ['new'] },
+  { id: 'con-011', name: 'Kofi Asante',      email: 'kofi@goldcoasttrade.gh',        phone: '+233 24 123 4567',  company: 'Gold Coast Trade',department: 'Finance',       title: 'CFO',                 status: 'active',   totalTickets: 6,  openTickets: 0, lastTicketAt: ago(72 * 60), createdAt: ago(220 * 24 * 60), location: 'Accra, GH',  tags: ['finance'] },
+  { id: 'con-012', name: 'Zainab Kamara',    email: 'zainab@afritrust.com',          phone: '+231 88 123 456',   company: 'AfriTrust Bank',  department: 'Compliance',    title: 'Compliance Officer',  status: 'vip',      totalTickets: 5,  openTickets: 0, lastTicketAt: ago(20 * 60), createdAt: ago(300 * 24 * 60), location: 'Monrovia, LR', tags: ['vip', 'banking'] },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Knowledge Base (agent authoring)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type KBStatus = 'published' | 'draft' | 'archived';
+
+export interface KBArticle {
+  id: string;
+  title: string;
+  category: string;
+  status: KBStatus;
+  views: number;
+  helpfulVotes: number;
+  totalVotes: number;
+  author: string;
+  updatedAt: string;
+  createdAt: string;
+  excerpt: string;
+}
+
+export const kbArticles: KBArticle[] = [
+  { id: 'kb-001', title: 'How to connect to the corporate VPN (Cisco AnyConnect)', category: 'Network & VPN', status: 'published', views: 1840, helpfulVotes: 142, totalVotes: 158, author: 'Tunde Bakare', updatedAt: ago(3 * 24 * 60), createdAt: ago(90 * 24 * 60), excerpt: 'Step-by-step guide for connecting to the corporate VPN on Windows and macOS using Cisco AnyConnect.' },
+  { id: 'kb-002', title: 'Resetting your Microsoft 365 password', category: 'Identity & Access', status: 'published', views: 1320, helpfulVotes: 98, totalVotes: 112, author: 'Adaeze Nwosu', updatedAt: ago(7 * 24 * 60), createdAt: ago(120 * 24 * 60), excerpt: 'How to self-service reset your Microsoft 365 password via the SSPR portal.' },
+  { id: 'kb-003', title: 'Setting up email on iPhone and Android', category: 'Email', status: 'published', views: 985, helpfulVotes: 87, totalVotes: 95, author: 'Chinedu Okafor', updatedAt: ago(14 * 24 * 60), createdAt: ago(150 * 24 * 60), excerpt: 'Configure corporate email on your mobile device using Exchange ActiveSync or Outlook app.' },
+  { id: 'kb-004', title: 'Requesting new software or a licence seat', category: 'Software & Licences', status: 'published', views: 742, helpfulVotes: 64, totalVotes: 71, author: 'Fatima Suleiman', updatedAt: ago(21 * 24 * 60), createdAt: ago(200 * 24 * 60), excerpt: 'Submit a software request through the portal. Approval typically takes 1–2 business days.' },
+  { id: 'kb-005', title: 'Printer troubleshooting: paper jam and driver issues', category: 'Hardware', status: 'published', views: 620, helpfulVotes: 51, totalVotes: 62, author: 'Adaeze Nwosu', updatedAt: ago(5 * 24 * 60), createdAt: ago(180 * 24 * 60), excerpt: 'Common printer issues and how to resolve them without raising a ticket.' },
+  { id: 'kb-006', title: 'How to onboard a new staff member (IT checklist)', category: 'Onboarding', status: 'published', views: 580, helpfulVotes: 52, totalVotes: 58, author: 'Tunde Bakare', updatedAt: ago(2 * 24 * 60), createdAt: ago(60 * 24 * 60), excerpt: 'Full IT onboarding checklist: account creation, device provisioning, and access setup.' },
+  { id: 'kb-007', title: 'Using the Zoom Phone system', category: 'Telephony', status: 'published', views: 440, helpfulVotes: 38, totalVotes: 44, author: 'Chinedu Okafor', updatedAt: ago(10 * 24 * 60), createdAt: ago(100 * 24 * 60), excerpt: 'Make and receive calls, set your status, and configure voicemail with Zoom Phone.' },
+  { id: 'kb-008', title: 'Reporting a phishing or suspicious email', category: 'Security', status: 'published', views: 912, helpfulVotes: 80, totalVotes: 88, author: 'Kwame Mensah', updatedAt: ago(1 * 24 * 60), createdAt: ago(45 * 24 * 60), excerpt: 'How to report a phishing email and what to do if you accidentally clicked a link.' },
+  { id: 'kb-009', title: 'Conference room AV: connecting your laptop', category: 'AV & Meeting Rooms', status: 'draft', views: 0, helpfulVotes: 0, totalVotes: 0, author: 'Adaeze Nwosu', updatedAt: ago(60), createdAt: ago(60), excerpt: 'Draft guide for using HDMI, USB-C, and wireless display in meeting rooms.' },
+  { id: 'kb-010', title: 'Multi-factor authentication setup guide', category: 'Identity & Access', status: 'published', views: 1120, helpfulVotes: 103, totalVotes: 115, author: 'Kwame Mensah', updatedAt: ago(30 * 24 * 60), createdAt: ago(250 * 24 * 60), excerpt: 'Enable and configure MFA on your corporate account using the Authenticator app.' },
+  { id: 'kb-011', title: 'IT hardware request and procurement process', category: 'Hardware', status: 'published', views: 334, helpfulVotes: 29, totalVotes: 36, author: 'Tunde Bakare', updatedAt: ago(28 * 24 * 60), createdAt: ago(170 * 24 * 60), excerpt: 'How to submit a hardware request and what to expect during the procurement process.' },
+  { id: 'kb-012', title: 'WhatsApp Business: known channel issues', category: 'Channels', status: 'draft', views: 0, helpfulVotes: 0, totalVotes: 0, author: 'Kwame Mensah', updatedAt: ago(30), createdAt: ago(30), excerpt: 'Documenting current known issues with the WhatsApp Business channel integration.' },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Asset detail — history events
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type AssetEventType =
+  | 'assigned'
+  | 'unassigned'
+  | 'repaired'
+  | 'audited'
+  | 'added'
+  | 'warranty_noted'
+  | 'ticket_linked';
+
+export interface AssetHistoryEvent {
+  id: string;
+  type: AssetEventType;
+  description: string;
+  actor: string;
+  at: string;
+}
+
+export const mockAssetHistory: AssetHistoryEvent[] = [
+  { id: 'ah-001', type: 'added',          description: 'Asset registered in inventory',                        actor: 'Tunde Bakare',  at: ago(365 * 24 * 60) },
+  { id: 'ah-002', type: 'assigned',        description: 'Assigned to Sarah Okonkwo (Lagos HQ — Floor 4)',      actor: 'Tunde Bakare',  at: ago(14 * 24 * 60)  },
+  { id: 'ah-003', type: 'ticket_linked',   description: 'Linked to ticket #1024 (VPN issue)',                   actor: 'System',        at: ago(42)            },
+  { id: 'ah-004', type: 'audited',         description: 'Asset physically verified — condition: Excellent',     actor: 'Adaeze Nwosu',  at: ago(7 * 24 * 60)   },
+  { id: 'ah-005', type: 'warranty_noted',  description: 'Warranty end date confirmed: 12 May 2029',            actor: 'System',        at: ago(365 * 24 * 60) },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Audits
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type AuditStatus = 'completed' | 'in_progress' | 'scheduled' | 'overdue';
+
+export interface AssetAudit {
+  id: string;
+  name: string;
+  location: string;
+  status: AuditStatus;
+  totalAssets: number;
+  verified: number;
+  missing: number;
+  assignedTo: string;
+  scheduledDate: string;
+  completedDate?: string;
+  notes?: string;
+}
+
+export const mockAudits: AssetAudit[] = [
+  { id: 'aud-001', name: 'Lagos HQ — Q2 Full Audit',         location: 'Lagos HQ',          status: 'in_progress', totalAssets: 142, verified: 118, missing: 2, assignedTo: 'Tunde Bakare',   scheduledDate: inDays(-5),  notes: 'Floor 4 and server room pending.' },
+  { id: 'aud-002', name: 'Ikeja Branch — May Spot Check',    location: 'Ikeja Branch',      status: 'overdue',     totalAssets: 38,  verified: 21,  missing: 3, assignedTo: 'Kwame Mensah',   scheduledDate: inDays(-10), notes: 'Delayed due to network outage. Reschedule required.' },
+  { id: 'aud-003', name: 'Nairobi Office — Annual Audit',    location: 'Nairobi Office',    status: 'scheduled',   totalAssets: 27,  verified: 0,   missing: 0, assignedTo: 'Adaeze Nwosu',   scheduledDate: inDays(14)  },
+  { id: 'aud-004', name: 'Lagos HQ — Q1 Full Audit',         location: 'Lagos HQ',          status: 'completed',   totalAssets: 138, verified: 136, missing: 2, assignedTo: 'Tunde Bakare',   scheduledDate: inDays(-90), completedDate: inDays(-88), notes: '2 laptops unaccounted — reported as lost.' },
+  { id: 'aud-005', name: 'Cape Town — New Office Baseline',  location: 'Cape Town',         status: 'scheduled',   totalAssets: 18,  verified: 0,   missing: 0, assignedTo: 'Fatima Suleiman',scheduledDate: inDays(21)  },
+  { id: 'aud-006', name: 'Dakar Office — Spot Check',        location: 'Dakar Office',      status: 'completed',   totalAssets: 22,  verified: 22,  missing: 0, assignedTo: 'Chinedu Okafor', scheduledDate: inDays(-30), completedDate: inDays(-28) },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Inventory (consumables / stock)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type InventoryStatus = 'in_stock' | 'low_stock' | 'out_of_stock' | 'on_order';
+
+export interface InventoryItem {
+  id: string;
+  sku: string;
+  name: string;
+  category: string;
+  location: string;
+  quantity: number;
+  reorderThreshold: number;
+  reorderQty: number;
+  unitCost: number; // USD
+  status: InventoryStatus;
+  supplier: string;
+  lastRestockedAt?: string;
+  onOrderQty?: number;
+}
+
+export const mockInventory: InventoryItem[] = [
+  { id: 'inv-001', sku: 'LT-MBP14-M3P',   name: 'MacBook Pro 14" M3 Pro',          category: 'Laptops',         location: 'Lagos HQ - IT Store',    quantity: 3,  reorderThreshold: 2,  reorderQty: 5,  unitCost: 2499, status: 'in_stock',    supplier: 'Apple EMEA',       lastRestockedAt: inDays(-12) },
+  { id: 'inv-002', sku: 'LT-DELLXPS15',   name: 'Dell XPS 15 9530',                category: 'Laptops',         location: 'Lagos HQ - IT Store',    quantity: 1,  reorderThreshold: 2,  reorderQty: 4,  unitCost: 1899, status: 'low_stock',   supplier: 'Dell Nigeria',     lastRestockedAt: inDays(-45) },
+  { id: 'inv-003', sku: 'MON-DELLU27',    name: 'Dell UltraSharp U2723QE 27"',     category: 'Monitors',        location: 'Lagos HQ - IT Store',    quantity: 4,  reorderThreshold: 3,  reorderQty: 6,  unitCost: 649,  status: 'in_stock',    supplier: 'Dell Nigeria',     lastRestockedAt: inDays(-8)  },
+  { id: 'inv-004', sku: 'PHN-IP15PRO',    name: 'iPhone 15 Pro 256GB',             category: 'Mobile Devices',  location: 'Lagos HQ - IT Store',    quantity: 0,  reorderThreshold: 2,  reorderQty: 4,  unitCost: 1199, status: 'out_of_stock',supplier: 'Apple EMEA',       lastRestockedAt: inDays(-90), onOrderQty: 4 },
+  { id: 'inv-005', sku: 'CBL-USBC-1M',   name: 'USB-C Cable 1m (braided)',         category: 'Accessories',     location: 'Lagos HQ - IT Store',    quantity: 22, reorderThreshold: 10, reorderQty: 25, unitCost: 18,   status: 'in_stock',    supplier: 'Anker Distributors',lastRestockedAt: inDays(-20) },
+  { id: 'inv-006', sku: 'CBL-HDMI-2M',   name: 'HDMI 2.1 Cable 2m',              category: 'Accessories',     location: 'Lagos HQ - IT Store',    quantity: 8,  reorderThreshold: 5,  reorderQty: 15, unitCost: 22,   status: 'in_stock',    supplier: 'Anker Distributors',lastRestockedAt: inDays(-20) },
+  { id: 'inv-007', sku: 'NET-UBAP-U6PRO', name: 'Ubiquiti UniFi U6-Pro AP',        category: 'Network Equip.',  location: 'Lagos HQ - IT Store',    quantity: 2,  reorderThreshold: 1,  reorderQty: 3,  unitCost: 199,  status: 'in_stock',    supplier: 'Ubiquiti West Africa',lastRestockedAt: inDays(-60) },
+  { id: 'inv-008', sku: 'INK-HP404A',    name: 'HP 404A Toner Cartridge (Blk)',   category: 'Consumables',     location: 'Lagos HQ - IT Store',    quantity: 1,  reorderThreshold: 3,  reorderQty: 6,  unitCost: 85,   status: 'low_stock',   supplier: 'HP Nigeria',       lastRestockedAt: inDays(-30) },
+  { id: 'inv-009', sku: 'KBD-APPLE-MK',  name: 'Apple Magic Keyboard (TouchID)',  category: 'Accessories',     location: 'Lagos HQ - IT Store',    quantity: 5,  reorderThreshold: 3,  reorderQty: 8,  unitCost: 129,  status: 'in_stock',    supplier: 'Apple EMEA',       lastRestockedAt: inDays(-15) },
+  { id: 'inv-010', sku: 'DT-OPTIPLEX7010',name: 'Dell OptiPlex 7010 SFF',          category: 'Desktops',        location: 'Ikeja Branch - Store',   quantity: 0,  reorderThreshold: 1,  reorderQty: 2,  unitCost: 899,  status: 'on_order',    supplier: 'Dell Nigeria',     onOrderQty: 2 },
+  { id: 'inv-011', sku: 'UPS-APC-750',   name: 'APC Back-UPS 750VA',              category: 'Power',           location: 'Lagos HQ - IT Store',    quantity: 2,  reorderThreshold: 1,  reorderQty: 4,  unitCost: 195,  status: 'in_stock',    supplier: 'APC / Schneider',  lastRestockedAt: inDays(-90) },
+  { id: 'inv-012', sku: 'NET-CISCO-9200', name: 'Cisco Catalyst 9200-24P Switch',  category: 'Network Equip.',  location: 'Lagos HQ - IT Store',    quantity: 0,  reorderThreshold: 1,  reorderQty: 1,  unitCost: 3200, status: 'on_order',    supplier: 'Cisco West Africa',onOrderQty: 1 },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Automations
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type AutomationTrigger =
+  | 'ticket_created'
+  | 'ticket_updated'
+  | 'sla_warning'
+  | 'sla_breached'
+  | 'ticket_idle'
+  | 'customer_replied'
+  | 'agent_assigned';
+
+export type AutomationAction =
+  | 'assign_agent'
+  | 'assign_group'
+  | 'set_priority'
+  | 'set_status'
+  | 'add_tag'
+  | 'send_email'
+  | 'add_note'
+  | 'escalate';
+
+export interface MockAutomation {
+  id: string;
+  name: string;
+  description: string;
+  trigger: AutomationTrigger;
+  triggerLabel: string;
+  actions: { action: AutomationAction; label: string }[];
+  conditions: string[];
+  enabled: boolean;
+  runCount: number;
+  lastRunAt?: string;
+  createdBy: string;
+}
+
+export const mockAutomations: MockAutomation[] = [
+  {
+    id: 'auto-001',
+    name: 'Auto-assign VPN tickets',
+    description: 'When a ticket is created with category "Network / VPN", assign it to Tunde Bakare and tag it as vpn.',
+    trigger: 'ticket_created',
+    triggerLabel: 'Ticket created',
+    actions: [
+      { action: 'assign_agent', label: 'Assign to: Tunde Bakare' },
+      { action: 'add_tag', label: 'Add tag: vpn' },
+    ],
+    conditions: ['Category = "Network / VPN"'],
+    enabled: true,
+    runCount: 34,
+    lastRunAt: ago(42),
+    createdBy: 'Tunde Bakare',
+  },
+  {
+    id: 'auto-002',
+    name: 'Urgent ticket escalation',
+    description: 'When an urgent ticket has had no response within 15 minutes, escalate to Tier 2 Support group.',
+    trigger: 'ticket_idle',
+    triggerLabel: 'Ticket idle (15 min)',
+    actions: [
+      { action: 'assign_group', label: 'Assign to group: Tier 2 Support' },
+      { action: 'escalate', label: 'Escalate ticket' },
+      { action: 'add_note', label: 'Add note: Auto-escalated due to no response' },
+    ],
+    conditions: ['Priority = Urgent', 'Status = New OR Open', 'No agent response in 15 min'],
+    enabled: true,
+    runCount: 8,
+    lastRunAt: ago(95),
+    createdBy: 'Tunde Bakare',
+  },
+  {
+    id: 'auto-003',
+    name: 'SLA warning notification',
+    description: 'When a ticket is 30 minutes from SLA breach, send an email to the assigned agent.',
+    trigger: 'sla_warning',
+    triggerLabel: 'SLA warning (30 min before breach)',
+    actions: [
+      { action: 'send_email', label: 'Email: assigned agent' },
+      { action: 'add_tag', label: 'Add tag: sla-at-risk' },
+    ],
+    conditions: ['SLA due in ≤ 30 min', 'Status ≠ Resolved'],
+    enabled: true,
+    runCount: 52,
+    lastRunAt: ago(20),
+    createdBy: 'Adaeze Nwosu',
+  },
+  {
+    id: 'auto-004',
+    name: 'Auto-close resolved tickets (72h)',
+    description: 'Automatically close tickets that have been in Resolved status for more than 72 hours.',
+    trigger: 'ticket_idle',
+    triggerLabel: 'Ticket idle (72h)',
+    actions: [
+      { action: 'set_status', label: 'Set status: Closed' },
+      { action: 'send_email', label: 'Email: customer (closure notice)' },
+    ],
+    conditions: ['Status = Resolved', 'Idle > 72 hours'],
+    enabled: true,
+    runCount: 189,
+    lastRunAt: ago(6 * 60),
+    createdBy: 'Tunde Bakare',
+  },
+  {
+    id: 'auto-005',
+    name: 'Security ticket priority bump',
+    description: 'Tickets categorised as Security are automatically set to High priority and assigned to Security Ops.',
+    trigger: 'ticket_created',
+    triggerLabel: 'Ticket created',
+    actions: [
+      { action: 'set_priority', label: 'Set priority: High' },
+      { action: 'assign_group', label: 'Assign to group: Security Ops' },
+    ],
+    conditions: ['Category contains "Security"'],
+    enabled: true,
+    runCount: 28,
+    lastRunAt: ago(150),
+    createdBy: 'Kwame Mensah',
+  },
+  {
+    id: 'auto-006',
+    name: 'Customer reply re-open',
+    description: 'When a customer replies on a Resolved or Closed ticket, set it back to Open.',
+    trigger: 'customer_replied',
+    triggerLabel: 'Customer replied',
+    actions: [
+      { action: 'set_status', label: 'Set status: Open' },
+      { action: 'assign_agent', label: 'Re-assign to: original agent' },
+    ],
+    conditions: ['Status = Resolved OR Closed', 'Reply from: Customer'],
+    enabled: true,
+    runCount: 14,
+    lastRunAt: ago(300),
+    createdBy: 'Adaeze Nwosu',
+  },
+  {
+    id: 'auto-007',
+    name: 'Onboarding ticket checklist note',
+    description: 'When an onboarding ticket is created, add a standard checklist as an internal note.',
+    trigger: 'ticket_created',
+    triggerLabel: 'Ticket created',
+    actions: [
+      { action: 'add_note', label: 'Add internal note: onboarding checklist' },
+      { action: 'assign_group', label: 'Assign to group: IT Operations' },
+    ],
+    conditions: ['Category = "Onboarding"'],
+    enabled: false,
+    runCount: 7,
+    lastRunAt: ago(7 * 24 * 60),
+    createdBy: 'Fatima Suleiman',
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SLA Policies
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface SLATarget {
+  priority: TicketPriority;
+  firstResponseMin: number;
+  resolutionHours: number;
+}
+
+export interface SLAPolicy {
+  id: string;
+  name: string;
+  description: string;
+  targets: SLATarget[];
+  conditions: string[];
+  businessHoursOnly: boolean;
+  escalationEnabled: boolean;
+  activeTickets: number;
+  breachedThisMonth: number;
+  compliancePct: number;
+}
+
+export const mockSLAPolicies: SLAPolicy[] = [
+  {
+    id: 'sla-001',
+    name: 'Default SLA',
+    description: 'Applies to all tickets not matched by a more specific policy.',
+    targets: [
+      { priority: 'urgent', firstResponseMin: 15,  resolutionHours: 4   },
+      { priority: 'high',   firstResponseMin: 30,  resolutionHours: 8   },
+      { priority: 'medium', firstResponseMin: 120, resolutionHours: 24  },
+      { priority: 'low',    firstResponseMin: 480, resolutionHours: 72  },
+    ],
+    conditions: ['All tickets (fallback)'],
+    businessHoursOnly: true,
+    escalationEnabled: true,
+    activeTickets: 32,
+    breachedThisMonth: 3,
+    compliancePct: 94,
+  },
+  {
+    id: 'sla-002',
+    name: 'VIP Customer SLA',
+    description: 'Stricter targets for customers tagged as VIP.',
+    targets: [
+      { priority: 'urgent', firstResponseMin: 5,   resolutionHours: 2   },
+      { priority: 'high',   firstResponseMin: 15,  resolutionHours: 4   },
+      { priority: 'medium', firstResponseMin: 60,  resolutionHours: 12  },
+      { priority: 'low',    firstResponseMin: 240, resolutionHours: 48  },
+    ],
+    conditions: ['Customer tag = vip'],
+    businessHoursOnly: false,
+    escalationEnabled: true,
+    activeTickets: 5,
+    breachedThisMonth: 0,
+    compliancePct: 100,
+  },
+  {
+    id: 'sla-003',
+    name: 'Security Incidents SLA',
+    description: '24/7 coverage for all security-related tickets.',
+    targets: [
+      { priority: 'urgent', firstResponseMin: 5,   resolutionHours: 1   },
+      { priority: 'high',   firstResponseMin: 10,  resolutionHours: 4   },
+      { priority: 'medium', firstResponseMin: 30,  resolutionHours: 8   },
+      { priority: 'low',    firstResponseMin: 120, resolutionHours: 24  },
+    ],
+    conditions: ['Category contains "Security"'],
+    businessHoursOnly: false,
+    escalationEnabled: true,
+    activeTickets: 4,
+    breachedThisMonth: 1,
+    compliancePct: 97,
+  },
+  {
+    id: 'sla-004',
+    name: 'Hardware Request SLA',
+    description: 'Relaxed targets for non-urgent hardware procurement requests.',
+    targets: [
+      { priority: 'urgent', firstResponseMin: 60,  resolutionHours: 24  },
+      { priority: 'high',   firstResponseMin: 120, resolutionHours: 48  },
+      { priority: 'medium', firstResponseMin: 480, resolutionHours: 120 },
+      { priority: 'low',    firstResponseMin: 1440,resolutionHours: 336 },
+    ],
+    conditions: ['Category = "Hardware Request" OR Category = "Procurement"'],
+    businessHoursOnly: true,
+    escalationEnabled: false,
+    activeTickets: 3,
+    breachedThisMonth: 0,
+    compliancePct: 100,
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Channels (agent inbox view)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ChannelType = 'email' | 'whatsapp' | 'widget' | 'voice' | 'sms' | 'api';
+export type ChannelStatus = 'connected' | 'warning' | 'disconnected';
+
+export interface MockAgentChannel {
+  id: string;
+  name: string;
+  type: ChannelType;
+  address: string; // email address, phone number, or URL
+  status: ChannelStatus;
+  openTickets: number;
+  pendingTickets: number;
+  avgResponseMin: number;
+  lastActivityAt?: string;
+  team: string;
+  notes?: string;
+}
+
+export const mockAgentChannels: MockAgentChannel[] = [
+  { id: 'ch-001', name: 'Main Support Inbox',    type: 'email',    address: 'support@consomoafrica.com',     status: 'connected',    openTickets: 18, pendingTickets: 4, avgResponseMin: 12, lastActivityAt: ago(5),    team: 'Tier 1 Support' },
+  { id: 'ch-002', name: 'Billing Support',        type: 'email',    address: 'billing@consomoafrica.com',     status: 'connected',    openTickets: 5,  pendingTickets: 1, avgResponseMin: 28, lastActivityAt: ago(32),   team: 'Billing' },
+  { id: 'ch-003', name: 'WhatsApp Business',      type: 'whatsapp', address: '+234 900 000 1234',             status: 'warning',      openTickets: 9,  pendingTickets: 3, avgResponseMin: 8,  lastActivityAt: ago(2),    team: 'Tier 1 Support', notes: 'Delivery receipt issue under investigation (ticket #1014).' },
+  { id: 'ch-004', name: 'Help Centre Widget',     type: 'widget',   address: 'https://help.consomoafrica.com',status: 'connected',    openTickets: 4,  pendingTickets: 0, avgResponseMin: 18, lastActivityAt: ago(20),   team: 'Tier 2 Support' },
+  { id: 'ch-005', name: 'Voice / Call Centre',    type: 'voice',    address: '+234 1 888 0000',               status: 'connected',    openTickets: 7,  pendingTickets: 2, avgResponseMin: 6,  lastActivityAt: ago(15),   team: 'Field Support' },
+  { id: 'ch-006', name: 'SMS Alerts Line',        type: 'sms',      address: '+234 900 000 5678',             status: 'connected',    openTickets: 2,  pendingTickets: 0, avgResponseMin: 45, lastActivityAt: ago(110),  team: 'IT Operations' },
+  { id: 'ch-007', name: 'API Integration',        type: 'api',      address: 'api.consomoafrica.com/tickets', status: 'connected',    openTickets: 2,  pendingTickets: 0, avgResponseMin: 0,  lastActivityAt: ago(30),   team: 'Tier 2 Support', notes: 'Automated ticket creation from monitoring system.' },
+  { id: 'ch-008', name: 'Security Ops Inbox',     type: 'email',    address: 'security@consomoafrica.com',    status: 'disconnected', openTickets: 0,  pendingTickets: 0, avgResponseMin: 0,  lastActivityAt: undefined, team: 'Security Ops',   notes: 'Inbox disconnected. Re-authentication required.' },
+];

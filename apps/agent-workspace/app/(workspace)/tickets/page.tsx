@@ -567,9 +567,9 @@ function ViewsRail({ viewId, onViewChange, counts }: ViewsRailProps) {
   ];
 
   return (
-    <aside className="hidden flex-col bg-muted/30 md:flex">
-      <div className="flex h-14 items-center justify-between border-b px-3">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+    <aside className="hidden flex-col bg-[#0B1120] border-r border-white/[0.06] md:flex">
+      <div className="flex h-14 items-center justify-between border-b border-white/[0.06] px-3">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-500">
           Views
         </p>
         <Tooltip>
@@ -577,7 +577,7 @@ function ViewsRail({ viewId, onViewChange, counts }: ViewsRailProps) {
             <button
               type="button"
               aria-label="Create view from current filters"
-              className="grid h-6 w-6 place-items-center rounded text-muted-foreground hover:bg-background hover:text-foreground"
+              className="grid h-6 w-6 place-items-center rounded text-gray-500 hover:bg-white/[0.06] hover:text-gray-200"
             >
               <Plus className="h-3.5 w-3.5" />
             </button>
@@ -589,7 +589,7 @@ function ViewsRail({ viewId, onViewChange, counts }: ViewsRailProps) {
         {groups.map((g) =>
           g.views.length > 0 ? (
             <div key={g.label}>
-              <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-600">
                 {g.label}
               </p>
               <ul className="space-y-0.5">
@@ -604,14 +604,14 @@ function ViewsRail({ viewId, onViewChange, counts }: ViewsRailProps) {
                         className={cn(
                           'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
                           active
-                            ? 'bg-primary text-white'
-                            : 'text-foreground hover:bg-background',
+                            ? 'bg-blue-500/12 text-blue-300'
+                            : 'text-gray-400 hover:bg-white/[0.05] hover:text-gray-100',
                         )}
                       >
                         <Icon
                           className={cn(
                             'h-3.5 w-3.5 shrink-0',
-                            active ? 'text-white' : 'text-muted-foreground',
+                            active ? 'text-blue-400' : 'text-gray-500',
                           )}
                         />
                         <span className="flex-1 truncate text-left">
@@ -620,7 +620,7 @@ function ViewsRail({ viewId, onViewChange, counts }: ViewsRailProps) {
                         <span
                           className={cn(
                             'text-[11px] tabular-nums',
-                            active ? 'text-white/80' : 'text-muted-foreground',
+                            active ? 'text-blue-300/80' : 'text-gray-600',
                           )}
                         >
                           {counts[v.id] ?? 0}
@@ -665,7 +665,7 @@ function ListHeader({
 }: ListHeaderProps) {
   const Icon = activeView.icon;
   return (
-    <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b bg-card px-4">
+    <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b bg-background/80 backdrop-blur-sm px-4">
       <div className="flex items-center gap-3">
         <Icon className="h-4 w-4 text-muted-foreground" />
         <div>
@@ -748,7 +748,7 @@ function ListHeader({
           <Download className="h-3.5 w-3.5" />
           Export
         </Button>
-        <Button size="sm" className="h-8 text-xs">
+        <Button size="sm" className="h-8 bg-gradient-to-r from-blue-600 to-blue-500 text-xs text-white shadow-blue-600/20 shadow-sm hover:from-blue-500 hover:to-blue-400">
           <Plus className="h-3.5 w-3.5" />
           New ticket
         </Button>

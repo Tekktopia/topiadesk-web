@@ -117,17 +117,21 @@ export default function TopologyPage() {
 
   return (
     <div className="space-y-5 p-5">
-      {/* Header */}
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div className="space-y-1">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Monitoring</p>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Network Topology</h1>
-          <p className="text-sm text-muted-foreground">Visual map of your network infrastructure per site</p>
+      {/* Gradient header */}
+      <div className="relative -mx-5 -mt-5 mb-1 overflow-hidden bg-gradient-to-br from-blue-700 to-blue-800 px-5 py-5">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">Monitoring</p>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-white">Network Topology</h1>
+            <p className="mt-0.5 text-sm text-white/70">Visual map of your network infrastructure per site</p>
+          </div>
+          <Button variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white" asChild>
+            <Link href="/monitoring/devices">View device list</Link>
+          </Button>
         </div>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/monitoring/devices">View device list</Link>
-        </Button>
-      </header>
+      </div>
 
       {/* Site tabs */}
       <div className="flex rounded-lg border p-0.5 text-xs w-fit">

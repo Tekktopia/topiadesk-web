@@ -71,29 +71,32 @@ export default function KbHome() {
     : null;
 
   return (
-    <div className="bg-muted/20">
-      <section className="border-b bg-card">
-        <div className="mx-auto max-w-4xl px-4 py-10 text-center lg:py-12">
-          <div className="inline-flex items-center gap-2 rounded-full bg-orange/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-orange">
+    <div className="bg-[#F1F5FA] min-h-screen">
+      {/* Dark hero */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#0B1529] to-[#0F2044]">
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="absolute -left-32 top-0 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
+        <div className="absolute right-0 bottom-0 h-48 w-48 rounded-full bg-blue-400/8 blur-3xl" />
+        <div className="relative mx-auto max-w-4xl px-4 py-12 text-center lg:py-16">
+          <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-400/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-300">
             <BookOpen className="h-3 w-3" />
             Help centre
           </div>
-          <h1 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          <h1 className="mt-4 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
             Find an answer in seconds
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {kbArticles.length}+ articles, guides and how-tos for everything we
-            support.
+          <p className="mt-2 text-sm text-white/60">
+            {kbArticles.length}+ articles, guides and how-tos for everything we support.
           </p>
 
-          <div className="mx-auto mt-6 max-w-2xl">
+          <div className="mx-auto mt-8 max-w-2xl">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
               <Input
                 placeholder="Search articles..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="h-12 pl-9 text-base"
+                className="h-12 border-white/10 bg-white/[0.06] pl-11 text-base text-white placeholder:text-white/40 focus-visible:border-blue-400/40 focus-visible:ring-blue-400/20"
               />
             </div>
           </div>

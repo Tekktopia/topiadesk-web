@@ -156,37 +156,43 @@ export default function ChannelsPage() {
 
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 lg:px-8">
-
-      {/* ── Page header ── */}
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-xl font-bold tracking-tight">
-            Email channels
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Add email addresses that automatically create tickets when customers
-            write in — no logins required.
-          </p>
+    <div className="space-y-5">
+      {/* Orange gradient header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-orange-500 to-orange-600 px-6 py-5">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">Connect</p>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-white">Email channels</h1>
+            <p className="mt-0.5 text-sm text-white/70">
+              Add email addresses that automatically create tickets when customers write in.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant={showAddForm ? 'outline' : 'default'}
+            className={showAddForm
+              ? 'border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white'
+              : 'bg-white text-orange-600 hover:bg-white/90'}
+            onClick={() => setShowAddForm((v) => !v)}
+          >
+            {showAddForm ? (
+              <>
+                <X className="h-3.5 w-3.5" />
+                Cancel
+              </>
+            ) : (
+              <>
+                <Plus className="h-3.5 w-3.5" />
+                Add inbox
+              </>
+            )}
+          </Button>
         </div>
-        <Button
-          size="sm"
-          variant={showAddForm ? 'outline' : 'default'}
-          onClick={() => setShowAddForm((v) => !v)}
-        >
-          {showAddForm ? (
-            <>
-              <X className="h-3.5 w-3.5" />
-              Cancel
-            </>
-          ) : (
-            <>
-              <Plus className="h-3.5 w-3.5" />
-              Add inbox
-            </>
-          )}
-        </Button>
       </div>
+
+      <div className="mx-auto max-w-4xl px-5 pb-5 lg:px-6 lg:pb-6 space-y-6">
 
       {/* ── How it works banner ── */}
       <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50/60 p-4">
@@ -551,6 +557,7 @@ export default function ChannelsPage() {
           })}
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -102,43 +102,46 @@ export default function TenantDetailPage() {
 
   return (
     <div className="space-y-5 p-6">
-      {/* Breadcrumb */}
-      <Link href="/tenants" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-3 w-3" />Tenants
-      </Link>
-
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="font-display text-2xl font-bold tracking-tight">{t.name}</h1>
-            <span className={cn('rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize', PLAN_STYLES[t.plan])}>{t.plan}</span>
-            <Badge variant={sm.variant} className="text-[10px]">{t.status.charAt(0).toUpperCase() + t.status.slice(1)}</Badge>
+      {/* Gradient header */}
+      <div className="relative -mx-6 -mt-6 mb-1 overflow-hidden bg-gradient-to-br from-emerald-600 to-emerald-700 px-6 py-5">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+        <div className="relative">
+          <Link href="/tenants" className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60 hover:text-white/90">
+            <ArrowLeft className="h-3 w-3" />Super Admin · Tenants
+          </Link>
+          <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="font-display text-2xl font-bold tracking-tight text-white">{t.name}</h1>
+                <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-semibold capitalize text-white">{t.plan}</span>
+                <Badge variant={sm.variant} className="text-[10px]">{t.status.charAt(0).toUpperCase() + t.status.slice(1)}</Badge>
+              </div>
+              <p className="mt-1 font-mono text-sm text-white/60">{t.subdomain}.topiadesk.com</p>
+              <p className="text-xs text-white/50">{t.owner.name} · {t.owner.email} · {t.country} · {t.industry}</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white" asChild>
+                <a href={`https://${t.subdomain}.topiadesk.com`} target="_blank" rel="noopener">
+                  <ExternalLink className="h-3 w-3" />Open workspace
+                </a>
+              </Button>
+              <Button variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white">Impersonate admin</Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="w-8 p-0 border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white"><MoreHorizontal className="h-4 w-4" /></Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>Change plan</DropdownMenuItem>
+                  <DropdownMenuItem>Reset owner password</DropdownMenuItem>
+                  <DropdownMenuItem>Export tenant data</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-amber-600">{t.status === 'suspended' ? 'Reactivate' : 'Suspend tenant'}</DropdownMenuItem>
+                  <DropdownMenuItem className="text-red-600">Delete tenant</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-          <p className="mt-1 font-mono text-sm text-muted-foreground">{t.subdomain}.topiadesk.com</p>
-          <p className="text-xs text-muted-foreground">{t.owner.name} · {t.owner.email} · {t.country} · {t.industry}</p>
-        </div>
-
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <a href={`https://${t.subdomain}.topiadesk.com`} target="_blank" rel="noopener">
-              <ExternalLink className="h-3 w-3" />Open workspace
-            </a>
-          </Button>
-          <Button variant="outline" size="sm">Impersonate admin</Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Change plan</DropdownMenuItem>
-              <DropdownMenuItem>Reset owner password</DropdownMenuItem>
-              <DropdownMenuItem>Export tenant data</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-amber-600">{t.status === 'suspended' ? 'Reactivate' : 'Suspend tenant'}</DropdownMenuItem>
-              <DropdownMenuItem className="text-red-600">Delete tenant</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </div>
 

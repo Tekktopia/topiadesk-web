@@ -74,23 +74,25 @@ export default function AlertRulesPage() {
 
   return (
     <div className="space-y-5 p-5">
-      {/* Header */}
-      <div>
-        <Link href="/monitoring/alerts" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-3 w-3" />Alerts Feed
-        </Link>
-      </div>
-
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div className="space-y-1">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Monitoring › Alerts</p>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Alert Rules</h1>
-          <p className="text-sm text-muted-foreground">
-            {counts.enabled} active rule{counts.enabled !== 1 ? 's' : ''} · {counts.disabled} disabled
-          </p>
+      {/* Gradient header */}
+      <div className="relative -mx-5 -mt-5 mb-1 overflow-hidden bg-gradient-to-br from-blue-700 to-blue-800 px-5 py-5">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <Link href="/monitoring/alerts" className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60 hover:text-white/90">
+              <ArrowLeft className="h-3 w-3" />Monitoring › Alerts
+            </Link>
+            <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-white">Alert Rules</h1>
+            <p className="mt-0.5 text-sm text-white/70">
+              {counts.enabled} active rule{counts.enabled !== 1 ? 's' : ''} · {counts.disabled} disabled
+            </p>
+          </div>
+          <Button size="sm" className="bg-white text-blue-700 hover:bg-white/90">
+            <Plus className="h-3 w-3" />New rule
+          </Button>
         </div>
-        <Button size="sm"><Plus className="h-3 w-3" />New rule</Button>
-      </header>
+      </div>
 
       {/* Summary tiles */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

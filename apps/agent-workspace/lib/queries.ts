@@ -17,6 +17,21 @@ import {
   mockNOCMetrics,
   mockTopologies,
   uptimeTrend,
+  ticketVolumeData,
+  agentStats,
+  categorySummary,
+  channelSummary,
+  reportSummary,
+  csatSurveys,
+  csatMetrics,
+  mockContacts,
+  kbArticles,
+  mockAssetHistory,
+  mockAudits,
+  mockInventory,
+  mockAutomations,
+  mockSLAPolicies,
+  mockAgentChannels,
   type MockTicket,
   type MockAsset,
   type DashboardMetrics,
@@ -31,6 +46,21 @@ import {
   type AlertRule,
   type NOCMetrics,
   type TopologyData,
+  type VolumePoint,
+  type AgentStat,
+  type CategoryStat,
+  type ChannelStat,
+  type ReportSummary,
+  type CSATSurvey,
+  type CSATMetrics,
+  type MockContact,
+  type KBArticle,
+  type AssetHistoryEvent,
+  type AssetAudit,
+  type InventoryItem,
+  type MockAutomation,
+  type SLAPolicy,
+  type MockAgentChannel,
 } from './mock-data';
 
 /**
@@ -160,5 +190,137 @@ export function useUptimeTrend() {
   return useQuery({
     queryKey: ['monitoring', 'uptime-trend'],
     queryFn: () => delay(uptimeTrend, 100),
+  });
+}
+
+// ── Reports ───────────────────────────────────────────────────────────────────
+
+export function useTicketVolume() {
+  return useQuery<VolumePoint[]>({
+    queryKey: ['reports', 'volume'],
+    queryFn: () => delay(ticketVolumeData, 200),
+  });
+}
+
+export function useAgentStats() {
+  return useQuery<AgentStat[]>({
+    queryKey: ['reports', 'agents'],
+    queryFn: () => delay(agentStats, 200),
+  });
+}
+
+export function useCategorySummary() {
+  return useQuery<CategoryStat[]>({
+    queryKey: ['reports', 'categories'],
+    queryFn: () => delay(categorySummary, 150),
+  });
+}
+
+export function useChannelSummary() {
+  return useQuery<ChannelStat[]>({
+    queryKey: ['reports', 'channels'],
+    queryFn: () => delay(channelSummary, 150),
+  });
+}
+
+export function useReportSummary() {
+  return useQuery<ReportSummary>({
+    queryKey: ['reports', 'summary'],
+    queryFn: () => delay(reportSummary, 100),
+  });
+}
+
+// ── CSAT ─────────────────────────────────────────────────────────────────────
+
+export function useCSATSurveys() {
+  return useQuery<CSATSurvey[]>({
+    queryKey: ['csat', 'surveys'],
+    queryFn: () => delay(csatSurveys, 200),
+  });
+}
+
+export function useCSATMetrics() {
+  return useQuery<CSATMetrics>({
+    queryKey: ['csat', 'metrics'],
+    queryFn: () => delay(csatMetrics, 100),
+  });
+}
+
+// ── Contacts ─────────────────────────────────────────────────────────────────
+
+export function useContacts() {
+  return useQuery<MockContact[]>({
+    queryKey: ['contacts'],
+    queryFn: () => delay(mockContacts, 200),
+  });
+}
+
+export function useContact(id: string) {
+  return useQuery<MockContact | undefined>({
+    queryKey: ['contacts', id],
+    queryFn: () => delay(mockContacts.find((c) => c.id === id)),
+  });
+}
+
+// ── Knowledge Base ────────────────────────────────────────────────────────────
+
+export function useKBArticles() {
+  return useQuery<KBArticle[]>({
+    queryKey: ['kb', 'articles'],
+    queryFn: () => delay(kbArticles, 200),
+  });
+}
+
+// ── Asset history ─────────────────────────────────────────────────────────────
+
+export function useAssetHistory(_assetId: string) {
+  return useQuery<AssetHistoryEvent[]>({
+    queryKey: ['assets', 'history', _assetId],
+    queryFn: () => delay(mockAssetHistory, 150),
+  });
+}
+
+// ── Audits ────────────────────────────────────────────────────────────────────
+
+export function useAudits() {
+  return useQuery<AssetAudit[]>({
+    queryKey: ['audits'],
+    queryFn: () => delay(mockAudits, 200),
+  });
+}
+
+// ── Inventory ─────────────────────────────────────────────────────────────────
+
+export function useInventory() {
+  return useQuery<InventoryItem[]>({
+    queryKey: ['inventory'],
+    queryFn: () => delay(mockInventory, 200),
+  });
+}
+
+// ── Automations ───────────────────────────────────────────────────────────────
+
+export function useAutomations() {
+  return useQuery<MockAutomation[]>({
+    queryKey: ['automations'],
+    queryFn: () => delay(mockAutomations, 200),
+  });
+}
+
+// ── SLA Policies ──────────────────────────────────────────────────────────────
+
+export function useSLAPolicies() {
+  return useQuery<SLAPolicy[]>({
+    queryKey: ['sla', 'policies'],
+    queryFn: () => delay(mockSLAPolicies, 150),
+  });
+}
+
+// ── Agent Channels ────────────────────────────────────────────────────────────
+
+export function useAgentChannels() {
+  return useQuery<MockAgentChannel[]>({
+    queryKey: ['channels'],
+    queryFn: () => delay(mockAgentChannels, 150),
   });
 }
