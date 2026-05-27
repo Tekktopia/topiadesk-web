@@ -71,6 +71,10 @@ import {
   initials,
   relativeTime,
 } from '@/lib/format';
+import { useOfflineMutation } from '@/app/_hooks/use-offline-mutation';
+import { useOffline } from '@/app/_hooks/use-offline';
+import { PendingBadge } from '@/app/_components/pending-badge';
+import { AISuggestionPanel } from '@/app/_components/ai-suggestion-panel';
 
 const RELATED_TICKETS = [
   { number: '#1015', subject: 'VPN cert provisioning fails on imaging', status: 'resolved' as const },
@@ -130,9 +134,12 @@ export default function TicketDetailPage() {
                 {ticket.number}
               </span>
             </div>
-            <h1 className="font-display text-2xl font-bold leading-tight">
-              {ticket.subject}
-            </h1>
+            <div className="flex flex-wrap items-start gap-2">
+              <h1 className="font-display text-2xl font-bold leading-tight">
+                {ticket.subject}
+              </h1>
+              <PendingBadge entityId={ticket.id} className="mt-1.5" />
+            </div>
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
                 <Clock className="h-3 w-3" />
@@ -225,7 +232,8 @@ export default function TicketDetailPage() {
                 createdAt={ticket.createdAt}
                 messages={ticket.conversations}
               />
-              <Composer />
+              <AISuggestionPanel ticketId={ticket.id} />
+              <Composer ticketId={ticket.id} requesterName={ticket.requester.name} />
             </TabsContent>
 
             <TabsContent value="activity">
@@ -249,6 +257,24 @@ export default function TicketDetailPage() {
 }
 
 function StatusBar({ ticket }: { ticket: MockTicket }) {
+  const { isOffline } = useOffline();
+  const resolveOp = useOfflineMutation<{ status: string }>({
+    type: 'ticket_status',
+    entityId: ticket.id,
+    dedupeKey: (p) => `ticket_status:${ticket.id}:${p.status}`,
+    url: () => `/api/tickets/${ticket.id}`,
+    method: 'PATCH',
+    label: () => `Mark ticket ${ticket.number} as resolved`,
+    invalidates: [['tickets'], ['tickets', ticket.id]],
+    optimisticUpdate: (payload) => ({
+      store: 'tickets',
+      id: ticket.id,
+      updater: (current: any) => ({ ...current, status: payload.status }),
+    }),
+  });
+
+  const resolved = resolveOp.status === 'success' || resolveOp.status === 'queued';
+
   return (
     <div className="flex shrink-0 flex-wrap items-center gap-2 border-b bg-background/90 backdrop-blur-sm shadow-sm px-5 py-2.5">
       <InlineSelect label="Status" current={<StatusPill status={ticket.status} />} options={['New', 'Open', 'In progress', 'Pending', 'Resolved', 'Closed']} />
@@ -278,6 +304,12 @@ function StatusBar({ ticket }: { ticket: MockTicket }) {
         options={['Tunde Bakare', 'Adaeze Nwosu', 'Kwame Mensah', 'Fatima Suleiman']}
       />
       <div className="ml-auto flex items-center gap-2">
+        {/* Offline indicator pill */}
+        {isOffline && (
+          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+            <Reply className="h-2.5 w-2.5" /> Offline — changes queued
+          </span>
+        )}
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="inline-flex items-center gap-1.5 rounded-md bg-card px-2 py-1 text-xs text-muted-foreground">
@@ -291,8 +323,17 @@ function StatusBar({ ticket }: { ticket: MockTicket }) {
           <UserPlus className="h-3 w-3" />
           Assign me
         </Button>
-        <Button variant="outline" size="sm" className="h-7">
-          Mark resolved
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7"
+          disabled={resolveOp.status === 'loading' || resolved}
+          onClick={() => resolveOp.mutate({ status: 'resolved' })}
+        >
+          {resolveOp.status === 'loading' ? 'Saving…'
+            : resolveOp.status === 'queued' ? '⏱ Queued'
+            : resolveOp.status === 'success' ? '✓ Resolved'
+            : 'Mark resolved'}
         </Button>
       </div>
     </div>
@@ -409,127 +450,157 @@ function ConversationThread({
   );
 }
 
-function Composer() {
+function Composer({ ticketId, requesterName }: { ticketId: string; requesterName: string }) {
+  const [body, setBody] = useState('');
+  const [mode, setMode] = useState<'reply' | 'note' | 'forward'>('reply');
+  const { isOffline } = useOffline();
+
+  const replyOp = useOfflineMutation<{ body: string; type: string; ticketId: string }>({
+    type: 'ticket_reply',
+    entityId: ticketId,
+    url: () => `/api/tickets/${ticketId}/replies`,
+    method: 'POST',
+    label: (p) => `Reply to ticket: "${p.body.slice(0, 60)}${p.body.length > 60 ? '…' : ''}"`,
+    invalidates: [['tickets', ticketId]],
+  });
+
+  function handleSend(andThen?: 'resolve' | 'pending') {
+    if (!body.trim()) return;
+    replyOp.mutate({ body, type: mode, ticketId });
+    if (replyOp.status !== 'queued') setBody('');
+  }
+
+  const sending = replyOp.status === 'loading';
+  const queued  = replyOp.status === 'queued';
+  const sent    = replyOp.status === 'success';
+
   return (
-    <Card>
+    <Card className={cn(queued && 'ring-1 ring-amber-300', sent && 'ring-1 ring-emerald-300')}>
+      {/* Offline notice */}
+      {isOffline && (
+        <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          <Reply className="h-3 w-3 shrink-0 text-amber-500" />
+          You&apos;re offline — your reply will be saved and sent when you reconnect.
+        </div>
+      )}
+
+      {/* Queued confirmation */}
+      {queued && (
+        <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          <Send className="h-3 w-3 shrink-0 text-amber-500" />
+          Reply queued — will be sent automatically when you&apos;re back online.
+        </div>
+      )}
+
+      {/* Sent confirmation */}
+      {sent && (
+        <div className="flex items-center gap-2 border-b border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+          <Send className="h-3 w-3 shrink-0 text-emerald-500" />
+          Reply sent successfully.
+        </div>
+      )}
+
       <div className="flex items-center gap-2 border-b bg-muted/30 px-3 py-1.5 text-xs">
-        <button className="rounded px-2 py-1 font-medium text-foreground hover:bg-background">
-          Reply
-        </button>
-        <button className="rounded px-2 py-1 font-medium text-muted-foreground hover:bg-background">
-          <Lock className="mr-1 inline-block h-3 w-3" />
-          Internal note
-        </button>
-        <button className="rounded px-2 py-1 font-medium text-muted-foreground hover:bg-background">
-          Forward
-        </button>
+        {(['reply', 'note', 'forward'] as const).map((m) => (
+          <button
+            key={m}
+            className={cn('rounded px-2 py-1 font-medium capitalize transition-colors', mode === m ? 'text-foreground bg-background shadow-sm' : 'text-muted-foreground hover:bg-background')}
+            onClick={() => setMode(m)}
+          >
+            {m === 'note' && <Lock className="mr-1 inline-block h-3 w-3" />}
+            {m === 'note' ? 'Internal note' : m.charAt(0).toUpperCase() + m.slice(1)}
+          </button>
+        ))}
         <span className="ml-auto text-[10px] text-muted-foreground">
-          Replying to {`Sarah Okonkwo <sarah.o@acmebank.ng>`}
+          {mode === 'reply' ? `Replying to ${requesterName}` : mode === 'note' ? 'Visible to agents only' : `Forwarding from ${requesterName}`}
         </span>
       </div>
+
       <CardContent className="space-y-3 p-3">
+        {/* Toolbar */}
         <div className="flex items-center gap-1 border-b pb-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <Bold className="h-3 w-3" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Bold</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <Italic className="h-3 w-3" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Italic</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <Underline className="h-3 w-3" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Underline</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <Link2 className="h-3 w-3" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Link</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <ListChecks className="h-3 w-3" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Bulleted list</TooltipContent>
-          </Tooltip>
+          {[
+            { icon: Bold,       tip: 'Bold'          },
+            { icon: Italic,     tip: 'Italic'        },
+            { icon: Underline,  tip: 'Underline'     },
+            { icon: Link2,      tip: 'Link'          },
+            { icon: ListChecks, tip: 'Bulleted list' },
+          ].map(({ icon: Icon, tip }) => (
+            <Tooltip key={tip}>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7"><Icon className="h-3 w-3" /></Button>
+              </TooltipTrigger>
+              <TooltipContent>{tip}</TooltipContent>
+            </Tooltip>
+          ))}
           <Separator orientation="vertical" className="mx-1 h-4" />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <Paperclip className="h-3 w-3" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Attach file</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <Smile className="h-3 w-3" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Emoji</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <AtSign className="h-3 w-3" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Mention agent</TooltipContent>
-          </Tooltip>
+          {[
+            { icon: Paperclip, tip: 'Attach file'   },
+            { icon: Smile,     tip: 'Emoji'         },
+            { icon: AtSign,    tip: 'Mention agent' },
+          ].map(({ icon: Icon, tip }) => (
+            <Tooltip key={tip}>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7"><Icon className="h-3 w-3" /></Button>
+              </TooltipTrigger>
+              <TooltipContent>{tip}</TooltipContent>
+            </Tooltip>
+          ))}
           <Separator orientation="vertical" className="mx-1 h-4" />
           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
-            <FileText className="h-3 w-3" />
-            Canned response
+            <FileText className="h-3 w-3" /> Canned response
           </Button>
           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-orange">
-            <Sparkles className="h-3 w-3" />
-            AI suggest
+            <Sparkles className="h-3 w-3" /> AI suggest
           </Button>
         </div>
+
         <Textarea
-          placeholder="Type your reply..."
+          placeholder={isOffline ? 'Type your reply — it will be queued and sent when you reconnect…' : 'Type your reply…'}
           rows={5}
           className="resize-none border-0 px-0 shadow-none focus-visible:ring-0"
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          disabled={sending}
         />
+
         <div className="flex items-center justify-between gap-2 pt-1">
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
             <Tag className="h-3 w-3" />
             Add tag on send
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-8">
+            <Button variant="outline" size="sm" className="h-8" disabled={!body.trim() || sending}>
               Save draft
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="sm" className="h-8">
-                  <Send className="h-3 w-3" />
-                  Send
+                <Button
+                  size="sm"
+                  className={cn('h-8', queued ? 'bg-amber-500 hover:bg-amber-600' : '')}
+                  disabled={!body.trim() || sending || queued}
+                  onClick={() => handleSend()}
+                >
+                  {sending ? (
+                    <><Send className="h-3 w-3 animate-pulse" /> Sending…</>
+                  ) : queued ? (
+                    <><Send className="h-3 w-3" /> Queued</>
+                  ) : (
+                    <><Send className="h-3 w-3" /> Send</>
+                  )}
                   <ChevronDown className="h-3 w-3 opacity-70" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem>Send</DropdownMenuItem>
-                <DropdownMenuItem>Send and set Pending</DropdownMenuItem>
-                <DropdownMenuItem>Send and resolve</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleSend()}>
+                  {isOffline ? 'Queue reply' : 'Send'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleSend('pending')}>
+                  {isOffline ? 'Queue and set Pending' : 'Send and set Pending'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleSend('resolve')}>
+                  {isOffline ? 'Queue and resolve' : 'Send and resolve'}
+                </DropdownMenuItem>
                 <DropdownMenuItem>Send and snooze</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

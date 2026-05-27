@@ -2295,3 +2295,234 @@ export const mockAgentChannels: MockAgentChannel[] = [
   { id: 'ch-007', name: 'API Integration',        type: 'api',      address: 'api.consomoafrica.com/tickets', status: 'connected',    openTickets: 2,  pendingTickets: 0, avgResponseMin: 0,  lastActivityAt: ago(30),   team: 'Tier 2 Support', notes: 'Automated ticket creation from monitoring system.' },
   { id: 'ch-008', name: 'Security Ops Inbox',     type: 'email',    address: 'security@consomoafrica.com',    status: 'disconnected', openTickets: 0,  pendingTickets: 0, avgResponseMin: 0,  lastActivityAt: undefined, team: 'Security Ops',   notes: 'Inbox disconnected. Re-authentication required.' },
 ];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AI First-Response Agent
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type AITone = 'professional' | 'friendly' | 'technical';
+export type AITrainingSource =
+  | 'last-30-days'
+  | 'last-90-days'
+  | 'last-180-days'
+  | 'all-time';
+
+export interface AIIntegration {
+  id: string;
+  name: string;
+  description: string;
+  category: 'identity' | 'itsm' | 'comms' | 'productivity';
+  enabled: boolean;
+  actionLabel: string;
+}
+
+export interface AIAgentConfig {
+  enabled: boolean;
+  /** Confidence ≥ this → surface suggestion to agent */
+  confidenceThreshold: number;
+  /** Confidence ≥ this → auto-send without agent review */
+  autoReplyThreshold: number;
+  trainingSource: AITrainingSource;
+  lastTrainedAt: string;
+  trainingTicketCount: number;
+  modelVersion: string;
+  autoHandleCategories: string[];
+  alwaysEscalateCategories: string[];
+  integrations: AIIntegration[];
+  tone: AITone;
+  signOff: string;
+  maxAutoRepliesPerHour: number;
+}
+
+export interface AISuggestion {
+  ticketId: string;
+  confidence: number;
+  suggestedResponse: string;
+  suggestedAction: 'auto-reply' | 'suggest-reply' | 'escalate';
+  sourceTicketNumbers: string[];
+  kbArticles: string[];
+  reasoning: string;
+  generatedAt: string;
+  status: 'pending' | 'sent' | 'dismissed' | 'edited-and-sent';
+}
+
+export type AIActivityAction =
+  | 'auto-handled'
+  | 'suggested'
+  | 'escalated'
+  | 'overridden';
+
+export interface AIActivityEntry {
+  id: string;
+  ticketId: string;
+  ticketNumber: string;
+  subject: string;
+  requesterName: string;
+  action: AIActivityAction;
+  confidence: number;
+  responseTimeSec: number;
+  timestamp: string;
+  agentName?: string;
+}
+
+export interface AIMetrics {
+  ticketsHandled: number;
+  autoResolved: number;
+  suggested: number;
+  escalated: number;
+  overridden: number;
+  handlingRate: number;     // % of all incoming tickets
+  resolutionRate: number;   // % of AI-handled that never needed a human
+  avgConfidence: number;
+  avgResponseTimeSec: number;
+  csatScore: number;
+  costSavedUsd: number;
+  trend: { day: string; handled: number; escalated: number }[];
+}
+
+export const mockAIConfig: AIAgentConfig = {
+  enabled: true,
+  confidenceThreshold: 65,
+  autoReplyThreshold: 90,
+  trainingSource: 'last-90-days',
+  lastTrainedAt: ago(36 * 60),
+  trainingTicketCount: 487,
+  modelVersion: 'topiadesk-v2.1',
+  autoHandleCategories: [
+    'Password Reset',
+    'Access Request',
+    'Email',
+    'Software',
+    'Hardware Request',
+    'Onboarding',
+  ],
+  alwaysEscalateCategories: [
+    'Security / Phishing',
+    'Billing',
+    'Security / CCTV',
+  ],
+  integrations: [
+    {
+      id: 'int-msad',
+      name: 'Microsoft Active Directory',
+      description: 'Reset passwords and unlock accounts automatically',
+      category: 'identity',
+      enabled: true,
+      actionLabel: 'Reset password / Unlock account',
+    },
+    {
+      id: 'int-jamf',
+      name: 'Jamf MDM',
+      description: 'Remotely lock, wipe, or re-enrol macOS / iOS devices',
+      category: 'itsm',
+      enabled: true,
+      actionLabel: 'Lock / wipe device',
+    },
+    {
+      id: 'int-jira',
+      name: 'Jira Service Management',
+      description: 'Create and link Jira issues from tickets',
+      category: 'itsm',
+      enabled: false,
+      actionLabel: 'Create linked Jira issue',
+    },
+    {
+      id: 'int-sf',
+      name: 'Salesforce CRM',
+      description: 'Look up customer account and contract details',
+      category: 'productivity',
+      enabled: true,
+      actionLabel: 'Lookup customer account',
+    },
+    {
+      id: 'int-slack',
+      name: 'Slack',
+      description: 'Post AI escalation notifications to a channel',
+      category: 'comms',
+      enabled: true,
+      actionLabel: 'Post escalation alert',
+    },
+  ],
+  tone: 'professional',
+  signOff: 'Topiadesk AI Support',
+  maxAutoRepliesPerHour: 50,
+};
+
+export const mockAISuggestions: AISuggestion[] = [
+  {
+    ticketId: 't-1024',
+    confidence: 82,
+    suggestedResponse:
+      'Hi Sarah,\n\nThank you for reaching out. Based on your description, this appears to be a certificate provisioning issue — we\'ve seen the same problem on two other new MacBooks this week.\n\nHere\'s what to try:\n1. Open Keychain Access and check if "ConsomoAfrica-VPN" certificate is present and not expired.\n2. If missing, visit http://certs.internal and click "Download Corporate VPN Certificate".\n3. Reinstall Cisco AnyConnect and try connecting again.\n\nIf this doesn\'t resolve it within 30 minutes, I\'ll arrange for our network team to push the certificate remotely via Jamf.\n\nBest regards,\nTopiadesk AI Support',
+    suggestedAction: 'suggest-reply',
+    sourceTicketNumbers: ['#987', '#991', '#1003'],
+    kbArticles: ['kb-001'],
+    reasoning:
+      'High similarity (0.87 cosine) to 3 resolved VPN/certificate tickets. Proposed fix matches the accepted solution in all 3 cases.',
+    generatedAt: ago(5),
+    status: 'pending',
+  },
+  {
+    ticketId: 't-1022',
+    confidence: 94,
+    suggestedResponse:
+      'Hi Joshua,\n\nI can see your manager approval was recorded in the system yesterday. I\'ve submitted the access provisioning request to the IT Operations team — access to the Q3 Reporting Workspace typically propagates within 15–30 minutes.\n\nYou\'ll receive a confirmation email once access is active. If you haven\'t heard back within an hour, please reply here and I\'ll escalate directly.\n\nBest regards,\nTopiadesk AI Support',
+    suggestedAction: 'auto-reply',
+    sourceTicketNumbers: ['#934', '#956', '#978', '#1001'],
+    kbArticles: [],
+    reasoning:
+      'Access request pattern matched with 97% confidence. AD integration confirms manager approval is on record. Auto-reply threshold (90) exceeded.',
+    generatedAt: ago(12),
+    status: 'pending',
+  },
+  {
+    ticketId: 't-1019',
+    confidence: 88,
+    suggestedResponse:
+      'Hi Grace,\n\nI\'ve logged a provisioning request for John Adesanya (starting Monday 26 May). Based on your team\'s standard onboarding kit, I\'ve raised requests for:\n\n• MacBook Pro 14" M3 Pro — 1 unit available in IT Store\n• Standard peripherals kit (keyboard, mouse, USB-C hub)\n• Microsoft 365 account creation\n• M365 Business licence provisioning\n\nAn IT team member will confirm everything is ready by Friday. Is there any additional software or access John will need on day one?\n\nBest regards,\nTopiadesk AI Support',
+    suggestedAction: 'suggest-reply',
+    sourceTicketNumbers: ['#1015', '#1002', '#960'],
+    kbArticles: ['kb-006'],
+    reasoning:
+      'New joiner hardware request matched onboarding template (0.91 similarity). Asset inventory integration confirmed MacBook stock availability.',
+    generatedAt: ago(10),
+    status: 'pending',
+  },
+];
+
+export const mockAIActivity: AIActivityEntry[] = [
+  { id: 'ai-001', ticketId: 't-1024', ticketNumber: '#1024', subject: 'Cannot connect to office VPN from new laptop',          requesterName: 'Sarah Okonkwo',   action: 'suggested',     confidence: 82, responseTimeSec: 4, timestamp: ago(5) },
+  { id: 'ai-002', ticketId: 't-1019', ticketNumber: '#1019', subject: 'Request: laptop for new joiner starting Monday',         requesterName: 'Grace Maathai',    action: 'suggested',     confidence: 88, responseTimeSec: 6, timestamp: ago(11) },
+  { id: 'ai-003', ticketId: 't-1022', ticketNumber: '#1022', subject: 'Need access to the Q3 reporting workspace',              requesterName: 'Joshua Adekunle',  action: 'auto-handled',  confidence: 94, responseTimeSec: 3, timestamp: ago(182) },
+  { id: 'ai-004', ticketId: 't-1013', ticketNumber: '#1013', subject: 'Door access card not working for floor 5',               requesterName: 'Grace Maathai',    action: 'escalated',     confidence: 42, responseTimeSec: 3, timestamp: ago(312) },
+  { id: 'ai-005', ticketId: 't-1008', ticketNumber: '#1008', subject: 'Two-factor reset for departing contractor',              requesterName: 'Lerato Mokoena',   action: 'suggested',     confidence: 81, responseTimeSec: 4, timestamp: ago(112), agentName: 'Adaeze Nwosu' },
+  { id: 'ai-006', ticketId: 't-1018', ticketNumber: '#1018', subject: 'Slack notifications muted for #support channel',         requesterName: 'Emmanuel Diallo',  action: 'auto-handled',  confidence: 91, responseTimeSec: 4, timestamp: ago(365) },
+  { id: 'ai-007', ticketId: 't-1016', ticketNumber: '#1016', subject: 'Cannot install Adobe Creative Cloud — license check fails', requesterName: 'Aisha Ibrahim', action: 'suggested',     confidence: 78, responseTimeSec: 6, timestamp: ago(222), agentName: 'Tunde Bakare' },
+  { id: 'ai-008', ticketId: 't-1007', ticketNumber: '#1007', subject: 'Mobile app stuck on splash screen',                      requesterName: 'Marcus Botha',     action: 'escalated',     confidence: 38, responseTimeSec: 3, timestamp: ago(22) },
+  { id: 'ai-009', ticketId: 't-1006', ticketNumber: '#1006', subject: 'New laptop request for Lagos office expansion (×6)',      requesterName: 'Joshua Adekunle',  action: 'overridden',    confidence: 76, responseTimeSec: 5, timestamp: ago(1002), agentName: 'Chinedu Okafor' },
+  { id: 'ai-010', ticketId: 't-1010', ticketNumber: '#1010', subject: 'Need shared mailbox for accounts-payable team',          requesterName: 'Emmanuel Diallo',  action: 'suggested',     confidence: 73, responseTimeSec: 5, timestamp: ago(402), agentName: 'Chinedu Okafor' },
+];
+
+export const mockAIMetrics: AIMetrics = {
+  ticketsHandled:    847,
+  autoResolved:      312,
+  suggested:         389,
+  escalated:         146,
+  overridden:         58,
+  handlingRate:       41,
+  resolutionRate:     68,
+  avgConfidence:      79,
+  avgResponseTimeSec: 4.2,
+  csatScore:          4.4,
+  costSavedUsd:    14200,
+  trend: [
+    { day: 'Mon',   handled: 38, escalated: 9  },
+    { day: 'Tue',   handled: 42, escalated: 11 },
+    { day: 'Wed',   handled: 35, escalated: 8  },
+    { day: 'Thu',   handled: 51, escalated: 14 },
+    { day: 'Fri',   handled: 47, escalated: 10 },
+    { day: 'Sat',   handled: 18, escalated: 4  },
+    { day: 'Sun',   handled: 12, escalated: 3  },
+    { day: 'Today', handled: 28, escalated: 7  },
+  ],
+};

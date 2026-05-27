@@ -1,9 +1,18 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { useOfflineQuery } from '../app/_hooks/use-offline-query';
 import {
   mockTickets,
   mockAssets,
+  mockAIConfig,
+  mockAISuggestions,
+  mockAIActivity,
+  mockAIMetrics,
+  type AIAgentConfig,
+  type AISuggestion,
+  type AIActivityEntry,
+  type AIMetrics,
   mockMetrics,
   mockLicenses,
   mockAssetDashboard,
@@ -73,10 +82,13 @@ const delay = <T>(value: T, ms = 250): Promise<T> =>
   new Promise((resolve) => setTimeout(() => resolve(value), ms));
 
 export function useTickets() {
-  return useQuery<MockTicket[]>({
-    queryKey: ['tickets'],
-    queryFn: () => delay(mockTickets),
-  });
+  return useOfflineQuery<MockTicket>(
+    {
+      queryKey: ['tickets'],
+      queryFn: () => delay(mockTickets),
+    },
+    { idbStore: 'tickets', cacheKey: 'tickets-list' },
+  );
 }
 
 export function useTicket(id: string) {
@@ -87,10 +99,13 @@ export function useTicket(id: string) {
 }
 
 export function useAssets() {
-  return useQuery<MockAsset[]>({
-    queryKey: ['assets'],
-    queryFn: () => delay(mockAssets),
-  });
+  return useOfflineQuery<MockAsset>(
+    {
+      queryKey: ['assets'],
+      queryFn: () => delay(mockAssets),
+    },
+    { idbStore: 'assets', cacheKey: 'assets-list' },
+  );
 }
 
 export function useDashboardMetrics() {
@@ -322,5 +337,36 @@ export function useAgentChannels() {
   return useQuery<MockAgentChannel[]>({
     queryKey: ['channels'],
     queryFn: () => delay(mockAgentChannels, 150),
+  });
+}
+
+// ── AI First-Response Agent ───────────────────────────────────────────────────
+
+export function useAIConfig() {
+  return useQuery<AIAgentConfig>({
+    queryKey: ['ai', 'config'],
+    queryFn: () => delay(mockAIConfig, 150),
+  });
+}
+
+export function useAISuggestion(ticketId: string) {
+  return useQuery<AISuggestion | undefined>({
+    queryKey: ['ai', 'suggestion', ticketId],
+    queryFn: () => delay(mockAISuggestions.find((s) => s.ticketId === ticketId)),
+    staleTime: 30_000,
+  });
+}
+
+export function useAIActivity() {
+  return useQuery<AIActivityEntry[]>({
+    queryKey: ['ai', 'activity'],
+    queryFn: () => delay(mockAIActivity, 200),
+  });
+}
+
+export function useAIMetrics() {
+  return useQuery<AIMetrics>({
+    queryKey: ['ai', 'metrics'],
+    queryFn: () => delay(mockAIMetrics, 150),
   });
 }

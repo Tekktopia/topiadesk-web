@@ -93,11 +93,11 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-white/[0.06] bg-[#070D1A]">
+    <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-white/6 bg-[#070D1A]">
 
       {/* Logo */}
       <div className="flex h-14 items-center gap-2.5 border-b border-white/[0.07] px-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-500/30">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-linear-to-br from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-500/30">
           <Zap className="h-4 w-4 text-white" />
         </div>
         <div className="min-w-0">
@@ -130,7 +130,7 @@ export function Sidebar() {
                         'flex items-center justify-between gap-2.5 rounded-md px-2 py-1.5 text-sm font-medium transition-all',
                         active
                           ? 'bg-emerald-400/10 text-emerald-300'
-                          : 'text-gray-500 hover:bg-white/[0.05] hover:text-gray-200',
+                          : 'text-gray-500 hover:bg-white/5 hover:text-gray-200',
                       )}
                     >
                       <span className="flex items-center gap-2.5">
@@ -146,7 +146,7 @@ export function Sidebar() {
                         <Badge
                           variant={active ? 'secondary' : (item.badgeVariant ?? 'secondary')}
                           className={cn(
-                            'h-4 min-w-[1rem] border px-1 text-[10px]',
+                            'h-4 min-w-4 border px-1 text-[10px]',
                             active
                               ? 'border-emerald-400/20 bg-emerald-400/15 text-emerald-300'
                               : item.badgeVariant === 'danger'
@@ -172,14 +172,14 @@ export function Sidebar() {
       <div className="space-y-0.5 border-t border-white/[0.07] px-3 py-3">
         <Link
           href="/settings"
-          className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-gray-600 transition-colors hover:bg-white/[0.05] hover:text-gray-300"
+          className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-gray-600 transition-colors hover:bg-white/5 hover:text-gray-300"
         >
           <Settings className="h-4 w-4 text-gray-700" />
           Settings
         </Link>
         <Link
           href="/security"
-          className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-gray-600 transition-colors hover:bg-white/[0.05] hover:text-gray-300"
+          className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-gray-600 transition-colors hover:bg-white/5 hover:text-gray-300"
         >
           <ShieldCheck className="h-4 w-4 text-gray-700" />
           Security
@@ -192,10 +192,10 @@ export function Sidebar() {
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left transition-colors hover:bg-white/[0.05]"
+              className="flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left transition-colors hover:bg-white/5"
             >
               <Avatar className="h-7 w-7 shrink-0 ring-2 ring-emerald-500/20">
-                <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-emerald-700 text-[10px] font-bold text-white">
+                <AvatarFallback className="bg-linear-to-br from-emerald-500 to-emerald-700 text-[10px] font-bold text-white">
                   {CURRENT_ADMIN.initials}
                 </AvatarFallback>
               </Avatar>

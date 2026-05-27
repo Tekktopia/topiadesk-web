@@ -7,9 +7,11 @@ import {
   ArrowDown,
   ArrowUp,
   Bookmark,
+  Bot,
   ChevronDown,
   ChevronRight,
   Code,
+  Database,
   Download,
   Filter,
   Globe,
@@ -61,7 +63,8 @@ import {
   cn,
 } from '@topiadesk/ui';
 import { useTickets } from '@/lib/queries';
-import { agentDirectory } from '@/lib/mock-data';
+import { agentDirectory, mockAISuggestions } from '@/lib/mock-data';
+import { PendingBadge } from '@/app/_components/pending-badge';
 import type {
   MockTicket,
   Person,
@@ -196,7 +199,7 @@ type GroupKey = 'none' | 'status' | 'priority' | 'assignee' | 'channel';
 const PAGE_SIZE = 25;
 
 export default function TicketsPage() {
-  const { data: tickets, isLoading } = useTickets();
+  const { data: tickets, isLoading, isOfflineCached } = useTickets();
 
   const [viewId, setViewId] = useState<string>('all');
   const [search, setSearch] = useState('');
@@ -393,6 +396,7 @@ export default function TicketsPage() {
             setGroupBy(g);
             setPage(1);
           }}
+          isOfflineCached={isOfflineCached}
         />
 
         <FilterBar
@@ -650,6 +654,7 @@ interface ListHeaderProps {
   setDensity: (d: Density) => void;
   groupBy: GroupKey;
   setGroupBy: (g: GroupKey) => void;
+  isOfflineCached?: boolean;
 }
 
 function ListHeader({
@@ -662,6 +667,7 @@ function ListHeader({
   setDensity,
   groupBy,
   setGroupBy,
+  isOfflineCached,
 }: ListHeaderProps) {
   const Icon = activeView.icon;
   return (
@@ -669,11 +675,24 @@ function ListHeader({
       <div className="flex items-center gap-3">
         <Icon className="h-4 w-4 text-muted-foreground" />
         <div>
-          <h2 className="text-sm font-semibold leading-tight">
-            {activeView.label}
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold leading-tight">
+              {activeView.label}
+            </h2>
+            {isOfflineCached && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700"
+                title="Showing cached data — you're offline"
+              >
+                <Database className="h-2.5 w-2.5" />
+                Cached
+              </span>
+            )}
+          </div>
           <p className="text-[10px] text-muted-foreground">
-            Showing {showing} of {total}
+            {isOfflineCached
+              ? `${showing} tickets from local cache`
+              : `Showing ${showing} of ${total}`}
           </p>
         </div>
       </div>
@@ -1204,6 +1223,9 @@ function TicketRow({
 }: TicketRowProps) {
   const compact = density === 'compact';
   const ChannelIcon = CHANNEL_META[ticket.channel].icon;
+  const hasSuggestion = mockAISuggestions.some(
+    (s) => s.ticketId === ticket.id && s.status === 'pending',
+  );
   return (
     <TableRow
       onClick={onPreview}
@@ -1250,10 +1272,24 @@ function TicketRow({
               Escalated
             </Badge>
           )}
+          {hasSuggestion && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex items-center gap-0.5 rounded-full border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[9px] font-semibold text-violet-600">
+                  <Bot className="h-2.5 w-2.5" />
+                  AI
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>AI suggestion ready — click to review</TooltipContent>
+            </Tooltip>
+          )}
         </div>
-        <p className="mt-0.5 max-w-md truncate text-sm font-medium">
-          {ticket.subject}
-        </p>
+        <div className="mt-0.5 flex items-center gap-1.5">
+          <p className="max-w-md truncate text-sm font-medium">
+            {ticket.subject}
+          </p>
+          <PendingBadge entityId={ticket.id} />
+        </div>
         {!compact && ticket.tags.length > 0 && (
           <div className="mt-1 flex flex-wrap items-center gap-1">
             {ticket.tags.slice(0, 4).map((tag) => (
@@ -1508,9 +1544,12 @@ function PreviewPane({
 
       <div className="flex-1 space-y-5 overflow-y-auto p-4">
         <div>
-          <h3 className="font-display text-base font-bold leading-tight">
-            {ticket.subject}
-          </h3>
+          <div className="flex items-start gap-2">
+            <h3 className="font-display text-base font-bold leading-tight">
+              {ticket.subject}
+            </h3>
+            <PendingBadge entityId={ticket.id} className="mt-0.5 shrink-0" />
+          </div>
           <p className="mt-1 text-xs text-muted-foreground">
             Opened by {ticket.requester.name} via{' '}
             {CHANNEL_META[ticket.channel].label.toLowerCase()} ·{' '}

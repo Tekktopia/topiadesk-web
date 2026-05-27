@@ -9,6 +9,7 @@ import {
   BarChart3,
   Bell,
   BookOpen,
+  Bot,
   Boxes,
   Building2,
   CalendarClock,
@@ -84,10 +85,11 @@ const NAV_SECTIONS: NavSection[] = [
     label: 'Helpdesk',
     defaultOpen: true,
     links: [
-      { href: '/knowledge', label: 'Knowledge base', icon: BookOpen },
-      { href: '/automations', label: 'Automations', icon: Workflow },
-      { href: '/sla', label: 'SLA policies', icon: ShieldCheck },
-      { href: '/channels', label: 'Channels', icon: Headset },
+      { href: '/knowledge',   label: 'Knowledge base', icon: BookOpen },
+      { href: '/automations', label: 'Automations',    icon: Workflow },
+      { href: '/ai-agent',    label: 'AI Agent',       icon: Bot },
+      { href: '/sla',         label: 'SLA policies',   icon: ShieldCheck },
+      { href: '/channels',    label: 'Channels',       icon: Headset },
     ],
   },
   {

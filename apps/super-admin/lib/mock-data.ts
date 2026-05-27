@@ -585,3 +585,162 @@ export const mockAdminMetrics: AdminMetrics = {
   avgRevenuePerAccount: Math.round(6386 / 13),
   systemUptime: 99.82,
 };
+
+// ─── Invoices ─────────────────────────────────────────────────────────────────
+
+export type InvoiceStatus = 'paid' | 'pending' | 'overdue' | 'voided';
+
+export interface InvoiceLineItem {
+  id: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;  // USD cents
+  total: number;      // USD cents
+}
+
+export interface InvoicePayment {
+  id: string;
+  method: string;
+  amount: number;     // USD cents
+  paidAt: string;
+  reference: string;
+}
+
+export interface Invoice {
+  id: string;
+  number: string;
+  tenantId: string;
+  tenantName: string;
+  tenantSubdomain: string;
+  status: InvoiceStatus;
+  periodStart: string;
+  periodEnd: string;
+  issuedAt: string;
+  dueAt: string;
+  paidAt?: string;
+  subtotal: number;   // USD cents
+  taxRate: number;    // e.g. 7.5 for 7.5%
+  tax: number;        // USD cents
+  total: number;      // USD cents
+  currency: 'USD';
+  lineItems: InvoiceLineItem[];
+  payments: InvoicePayment[];
+  notes?: string;
+}
+
+export const mockInvoices: Invoice[] = [
+  {
+    id: 'inv-001',
+    number: 'INV-2026-0042',
+    tenantId: 'ten-001',
+    tenantName: 'AcmeBank Nigeria',
+    tenantSubdomain: 'acmebank',
+    status: 'paid',
+    periodStart: past(60),
+    periodEnd: past(31),
+    issuedAt: past(31),
+    dueAt: past(21),
+    paidAt: past(18),
+    subtotal: 99900,
+    taxRate: 7.5,
+    tax: 7493,
+    total: 107393,
+    currency: 'USD',
+    lineItems: [
+      { id: 'li-1', description: 'Enterprise plan — 42 agents (Apr 2026)', quantity: 1,  unitPrice: 99900, total: 99900 },
+      { id: 'li-2', description: 'Additional storage 50 GB',               quantity: 1,  unitPrice: 0,     total: 0     },
+    ],
+    payments: [
+      { id: 'pay-1', method: 'Visa ···4242', amount: 107393, paidAt: past(18), reference: 'ch_3Pxf9T2eZvKYlo2C01aHq48B' },
+    ],
+  },
+  {
+    id: 'inv-002',
+    number: 'INV-2026-0043',
+    tenantId: 'ten-001',
+    tenantName: 'AcmeBank Nigeria',
+    tenantSubdomain: 'acmebank',
+    status: 'paid',
+    periodStart: past(31),
+    periodEnd: past(1),
+    issuedAt: past(1),
+    dueAt: future(9),
+    paidAt: past(1),
+    subtotal: 99900,
+    taxRate: 7.5,
+    tax: 7493,
+    total: 107393,
+    currency: 'USD',
+    lineItems: [
+      { id: 'li-3', description: 'Enterprise plan — 42 agents (May 2026)', quantity: 1, unitPrice: 99900, total: 99900 },
+    ],
+    payments: [
+      { id: 'pay-2', method: 'Visa ···4242', amount: 107393, paidAt: past(1), reference: 'ch_4Qyg0U3fAw LZm3D12bIr59C' },
+    ],
+  },
+  {
+    id: 'inv-003',
+    number: 'INV-2026-0044',
+    tenantId: 'ten-002',
+    tenantName: 'KasiPay',
+    tenantSubdomain: 'kasipay',
+    status: 'overdue',
+    periodStart: past(31),
+    periodEnd: past(1),
+    issuedAt: past(1),
+    dueAt: past(7),
+    subtotal: 99900,
+    taxRate: 15,
+    tax: 14985,
+    total: 114885,
+    currency: 'USD',
+    lineItems: [
+      { id: 'li-4', description: 'Enterprise plan — 38 agents (May 2026)', quantity: 1, unitPrice: 99900, total: 99900 },
+    ],
+    payments: [],
+    notes: 'Payment failed on 2026-05-20. Retry scheduled.',
+  },
+  {
+    id: 'inv-004',
+    number: 'INV-2026-0045',
+    tenantId: 'ten-004',
+    tenantName: 'NorthField Corporation',
+    tenantSubdomain: 'northfield',
+    status: 'pending',
+    periodStart: past(1),
+    periodEnd: future(29),
+    issuedAt: past(1),
+    dueAt: future(9),
+    subtotal: 49900,
+    taxRate: 7.5,
+    tax: 3743,
+    total: 53643,
+    currency: 'USD',
+    lineItems: [
+      { id: 'li-5', description: 'Business plan — 14 agents (Jun 2026)', quantity: 1,  unitPrice: 49900, total: 49900 },
+    ],
+    payments: [],
+  },
+  {
+    id: 'inv-005',
+    number: 'INV-2026-0038',
+    tenantId: 'ten-003',
+    tenantName: 'SafariHold Group',
+    tenantSubdomain: 'safarihold',
+    status: 'voided',
+    periodStart: past(90),
+    periodEnd: past(60),
+    issuedAt: past(62),
+    dueAt: past(52),
+    subtotal: 99900,
+    taxRate: 16,
+    tax: 15984,
+    total: 115884,
+    currency: 'USD',
+    lineItems: [
+      { id: 'li-6', description: 'Enterprise plan — 29 agents (Feb 2026)', quantity: 1, unitPrice: 99900, total: 99900 },
+    ],
+    payments: [],
+    notes: 'Voided — duplicate invoice. Replaced by INV-2026-0039.',
+  },
+];

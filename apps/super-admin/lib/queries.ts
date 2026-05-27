@@ -6,6 +6,7 @@ import {
   mockAnnouncements,
   mockAuditLogs,
   mockFeatureFlags,
+  mockInvoices,
   mockPlatformUsers,
   mockPlans,
   mockRevenueTrend,
@@ -17,6 +18,7 @@ import {
   type Announcement,
   type AuditLog,
   type FeatureFlag,
+  type Invoice,
   type PlatformUser,
   type Plan,
   type RevenuePoint,
@@ -110,5 +112,19 @@ export function useRevenueTrend() {
   return useQuery<RevenuePoint[]>({
     queryKey: ['admin', 'revenue', 'trend'],
     queryFn: () => delay(mockRevenueTrend, 150),
+  });
+}
+
+export function useInvoices() {
+  return useQuery<Invoice[]>({
+    queryKey: ['admin', 'invoices'],
+    queryFn: () => delay(mockInvoices),
+  });
+}
+
+export function useInvoice(id: string) {
+  return useQuery<Invoice | undefined>({
+    queryKey: ['admin', 'invoices', id],
+    queryFn: () => delay(mockInvoices.find((inv) => inv.id === id)),
   });
 }
