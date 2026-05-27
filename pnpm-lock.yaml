@@ -102,6 +102,9 @@ importers:
       '@topiadesk/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      lucide-react:
+        specifier: ^0.469.0
+        version: 0.469.0(react@19.2.6)
       next:
         specifier: ^15.1.6
         version: 15.5.18(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -355,6 +358,9 @@ importers:
       '@topiadesk/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      lucide-react:
+        specifier: ^0.469.0
+        version: 0.469.0(react@19.2.6)
       next:
         specifier: ^15.1.6
         version: 15.5.18(react-dom@19.2.6(react@19.2.6))(react@19.2.6)

@@ -570,6 +570,86 @@ export const auditEvents: AuditEvent[] = [
   },
 ];
 
+// ─── Email Inboxes ─────────────────────────────────────────────────────────────
+
+export interface EmailInbox {
+  id: string;
+  /** Friendly display name shown to agents, e.g. "General Support" */
+  name: string;
+  /** The email address customers write to, e.g. "support@company.com" */
+  email: string;
+  /** Topiadesk inbound forwarding address, e.g. "company-abc123@in.topiadesk.com" */
+  forwardingAddress: string;
+  status: 'active' | 'pending' | 'paused';
+  defaultPriority: 'low' | 'medium' | 'high' | 'urgent';
+  defaultTeam: string | null;
+  autoReply: boolean;
+  autoReplyMessage: string;
+  ticketCount: number;
+  lastReceivedAt: string | null;
+  createdAt: string;
+}
+
+export const adminEmailInboxes: EmailInbox[] = [
+  {
+    id: 'inbox-1',
+    name: 'General Support',
+    email: 'support@consomoafrica.com',
+    forwardingAddress: 'consomoafrica-a1b2c3@in.topiadesk.com',
+    status: 'active',
+    defaultPriority: 'medium',
+    defaultTeam: 'Support',
+    autoReply: true,
+    autoReplyMessage:
+      "Thanks for reaching out! We've received your request and will respond within 1 business hour.",
+    ticketCount: 247,
+    lastReceivedAt: '12 minutes ago',
+    createdAt: '4 months ago',
+  },
+  {
+    id: 'inbox-2',
+    name: 'Billing Queries',
+    email: 'billing@consomoafrica.com',
+    forwardingAddress: 'consomoafrica-d4e5f6@in.topiadesk.com',
+    status: 'active',
+    defaultPriority: 'high',
+    defaultTeam: 'Finance',
+    autoReply: false,
+    autoReplyMessage: '',
+    ticketCount: 83,
+    lastReceivedAt: '2 hours ago',
+    createdAt: '4 months ago',
+  },
+  {
+    id: 'inbox-3',
+    name: 'Technical Escalations',
+    email: 'techsupport@consomoafrica.com',
+    forwardingAddress: 'consomoafrica-g7h8i9@in.topiadesk.com',
+    status: 'pending',
+    defaultPriority: 'urgent',
+    defaultTeam: 'Engineering',
+    autoReply: false,
+    autoReplyMessage: '',
+    ticketCount: 0,
+    lastReceivedAt: null,
+    createdAt: '2 days ago',
+  },
+  {
+    id: 'inbox-4',
+    name: 'Customer Feedback',
+    email: 'feedback@consomoafrica.com',
+    forwardingAddress: 'consomoafrica-j0k1l2@in.topiadesk.com',
+    status: 'paused',
+    defaultPriority: 'low',
+    defaultTeam: null,
+    autoReply: false,
+    autoReplyMessage: '',
+    ticketCount: 19,
+    lastReceivedAt: '3 weeks ago',
+    createdAt: '6 months ago',
+  },
+];
+
 export const BUSINESS_HOURS = {
   timezone: 'Africa/Lagos',
   schedule: [

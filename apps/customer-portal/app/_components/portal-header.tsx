@@ -19,6 +19,7 @@ import {
   Ticket,
   User,
   X,
+  Zap,
 } from 'lucide-react';
 import {
   Avatar,
@@ -36,10 +37,10 @@ import { CURRENT_CUSTOMER, TENANT, mockNotifications } from '@/lib/mock-data';
 import { initials } from '@/lib/format';
 
 const NAV = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/tickets', label: 'My tickets', icon: Ticket },
-  { href: '/kb', label: 'Help center', icon: BookOpen },
-  { href: '/notifications', label: 'Updates', icon: Bell },
+  { href: '/',             label: 'Home',        icon: Home },
+  { href: '/tickets',      label: 'My tickets',  icon: Ticket },
+  { href: '/kb',           label: 'Help center', icon: BookOpen },
+  { href: '/notifications', label: 'Updates',    icon: Bell },
 ];
 
 export function PortalHeader() {
@@ -49,14 +50,16 @@ export function PortalHeader() {
   const unreadCount = mockNotifications.filter((n) => n.unread).length;
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+    <header className="sticky top-0 z-40 border-b border-border/40 bg-white/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 lg:px-8">
+
+        {/* Brand */}
         <Link href="/" className="flex items-center gap-3">
-          <div className="grid h-9 w-9 place-items-center rounded-lg bg-navy text-2xl">
+          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 text-xl shadow-md shadow-blue-600/25">
             {TENANT.emoji}
           </div>
           <div className="hidden flex-col leading-tight sm:flex">
-            <span className="font-display text-base font-bold tracking-tight">
+            <span className="font-display text-base font-bold tracking-tight text-foreground">
               {TENANT.name}
             </span>
             <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -65,6 +68,7 @@ export function PortalHeader() {
           </div>
         </Link>
 
+        {/* Desktop nav */}
         <nav className="ml-6 hidden items-center gap-1 md:flex">
           {NAV.map((item) => {
             const Icon = item.icon;
@@ -76,10 +80,10 @@ export function PortalHeader() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+                  'inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-all',
                   active
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-foreground hover:bg-muted',
+                    ? 'bg-primary/8 text-primary'
+                    : 'text-foreground/70 hover:bg-muted/70 hover:text-foreground',
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -95,21 +99,28 @@ export function PortalHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
+          {/* Search (desktop) */}
           <Link
             href="/kb"
-            className="hidden h-9 w-48 items-center gap-2 rounded-md border border-input bg-muted/40 px-3 text-sm text-muted-foreground transition-colors hover:bg-muted md:flex lg:w-64"
+            className="hidden h-9 w-48 items-center gap-2 rounded-lg border border-border/60 bg-muted/50 px-3 text-sm text-muted-foreground shadow-sm transition-colors hover:border-border hover:bg-muted md:flex lg:w-64"
           >
             <Search className="h-3.5 w-3.5" />
             <span className="flex-1 truncate text-left">Search help</span>
           </Link>
 
-          <Button asChild size="sm" className="hidden md:inline-flex">
+          {/* New request button */}
+          <Button
+            asChild
+            size="sm"
+            className="hidden bg-gradient-to-r from-blue-600 to-blue-500 shadow-md shadow-blue-600/20 hover:from-blue-500 hover:to-blue-400 md:inline-flex"
+          >
             <Link href="/submit">
               <Plus className="h-3.5 w-3.5" />
               New request
             </Link>
           </Button>
 
+          {/* Notifications (mobile) */}
           <Link
             href="/notifications"
             aria-label={`Notifications (${unreadCount} unread)`}
@@ -117,10 +128,11 @@ export function PortalHeader() {
           >
             <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
-              <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-orange" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-orange ring-2 ring-white" />
             )}
           </Link>
 
+          {/* Hamburger */}
           <button
             type="button"
             onClick={() => setMobileOpen((v) => !v)}
@@ -134,8 +146,9 @@ export function PortalHeader() {
         </div>
       </div>
 
+      {/* Mobile nav drawer */}
       {mobileOpen && (
-        <div className="border-t bg-card md:hidden">
+        <div className="border-t border-border/50 bg-white/95 backdrop-blur-xl md:hidden">
           <nav className="mx-auto flex max-w-7xl flex-col gap-1 p-3">
             {NAV.map((item) => {
               const Icon = item.icon;
@@ -148,9 +161,9 @@ export function PortalHeader() {
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
-                    'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
+                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
                     active
-                      ? 'bg-primary/10 text-primary'
+                      ? 'bg-primary/8 text-primary'
                       : 'text-foreground hover:bg-muted',
                   )}
                 >
@@ -159,7 +172,10 @@ export function PortalHeader() {
                 </Link>
               );
             })}
-            <Button asChild className="mt-2">
+            <Button
+              asChild
+              className="mt-2 bg-gradient-to-r from-blue-600 to-blue-500"
+            >
               <Link href="/submit" onClick={() => setMobileOpen(false)}>
                 <Plus className="h-4 w-4" />
                 New request
@@ -178,10 +194,12 @@ function ProfileMenu() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="flex items-center gap-2 rounded-md p-1 pr-2 transition-colors hover:bg-muted"
+          className="flex items-center gap-2 rounded-lg p-1 pr-2 transition-colors hover:bg-muted"
         >
-          <Avatar className="h-8 w-8">
-            <AvatarFallback>{initials(CURRENT_CUSTOMER.name)}</AvatarFallback>
+          <Avatar className="h-8 w-8 ring-2 ring-primary/15">
+            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-700 text-xs font-semibold text-white">
+              {initials(CURRENT_CUSTOMER.name)}
+            </AvatarFallback>
           </Avatar>
           <ChevronDown className="hidden h-3 w-3 text-muted-foreground md:inline" />
         </button>

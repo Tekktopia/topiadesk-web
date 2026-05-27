@@ -511,47 +511,73 @@ export default function DashboardPage() {
 
 function PageHeader({ queueCount }: { queueCount: number }) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-3">
-      <div className="space-y-1">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          Helpdesk overview
-        </p>
-        <h1 className="font-display text-2xl font-bold tracking-tight">
-          Good morning, {CURRENT_AGENT_NAME}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          You have{' '}
-          <Link
-            href="/tickets?view=my-open"
-            className="font-medium text-foreground hover:underline"
+    <header className="relative overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-600 to-blue-700 px-6 py-5 shadow-lg shadow-blue-600/15">
+      {/* Subtle pattern */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-10"
+        style={{
+          backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)',
+          backgroundSize: '20px 20px',
+        }}
+      />
+      <div className="relative flex flex-wrap items-end justify-between gap-4">
+        <div className="space-y-1">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-200">
+            Helpdesk overview
+          </p>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-white">
+            Good morning, {CURRENT_AGENT_NAME} 👋
+          </h1>
+          <p className="text-sm text-blue-200">
+            You have{' '}
+            <Link
+              href="/tickets?view=my-open"
+              className="font-semibold text-white underline-offset-2 hover:underline"
+            >
+              {queueCount} open tickets
+            </Link>{' '}
+            in your queue. 2 are due in the next hour.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:border-white/30"
           >
-            {queueCount} open tickets
-          </Link>{' '}
-          in your queue. 2 are due in the next hour.
-        </p>
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/tickets?view=my-open">
-            <Inbox className="h-3 w-3" />
-            My queue
-            <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[9px]">
-              {queueCount}
-            </Badge>
-          </Link>
-        </Button>
-        <Button variant="outline" size="sm">
-          <Upload className="h-3 w-3" />
-          Import
-        </Button>
-        <Button variant="outline" size="sm">
-          <Activity className="h-3 w-3" />
-          Run report
-        </Button>
-        <Button size="sm">
-          <Plus className="h-3 w-3" />
-          New ticket
-        </Button>
+            <Link href="/tickets?view=my-open">
+              <Inbox className="h-3 w-3" />
+              My queue
+              <Badge className="ml-1 h-4 bg-white/20 px-1.5 text-[9px] text-white">
+                {queueCount}
+              </Badge>
+            </Link>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+          >
+            <Upload className="h-3 w-3" />
+            Import
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+          >
+            <Activity className="h-3 w-3" />
+            Run report
+          </Button>
+          <Button
+            size="sm"
+            className="bg-white text-blue-700 font-semibold shadow-md hover:bg-blue-50"
+          >
+            <Plus className="h-3 w-3" />
+            New ticket
+          </Button>
+        </div>
       </div>
     </header>
   );
@@ -568,11 +594,14 @@ interface MetricCardProps {
   loading?: boolean;
 }
 
-const accentClasses: Record<MetricCardProps['accent'], { bg: string; spark: string }> = {
-  info: { bg: 'bg-blue-100 text-blue-700', spark: 'text-blue-500' },
-  warning: { bg: 'bg-amber-100 text-amber-700', spark: 'text-amber-500' },
-  success: { bg: 'bg-emerald-100 text-emerald-700', spark: 'text-emerald-500' },
-  default: { bg: 'bg-muted text-muted-foreground', spark: 'text-muted-foreground' },
+const accentClasses: Record<
+  MetricCardProps['accent'],
+  { iconBg: string; iconText: string; spark: string; strip: string }
+> = {
+  info:    { iconBg: 'bg-blue-500/10',    iconText: 'text-blue-600',    spark: 'text-blue-500',    strip: 'from-blue-500 to-blue-400' },
+  warning: { iconBg: 'bg-amber-500/10',   iconText: 'text-amber-600',   spark: 'text-amber-500',   strip: 'from-amber-500 to-amber-400' },
+  success: { iconBg: 'bg-emerald-500/10', iconText: 'text-emerald-600', spark: 'text-emerald-500', strip: 'from-emerald-500 to-emerald-400' },
+  default: { iconBg: 'bg-muted',          iconText: 'text-muted-foreground', spark: 'text-muted-foreground', strip: 'from-slate-400 to-slate-300' },
 };
 
 function MetricCard({
@@ -585,10 +614,12 @@ function MetricCard({
   delta,
   loading,
 }: MetricCardProps) {
-  const accentClass = accentClasses[accent];
+  const ac = accentClasses[accent];
   const ArrowIcon = delta.direction === 'up' ? ArrowUpRight : ArrowDownRight;
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden shadow-sm transition-shadow hover:shadow-md">
+      {/* Gradient accent strip */}
+      <div className={cn('h-1 w-full bg-gradient-to-r', ac.strip)} />
       <CardContent className="space-y-3 p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -604,8 +635,10 @@ function MetricCard({
                 </p>
                 <span
                   className={cn(
-                    'inline-flex items-center gap-0.5 text-[10px] font-semibold',
-                    delta.good ? 'text-emerald-600' : 'text-red-600',
+                    'inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold',
+                    delta.good
+                      ? 'bg-emerald-50 text-emerald-600'
+                      : 'bg-red-50 text-red-600',
                   )}
                 >
                   <ArrowIcon className="h-3 w-3" />
@@ -620,14 +653,15 @@ function MetricCard({
           </div>
           <div
             className={cn(
-              'grid h-9 w-9 shrink-0 place-items-center rounded-lg',
-              accentClass.bg,
+              'grid h-10 w-10 shrink-0 place-items-center rounded-xl',
+              ac.iconBg,
+              ac.iconText,
             )}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className="h-5 w-5" />
           </div>
         </div>
-        <Sparkline data={trend} width={240} height={28} className={accentClass.spark} />
+        <Sparkline data={trend} width={240} height={28} className={ac.spark} />
       </CardContent>
     </Card>
   );

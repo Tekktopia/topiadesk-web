@@ -60,42 +60,60 @@ export default function PortalHome() {
 
   return (
     <div className="bg-muted/20">
-      <section className="border-b bg-card">
-        <div className="mx-auto max-w-5xl px-4 py-12 text-center lg:py-16">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            {TENANT.name} support
+      <section className="relative overflow-hidden border-b bg-[#0B1529] py-14 text-center lg:py-20">
+        {/* Gradient orbs */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-blue-600/20 blur-[100px]" />
+          <div className="absolute right-1/4 bottom-0 h-[200px] w-[300px] rounded-full bg-violet-600/10 blur-[80px]" />
+        </div>
+        {/* Dot grid */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: 'radial-gradient(#ffffff08 1px, transparent 1px)',
+            backgroundSize: '24px 24px',
+          }}
+        />
+
+        <div className="relative mx-auto max-w-5xl px-4 lg:px-8">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-400">
+            {TENANT.name} Support
           </p>
-          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
             Hi {firstName}, how can we help today?
           </h1>
-          <p className="mt-3 text-sm text-muted-foreground">
+          <p className="mt-4 text-base text-slate-400">
             Search our help centre, submit a request, or track an existing ticket.
           </p>
 
           <form
             action="/kb"
             method="GET"
-            className="mx-auto mt-6 flex max-w-2xl items-center gap-2 rounded-xl border border-input bg-card p-1.5 shadow-sm focus-within:border-primary"
+            className="mx-auto mt-8 flex max-w-2xl items-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] p-1.5 shadow-xl backdrop-blur-sm focus-within:border-blue-500/40 focus-within:bg-white/10"
           >
-            <Search className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
+            <Search className="ml-2 h-4 w-4 shrink-0 text-slate-500" />
             <input
               name="q"
               type="text"
-              placeholder="Try &ldquo;reset password&rdquo; or &ldquo;new laptop&rdquo;..."
-              className="flex-1 bg-transparent px-2 py-2 text-sm outline-none placeholder:text-muted-foreground"
+              placeholder='Try "reset password" or "new laptop"...'
+              className="flex-1 bg-transparent px-2 py-2 text-sm text-white outline-none placeholder:text-slate-600"
             />
-            <Button type="submit" size="sm" className="h-9">
+            <Button
+              type="submit"
+              size="sm"
+              className="h-9 bg-gradient-to-r from-blue-600 to-blue-500 shadow-md shadow-blue-600/25 hover:from-blue-500 hover:to-blue-400"
+            >
               Search
             </Button>
           </form>
 
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1.5 text-[11px] text-slate-600">
             <span>Popular:</span>
             {['reset password', 'new laptop', 'VPN', 'shared mailbox'].map((q) => (
               <Link
                 key={q}
                 href={`/kb?q=${encodeURIComponent(q)}`}
-                className="rounded-full bg-muted px-2.5 py-0.5 hover:bg-muted/70"
+                className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
               >
                 {q}
               </Link>
@@ -314,22 +332,27 @@ function ActionCard({
     <Link
       href={href}
       className={cn(
-        'group flex flex-col gap-2 rounded-lg border p-4 transition-all hover:-translate-y-0.5 hover:shadow-md',
+        'group relative flex flex-col gap-3 overflow-hidden rounded-xl border p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg',
         isPrimary
-          ? 'border-primary/40 bg-primary/5 hover:border-primary'
-          : 'border-border bg-card hover:border-primary/40',
+          ? 'border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 hover:border-blue-300'
+          : 'border-border bg-card hover:border-primary/30',
       )}
     >
-      <div className="flex items-center justify-between">
+      {/* Subtle corner gradient for primary */}
+      {isPrimary && (
+        <div className="pointer-events-none absolute right-0 top-0 h-24 w-24 rounded-bl-full bg-gradient-to-bl from-blue-100/60 to-transparent" />
+      )}
+
+      <div className="flex items-start justify-between">
         <div
           className={cn(
-            'grid h-9 w-9 place-items-center rounded-md',
+            'grid h-10 w-10 place-items-center rounded-xl shadow-sm',
             isPrimary
-              ? 'bg-primary text-white'
+              ? 'bg-gradient-to-br from-blue-600 to-blue-500 text-white shadow-blue-600/20'
               : 'bg-primary/10 text-primary',
           )}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className="h-5 w-5" />
         </div>
         {badge && (
           <Badge
@@ -341,10 +364,12 @@ function ActionCard({
         )}
       </div>
       <div>
-        <p className="text-sm font-semibold">{title}</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+        <p className="font-semibold text-foreground">{title}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
+          {description}
+        </p>
       </div>
-      <span className="mt-auto inline-flex items-center gap-1 text-[11px] font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
+      <span className="mt-auto inline-flex items-center gap-1 text-xs font-medium text-primary opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5">
         Open
         <ArrowRight className="h-3 w-3" />
       </span>

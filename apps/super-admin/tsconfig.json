@@ -1,7 +1,6 @@
 {
-  "extends": "@topiadesk/tsconfig/nextjs.json",
+  "extends": "../../packages/tsconfig/nextjs.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     }

@@ -45,28 +45,46 @@ export default function AdminOverview() {
 
   return (
     <div className="space-y-5 p-5 lg:p-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            Admin overview
-          </p>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
-            {TENANT.name} workspace
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Health, usage, and recent admin activity at a glance.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link href="/agents">
-              <Users className="h-3 w-3" />
-              Invite agent
-            </Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/settings">Open settings</Link>
-          </Button>
+      <header className="relative overflow-hidden rounded-2xl border border-orange/20 bg-gradient-to-br from-orange to-orange-light px-6 py-5 shadow-lg shadow-orange/15">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)',
+            backgroundSize: '20px 20px',
+          }}
+        />
+        <div className="relative flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-orange-100/80">
+              Admin overview
+            </p>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-white">
+              {TENANT.name} workspace
+            </h1>
+            <p className="text-sm text-orange-100">
+              Health, usage, and recent admin activity at a glance.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="border-white/25 bg-white/10 text-white hover:bg-white/20 hover:border-white/40"
+            >
+              <Link href="/agents">
+                <Users className="h-3 w-3" />
+                Invite agent
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="sm"
+              className="bg-white text-orange font-semibold hover:bg-orange-50"
+            >
+              <Link href="/settings">Open settings</Link>
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -290,7 +308,15 @@ function Stat({
   tone?: 'default' | 'success';
 }) {
   return (
-    <Card>
+    <Card className="overflow-hidden shadow-sm transition-shadow hover:shadow-md">
+      <div
+        className={cn(
+          'h-1 w-full bg-gradient-to-r',
+          tone === 'success'
+            ? 'from-emerald-500 to-emerald-400'
+            : 'from-blue-500 to-blue-400',
+        )}
+      />
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div>
@@ -300,14 +326,23 @@ function Stat({
             </p>
             <p className="text-[11px] text-muted-foreground">{sub}</p>
           </div>
-          <Activity className="h-4 w-4 text-muted-foreground" />
+          <div
+            className={cn(
+              'grid h-9 w-9 place-items-center rounded-lg',
+              tone === 'success'
+                ? 'bg-emerald-500/10 text-emerald-600'
+                : 'bg-blue-500/10 text-blue-600',
+            )}
+          >
+            <Activity className="h-4 w-4" />
+          </div>
         </div>
         <Sparkline
           data={trend}
           width={220}
           height={28}
           className={cn(
-            'mt-2',
+            'mt-3',
             tone === 'success' ? 'text-emerald-500' : 'text-primary',
           )}
         />

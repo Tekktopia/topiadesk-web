@@ -105,13 +105,13 @@ export function Topbar() {
 
   return (
     <>
-      <header className="flex h-14 shrink-0 items-center gap-3 border-b bg-background px-4">
+      <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/50 bg-background/80 px-4 backdrop-blur-xl">
         <Breadcrumbs />
 
         <button
           type="button"
           onClick={() => setCommandOpen(true)}
-          className="group ml-auto flex h-9 w-72 items-center gap-2 rounded-md border border-input bg-muted/40 px-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
+          className="group ml-auto flex h-9 w-72 items-center gap-2 rounded-lg border border-border/60 bg-muted/50 px-3 text-sm text-muted-foreground shadow-sm transition-colors hover:border-border hover:bg-muted"
         >
           <Search className="h-3.5 w-3.5" />
           <span className="flex-1 text-left">

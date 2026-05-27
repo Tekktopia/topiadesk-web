@@ -38,6 +38,7 @@ import {
   Webhook,
   Workflow,
   X,
+  Zap,
 } from 'lucide-react';
 import {
   Avatar,
@@ -73,29 +74,30 @@ const SECTIONS: NavSection[] = [
   {
     label: 'Workspace',
     items: [
-      { href: '/settings', label: 'Tenant settings', icon: Settings },
-      { href: '/branding', label: 'Branding', icon: Brush },
-      { href: '/business-hours', label: 'Business hours', icon: Calendar },
+      { href: '/settings',       label: 'Tenant settings', icon: Settings },
+      { href: '/branding',       label: 'Branding',        icon: Brush },
+      { href: '/business-hours', label: 'Business hours',  icon: Calendar },
     ],
   },
   {
     label: 'Ticketing',
     items: [
-      { href: '/sla', label: 'SLA policies', icon: Timer },
-      { href: '/automations', label: 'Automations', icon: Workflow },
+      { href: '/sla',         label: 'SLA policies', icon: Timer },
+      { href: '/automations', label: 'Automations',  icon: Workflow },
     ],
   },
   {
     label: 'People',
     items: [
-      { href: '/agents', label: 'Agents & users', icon: Users },
-      { href: '/roles', label: 'Roles & permissions', icon: Shield },
+      { href: '/agents', label: 'Agents & users',     icon: Users },
+      { href: '/roles',  label: 'Roles & permissions', icon: Shield },
     ],
   },
   {
     label: 'Connect',
     items: [
-      { href: '/integrations', label: 'Integrations', icon: Plug },
+      { href: '/channels',     label: 'Email channels', icon: Mail },
+      { href: '/integrations', label: 'Integrations',   icon: Plug },
     ],
   },
   {
@@ -107,7 +109,7 @@ const SECTIONS: NavSection[] = [
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   return (
-    <div className="flex h-screen overflow-hidden bg-muted/30">
+    <div className="flex h-screen overflow-hidden bg-[#F1F5FA]">
       <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar onToggleMobile={() => setMobileOpen((v) => !v)} />
@@ -131,39 +133,43 @@ function Sidebar({
         <button
           aria-label="Close menu"
           onClick={onClose}
-          className="fixed inset-0 z-30 bg-black/30 lg:hidden"
+          className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden"
         />
       )}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r bg-background transition-transform lg:static lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/[0.06] bg-[#0B1120] transition-transform lg:static lg:translate-x-0',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         )}
       >
-        <div className="flex h-14 items-center gap-3 border-b px-4">
-          <div className="grid h-9 w-9 place-items-center rounded-lg bg-navy text-lg">
+        {/* Logo / brand */}
+        <div className="flex h-14 items-center gap-3 border-b border-white/[0.07] px-4">
+          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-orange to-orange-light text-xl shadow-lg shadow-orange/20">
             {TENANT.emoji}
           </div>
           <div className="min-w-0 flex-1 leading-tight">
-            <p className="truncate text-sm font-semibold">{TENANT.name}</p>
-            <p className="truncate text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="truncate text-sm font-semibold text-gray-100">
+              {TENANT.name}
+            </p>
+            <p className="truncate text-[10px] uppercase tracking-[0.18em] text-gray-500">
               Admin · {TENANT.plan}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="grid h-7 w-7 place-items-center rounded text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
+            className="grid h-7 w-7 place-items-center rounded-md text-gray-600 hover:bg-white/10 hover:text-gray-200 lg:hidden"
             aria-label="Close menu"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
+        {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-3 py-3">
           {SECTIONS.map((section) => (
             <div key={section.label} className="mb-4">
-              <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-600">
                 {section.label}
               </p>
               <ul className="space-y-0.5">
@@ -178,16 +184,18 @@ function Sidebar({
                         href={item.href}
                         onClick={onClose}
                         className={cn(
-                          'group flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm font-medium transition-colors',
+                          'group flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm font-medium transition-all',
                           active
-                            ? 'bg-primary text-white'
-                            : 'text-foreground hover:bg-muted',
+                            ? 'bg-orange/10 text-orange'
+                            : 'text-gray-400 hover:bg-white/[0.05] hover:text-gray-100',
                         )}
                       >
                         <Icon
                           className={cn(
                             'h-4 w-4 shrink-0',
-                            active ? 'text-white' : 'text-muted-foreground',
+                            active
+                              ? 'text-orange'
+                              : 'text-gray-600 group-hover:text-gray-300',
                           )}
                         />
                         {item.label}
@@ -200,10 +208,11 @@ function Sidebar({
           ))}
         </nav>
 
-        <div className="border-t p-3 text-[11px]">
+        {/* Footer links */}
+        <div className="border-t border-white/[0.07] p-3 text-[11px]">
           <Link
             href="https://app.topiadesk.com"
-            className="flex items-center justify-between rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="flex items-center justify-between rounded-md p-2 text-gray-600 hover:bg-white/[0.05] hover:text-gray-300"
           >
             <span className="inline-flex items-center gap-2">
               <ExternalLink className="h-3 w-3" />
@@ -212,7 +221,7 @@ function Sidebar({
           </Link>
           <Link
             href="https://docs.topiadesk.com"
-            className="flex items-center justify-between rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="flex items-center justify-between rounded-md p-2 text-gray-600 hover:bg-white/[0.05] hover:text-gray-300"
           >
             <span className="inline-flex items-center gap-2">
               <HelpCircle className="h-3 w-3" />
@@ -227,7 +236,7 @@ function Sidebar({
 
 function Topbar({ onToggleMobile }: { onToggleMobile: () => void }) {
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b bg-background px-4 lg:px-6">
+    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/50 bg-white/80 px-4 backdrop-blur-xl lg:px-6">
       <button
         type="button"
         onClick={onToggleMobile}
@@ -241,7 +250,7 @@ function Topbar({ onToggleMobile }: { onToggleMobile: () => void }) {
         <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Search settings, agents, integrations..."
-          className="h-9 w-72 pl-8 text-xs"
+          className="h-9 w-72 rounded-lg border-border/60 bg-muted/50 pl-8 text-xs shadow-sm focus-visible:border-primary/50"
         />
       </div>
 
@@ -251,17 +260,19 @@ function Topbar({ onToggleMobile }: { onToggleMobile: () => void }) {
         className="relative grid h-9 w-9 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
         <Bell className="h-4 w-4" />
-        <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-orange" />
+        <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-orange ring-2 ring-white" />
       </button>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className="flex items-center gap-2 rounded-md p-1 pr-2 transition-colors hover:bg-muted"
+            className="flex items-center gap-2 rounded-lg p-1 pr-2 transition-colors hover:bg-muted"
           >
-            <Avatar className="h-7 w-7">
-              <AvatarFallback>{initials(CURRENT_ADMIN.name)}</AvatarFallback>
+            <Avatar className="h-7 w-7 ring-2 ring-orange/20">
+              <AvatarFallback className="bg-gradient-to-br from-orange to-orange-light text-[11px] font-bold text-white">
+                {initials(CURRENT_ADMIN.name)}
+              </AvatarFallback>
             </Avatar>
             <span className="hidden text-sm font-medium md:inline">
               {CURRENT_ADMIN.name}
