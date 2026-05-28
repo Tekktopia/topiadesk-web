@@ -139,8 +139,12 @@ export default function AssetDashboardPage() {
   );
 
   return (
-    <div className="space-y-5 p-5">
-      <PageHeader />
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
+      <div className="shrink-0 px-5 pt-5">
+        <PageHeader />
+      </div>
+
+      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-4">
 
       {/* Critical license alert banner */}
       {!licenses.isLoading && criticalCount > 0 && (
@@ -304,6 +308,7 @@ export default function AssetDashboardPage() {
           </CardContent>
         </Card>
       </div>
+      </div>
     </div>
   );
 }
@@ -312,7 +317,7 @@ export default function AssetDashboardPage() {
 
 function PageHeader() {
   return (
-    <div className="relative -mx-5 -mt-5 mb-1 overflow-hidden bg-navy px-5 py-5">
+    <header className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
       <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
       <div className="relative flex flex-wrap items-center justify-between gap-4">
@@ -332,13 +337,13 @@ function PageHeader() {
             <RefreshCw className="h-3 w-3" />
             Scan network
           </Button>
-          <Button size="sm" className="bg-coral text-white hover:bg-white/90">
+          <Button size="sm" className="bg-coral text-white hover:bg-coral-dark">
             <Plus className="h-3 w-3" />
             Add asset
           </Button>
         </div>
       </div>
-    </div>
+    </header>
   );
 }
 

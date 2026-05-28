@@ -203,8 +203,14 @@ export default function DashboardPage() {
     .slice(0, 6);
 
   return (
-    <div className="space-y-5 p-5">
-      <PageHeader queueCount={myQueue.length} />
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
+      {/* Fixed hero header */}
+      <div className="shrink-0 px-5 pt-5">
+        <PageHeader queueCount={myQueue.length} />
+      </div>
+
+      {/* Scrollable content area */}
+      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-4">
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
@@ -504,6 +510,7 @@ export default function DashboardPage() {
             </ul>
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   );

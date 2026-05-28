@@ -39,14 +39,20 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="light">
+    /*
+     * suppressHydrationWarning is required at the <html> and <body> level because
+     * browser extensions (Grammarly, QuillBot, Dark Reader, etc.) inject attributes
+     * like `data-qb-installed` before React hydrates, which would otherwise produce
+     * a console hydration mismatch warning.
+     */
+    <html lang="en" className="light" suppressHydrationWarning>
       <head>
         {/* PWA splash screens for iOS */}
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>

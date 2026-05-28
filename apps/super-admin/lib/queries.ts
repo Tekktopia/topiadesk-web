@@ -46,9 +46,9 @@ export function useTenants() {
 }
 
 export function useTenant(id: string) {
-  return useQuery<Tenant | undefined>({
+  return useQuery<Tenant | null>({
     queryKey: ['admin', 'tenants', id],
-    queryFn: () => delay(mockTenants.find((t) => t.id === id)),
+    queryFn: () => delay(mockTenants.find((t) => t.id === id) ?? null),
   });
 }
 
@@ -123,8 +123,8 @@ export function useInvoices() {
 }
 
 export function useInvoice(id: string) {
-  return useQuery<Invoice | undefined>({
+  return useQuery<Invoice | null>({
     queryKey: ['admin', 'invoices', id],
-    queryFn: () => delay(mockInvoices.find((inv) => inv.id === id)),
+    queryFn: () => delay(mockInvoices.find((inv) => inv.id === id) ?? null),
   });
 }

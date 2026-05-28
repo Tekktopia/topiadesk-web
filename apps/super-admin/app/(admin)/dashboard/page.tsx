@@ -154,9 +154,10 @@ export default function DashboardPage() {
   }, [tenants.data]);
 
   return (
-    <div className="space-y-6">
-      {/* Gradient header */}
-      <div className="relative overflow-hidden bg-navy px-6 py-5">
+    <div className="flex h-[calc(100vh-3rem)] flex-col overflow-hidden">
+      {/* Fixed header */}
+      <div className="shrink-0 p-5 pb-0">
+      <header className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
@@ -174,9 +175,10 @@ export default function DashboardPage() {
             </Button>
           </div>
         </div>
+      </header>
       </div>
 
-      <div className="space-y-6 px-6 pb-6">
+      <div className="flex-1 min-h-0 space-y-6 overflow-y-auto px-6 pb-6 pt-5">
       {/* System alert banner */}
       {degraded.length > 0 && (
         <div className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900 dark:bg-amber-950/30">

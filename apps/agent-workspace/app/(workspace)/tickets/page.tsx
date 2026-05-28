@@ -543,9 +543,9 @@ function SearchBar({
   return (
     <div
       className={cn(
-        'group relative flex h-9 w-80 items-center gap-2 rounded-full border bg-card pl-3.5 pr-1.5 transition-all duration-150',
+        'group relative flex h-9 w-full items-center gap-2 rounded-full border pl-3.5 pr-1.5 transition-all duration-150',
         focused
-          ? 'border-coral/40 shadow-[0_0_0_4px_rgba(255,107,74,0.10)] ring-0'
+          ? 'border-coral/40 bg-card shadow-[0_0_0_4px_rgba(255,107,74,0.10)] ring-0'
           : value
             ? 'border-border/80 bg-card'
             : 'border-transparent bg-muted/45 hover:bg-muted/70 hover:border-border/40',

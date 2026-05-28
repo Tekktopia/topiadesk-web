@@ -205,9 +205,10 @@ export default function DeviceDetailPage() {
   const activeSensorAlerts = d.sensors.filter((s) => s.status === 'down' || s.status === 'warning').length;
 
   return (
-    <div className="space-y-5 p-5">
-      {/* Gradient header */}
-      <div className="relative -mx-5 -mt-5 mb-1 overflow-hidden bg-navy px-5 py-5">
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
+      {/* Fixed header */}
+      <div className="shrink-0 p-5 pb-0">
+      <header className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative">
@@ -252,7 +253,11 @@ export default function DeviceDetailPage() {
             </div>
           </div>
         </div>
+      </header>
       </div>
+
+      {/* ── Scrollable content ── */}
+      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-5">
 
       {/* Stat strip */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -522,6 +527,7 @@ export default function DeviceDetailPage() {
             </Button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

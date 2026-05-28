@@ -66,8 +66,9 @@ export default function AssetDetailPage(props: { params: Promise<{ id: string }>
   const WarIcon = wst?.icon ?? CheckCircle2;
 
   return (
-    <div className="space-y-5 p-5">
-      <div className="relative -mx-5 -mt-5 mb-1 overflow-hidden px-5 py-6" style={{ background: 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)' }}>
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
+      <div className="shrink-0 p-5 pb-0">
+      <header className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
         <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="relative">
@@ -104,22 +105,27 @@ export default function AssetDetailPage(props: { params: Promise<{ id: string }>
             </div>
           ) : <p className="mt-2 text-white/70">Asset not found</p>}
         </div>
+      </header>
       </div>
 
+      <div className="flex-1 min-h-0 overflow-hidden">
+
       {!asset && !assets.isPending && (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <Boxes className="mb-2 h-8 w-8 text-muted-foreground/30" />
-            <p className="font-medium text-foreground">Asset not found</p>
-            <p className="text-sm text-muted-foreground">The asset ID does not exist in the register.</p>
-            <Link href="/assets" className="mt-3"><Button size="sm" variant="outline">Back to inventory</Button></Link>
-          </CardContent>
-        </Card>
+        <div className="h-full overflow-y-auto p-5">
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+              <Boxes className="mb-2 h-8 w-8 text-muted-foreground/30" />
+              <p className="font-medium text-foreground">Asset not found</p>
+              <p className="text-sm text-muted-foreground">The asset ID does not exist in the register.</p>
+              <Link href="/assets" className="mt-3"><Button size="sm" variant="outline">Back to inventory</Button></Link>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {(assets.isPending || asset) && (
-        <div className="grid gap-5 lg:grid-cols-3">
-          <div className="space-y-5 lg:col-span-2">
+        <div className="grid h-full gap-5 p-5 lg:grid-cols-3 lg:gap-0 lg:p-0">
+          <div className="space-y-5 lg:col-span-2 lg:overflow-y-auto lg:p-5">
             <Card>
               <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Asset details</CardTitle></CardHeader>
               <CardContent className="pt-0">
@@ -203,7 +209,7 @@ export default function AssetDetailPage(props: { params: Promise<{ id: string }>
             </Card>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 lg:overflow-y-auto lg:border-l lg:border-border/60 lg:bg-card/40 lg:p-5">
             <Card>
               <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Quick actions</CardTitle></CardHeader>
               <CardContent className="space-y-2 pt-0">
@@ -244,6 +250,7 @@ export default function AssetDetailPage(props: { params: Promise<{ id: string }>
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

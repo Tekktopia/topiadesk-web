@@ -71,12 +71,10 @@ export default function AIAgentPage() {
   const isEnabled = enabled ?? config.enabled;
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)]">
-      {/* ── Gradient header ── */}
-      <div
-        className="-mx-5 -mt-5 mb-6 px-5 pt-5 pb-6"
-        style={{ background: 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)' }}
-      >
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
+      {/* ── Fixed header ── */}
+      <div className="shrink-0 p-5 pb-0">
+      <header className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20">
@@ -137,10 +135,11 @@ export default function AIAgentPage() {
             tone="light"
           />
         </div>
+      </header>
       </div>
 
-      {/* ── Body ── */}
-      <div className="space-y-5 p-5 pt-0">
+      {/* ── Scrollable body ── */}
+      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5">
         <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
           {/* ── Left column ── */}
           <div className="space-y-5">

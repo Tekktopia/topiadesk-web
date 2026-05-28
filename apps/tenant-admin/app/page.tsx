@@ -44,8 +44,9 @@ export default function AdminOverview() {
   ).length;
 
   return (
-    <div className="space-y-5 p-5 lg:p-6">
-      <header className="relative overflow-hidden rounded-2xl border border-orange/20 bg-gradient-to-br from-orange to-orange-light px-6 py-5 shadow-lg shadow-orange/15">
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
+      <div className="shrink-0 p-5 pb-0">
+      <header className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
         <div
           className="pointer-events-none absolute inset-0 opacity-10"
           style={{
@@ -87,6 +88,9 @@ export default function AdminOverview() {
           </div>
         </div>
       </header>
+      </div>
+
+      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-5 lg:p-6 lg:pt-6">
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat
@@ -289,6 +293,7 @@ export default function AdminOverview() {
             </ul>
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   );

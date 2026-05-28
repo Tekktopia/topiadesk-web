@@ -299,10 +299,11 @@ export default function OnboardingDetailPage(props: { params: Promise<{ id: stri
   const pendingApprovals = onb?.approvals.filter((a) => a.status === 'pending').length ?? 0;
 
   return (
-    <div className="space-y-5 p-6">
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
 
-      {/* ── Gradient header ── */}
-      <div className="relative -mx-6 -mt-6 mb-1 overflow-hidden bg-navy px-6 py-5">
+      {/* ── Fixed header ── */}
+      <div className="shrink-0 p-5 pb-0">
+      <header className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.1),transparent_55%)]" />
         <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative">
@@ -351,26 +352,31 @@ export default function OnboardingDetailPage(props: { params: Promise<{ id: stri
             <p className="mt-2 text-white/70">Onboarding not found.</p>
           )}
         </div>
+      </header>
       </div>
 
-      {/* Not found */}
+      {/* ── Scrollable content area ── */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+
       {!onb && !isPending && (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <UserPlus className="mb-2 h-8 w-8 text-muted-foreground/30" />
-            <p className="font-medium text-foreground">Onboarding not found</p>
-            <Link href="/onboarding" className="mt-3">
-              <Button size="sm" variant="outline">Back to onboarding</Button>
-            </Link>
-          </CardContent>
-        </Card>
+        <div className="h-full overflow-y-auto p-6">
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+              <UserPlus className="mb-2 h-8 w-8 text-muted-foreground/30" />
+              <p className="font-medium text-foreground">Onboarding not found</p>
+              <Link href="/onboarding" className="mt-3">
+                <Button size="sm" variant="outline">Back to onboarding</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {(isPending || onb) && (
-        <div className="grid gap-5 lg:grid-cols-3">
+        <div className="grid h-full gap-5 p-6 lg:grid-cols-3 lg:gap-0 lg:p-0">
 
           {/* ── Main column: approval chain + tasks ── */}
-          <div className="space-y-5 lg:col-span-2">
+          <div className="space-y-5 lg:col-span-2 lg:overflow-y-auto lg:p-6">
             {isPending ? (
               <Skeleton className="h-48 rounded-xl" />
             ) : onb ? (
@@ -391,7 +397,7 @@ export default function OnboardingDetailPage(props: { params: Promise<{ id: stri
           </div>
 
           {/* ── Sidebar ── */}
-          <div className="space-y-4">
+          <div className="space-y-4 lg:overflow-y-auto lg:border-l lg:border-border/60 lg:bg-card/40 lg:p-6">
 
             {/* Employee info */}
             <Card>
@@ -536,6 +542,7 @@ export default function OnboardingDetailPage(props: { params: Promise<{ id: stri
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -266,10 +266,11 @@ export default function OnboardingHubPage() {
   const completed = onboardings?.filter((o) => o.status === 'completed') ?? [];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
 
-      {/* ── Gradient header ── */}
-      <div className="relative -mx-6 -mt-6 mb-1 overflow-hidden bg-navy px-6 py-6">
+      {/* ── Fixed header ── */}
+      <div className="shrink-0 p-5 pb-0">
+      <header className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.1),transparent_55%)]" />
         <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative flex flex-wrap items-end justify-between gap-4">
@@ -291,7 +292,11 @@ export default function OnboardingHubPage() {
             </Button>
           </Link>
         </div>
+      </header>
       </div>
+
+      {/* ── Scrollable content ── */}
+      <div className="flex-1 min-h-0 space-y-6 overflow-y-auto p-5 pt-5">
 
       {/* ── KPI strip ── */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -389,6 +394,7 @@ export default function OnboardingHubPage() {
         )}
       </div>
 
+      </div>
     </div>
   );
 }

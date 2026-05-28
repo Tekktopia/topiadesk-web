@@ -106,24 +106,36 @@ export function Topbar() {
   return (
     <>
       <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/60 bg-card/70 px-4 backdrop-blur-xl">
-        <Breadcrumbs />
+        {/* Left: breadcrumb trail */}
+        <div className="flex min-w-0 flex-1 items-center">
+          <Breadcrumbs />
+        </div>
 
+        {/* Center: command palette trigger styled as a premium search */}
         <button
           type="button"
           onClick={() => setCommandOpen(true)}
-          className="group ml-auto flex h-9 w-72 items-center gap-2 rounded-lg border border-border/60 bg-muted/50 px-3 text-sm text-muted-foreground shadow-sm transition-colors hover:border-border hover:bg-muted"
+          className={cn(
+            'group relative flex h-9 w-full max-w-md shrink-0 items-center gap-2.5 rounded-full',
+            'border border-transparent bg-muted/45 pl-3.5 pr-1.5',
+            'text-sm text-muted-foreground transition-all duration-150',
+            'hover:border-border/60 hover:bg-muted/70 hover:text-foreground',
+          )}
         >
-          <Search className="h-3.5 w-3.5" />
-          <span className="flex-1 text-left">
-            Search tickets, assets, contacts...
+          <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
+          <span className="min-w-0 flex-1 truncate text-left text-[13px]">
+            Search tickets, assets, contacts…
           </span>
-          <span className="flex items-center gap-1">
-            <Kbd>Ctrl</Kbd>
-            <Kbd>K</Kbd>
-          </span>
+          <kbd
+            className="pointer-events-none hidden h-5 select-none items-center gap-0.5 rounded-md border border-border/70 bg-card px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:inline-flex"
+            aria-hidden="true"
+          >
+            <span className="text-[11px] leading-none">⌘</span>K
+          </kbd>
         </button>
 
-        <div className="ml-auto flex items-center gap-0.5">
+        {/* Right: icons */}
+        <div className="flex flex-1 items-center justify-end gap-0.5">
           <Tooltip>
             <TooltipTrigger asChild>
               <button

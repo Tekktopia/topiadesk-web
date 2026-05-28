@@ -90,9 +90,10 @@ export default function AgentDetailPage(props: { params: Promise<{ id: string }>
   ];
 
   return (
-    <div className="space-y-0">
-      {/* ── Gradient header ── */}
-      <div className="relative overflow-hidden bg-navy px-6 py-5">
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
+      {/* ── Fixed header ── */}
+      <div className="shrink-0 p-5 pb-0">
+      <header className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
         <div className="relative">
@@ -147,10 +148,11 @@ export default function AgentDetailPage(props: { params: Promise<{ id: string }>
             </div>
           </div>
         </div>
+      </header>
       </div>
 
-      {/* ── Inner content ── */}
-      <div className="space-y-5 px-5 pb-5 pt-4 lg:px-6 lg:pb-6">
+      {/* ── Scrollable content ── */}
+      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto px-5 pb-5 pt-5 lg:px-6 lg:pb-6">
         {actionMsg && (
           <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700">
             <CheckCircle2 className="h-4 w-4 shrink-0" /> {actionMsg}

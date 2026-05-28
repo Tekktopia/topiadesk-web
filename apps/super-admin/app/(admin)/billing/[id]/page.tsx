@@ -59,9 +59,10 @@ export default function BillingDetailPage(props: { params: Promise<{ id: string 
   const StatusIcon = st?.icon ?? Clock;
 
   return (
-    <div className="space-y-5 p-6">
-      {/* ── Gradient header ── */}
-      <div className="relative -mx-6 -mt-6 mb-1 overflow-hidden bg-navy px-6 py-5">
+    <div className="flex h-[calc(100vh-3rem)] flex-col overflow-hidden">
+      {/* ── Fixed header ── */}
+      <div className="shrink-0 p-5 pb-0">
+      <header className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative">
@@ -107,23 +108,29 @@ export default function BillingDetailPage(props: { params: Promise<{ id: string 
             <p className="mt-2 text-white/70">Invoice not found.</p>
           )}
         </div>
+      </header>
       </div>
 
+      {/* ── Scrollable content area ── */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+
       {!invoice && !isPending && (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <Receipt className="mb-2 h-8 w-8 text-muted-foreground/30" />
-            <p className="font-medium text-foreground">Invoice not found</p>
-            <p className="text-sm text-muted-foreground">The invoice ID does not exist.</p>
-            <Link href="/billing" className="mt-3"><Button size="sm" variant="outline">Back to billing</Button></Link>
-          </CardContent>
-        </Card>
+        <div className="h-full overflow-y-auto p-6">
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+              <Receipt className="mb-2 h-8 w-8 text-muted-foreground/30" />
+              <p className="font-medium text-foreground">Invoice not found</p>
+              <p className="text-sm text-muted-foreground">The invoice ID does not exist.</p>
+              <Link href="/billing" className="mt-3"><Button size="sm" variant="outline">Back to billing</Button></Link>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {(isPending || invoice) && (
-        <div className="grid gap-5 lg:grid-cols-3">
+        <div className="grid h-full gap-5 p-6 lg:grid-cols-3 lg:gap-0 lg:p-0">
           {/* ── Main column ── */}
-          <div className="space-y-5 lg:col-span-2">
+          <div className="space-y-5 lg:col-span-2 lg:overflow-y-auto lg:p-6">
             {/* Line items */}
             <Card>
               <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Line items</CardTitle></CardHeader>
@@ -234,7 +241,7 @@ export default function BillingDetailPage(props: { params: Promise<{ id: string 
           </div>
 
           {/* ── Sidebar ── */}
-          <div className="space-y-4">
+          <div className="space-y-4 lg:overflow-y-auto lg:border-l lg:border-border/60 lg:bg-card/40 lg:p-6">
             {/* Invoice info */}
             <Card>
               <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Invoice details</CardTitle></CardHeader>
@@ -321,6 +328,7 @@ export default function BillingDetailPage(props: { params: Promise<{ id: string 
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -634,7 +634,7 @@ export default function NewOnboardingPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-0 p-6">
       {/* Header */}
-      <div className="relative -mx-6 -mt-6 mb-8 overflow-hidden bg-navy px-6 py-5">
+      <div className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15 mb-6">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.1),transparent_55%)]" />
         <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative">

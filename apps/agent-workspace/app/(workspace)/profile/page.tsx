@@ -120,8 +120,7 @@ export default function ProfilePage() {
     <div className="space-y-5 p-5">
       {/* ── Gradient header ── */}
       <div
-        className="relative -mx-5 -mt-5 mb-1 overflow-hidden px-5 py-6"
-        style={{ background: 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)' }}
+        className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15"
       >
         <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />

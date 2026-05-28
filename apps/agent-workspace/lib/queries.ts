@@ -102,9 +102,9 @@ export function useTickets() {
 }
 
 export function useTicket(id: string) {
-  return useQuery<MockTicket | undefined>({
+  return useQuery<MockTicket | null>({
     queryKey: ['tickets', id],
-    queryFn: () => delay(mockTickets.find((t) => t.id === id)),
+    queryFn: () => delay(mockTickets.find((t) => t.id === id) ?? null),
   });
 }
 
@@ -170,9 +170,9 @@ export function useDevices() {
 }
 
 export function useDevice(id: string) {
-  return useQuery<MockDevice | undefined>({
+  return useQuery<MockDevice | null>({
     queryKey: ['monitoring', 'devices', id],
-    queryFn: () => delay(mockDevices.find((d) => d.id === id)),
+    queryFn: () => delay(mockDevices.find((d) => d.id === id) ?? null),
   });
 }
 
@@ -205,9 +205,9 @@ export function useAlertRules() {
 }
 
 export function useTopology(site: string) {
-  return useQuery<TopologyData | undefined>({
+  return useQuery<TopologyData | null>({
     queryKey: ['monitoring', 'topology', site],
-    queryFn: () => delay(mockTopologies.find((t) => t.site === site)),
+    queryFn: () => delay(mockTopologies.find((t) => t.site === site) ?? null),
   });
 }
 
@@ -281,9 +281,9 @@ export function useContacts() {
 }
 
 export function useContact(id: string) {
-  return useQuery<MockContact | undefined>({
+  return useQuery<MockContact | null>({
     queryKey: ['contacts', id],
-    queryFn: () => delay(mockContacts.find((c) => c.id === id)),
+    queryFn: () => delay(mockContacts.find((c) => c.id === id) ?? null),
   });
 }
 
@@ -360,9 +360,9 @@ export function useAIConfig() {
 }
 
 export function useAISuggestion(ticketId: string) {
-  return useQuery<AISuggestion | undefined>({
+  return useQuery<AISuggestion | null>({
     queryKey: ['ai', 'suggestion', ticketId],
-    queryFn: () => delay(mockAISuggestions.find((s) => s.ticketId === ticketId)),
+    queryFn: () => delay(mockAISuggestions.find((s) => s.ticketId === ticketId) ?? null),
     staleTime: 30_000,
   });
 }
@@ -405,9 +405,9 @@ export function useOrgRoleTemplates() {
 }
 
 export function useOrgRoleTemplate(id: string) {
-  return useQuery<OrgRoleTemplate | undefined>({
+  return useQuery<OrgRoleTemplate | null>({
     queryKey: ['org', 'role-templates', id],
-    queryFn: () => delay(orgRoleTemplates.find((r) => r.id === id)),
+    queryFn: () => delay(orgRoleTemplates.find((r) => r.id === id) ?? null),
   });
 }
 
@@ -419,9 +419,9 @@ export function useOnboardings() {
 }
 
 export function useOnboarding(id: string) {
-  return useQuery<OnboardingRequest | undefined>({
+  return useQuery<OnboardingRequest | null>({
     queryKey: ['onboarding', id],
-    queryFn: () => delay(mockOnboardings.find((o) => o.id === id)),
+    queryFn: () => delay(mockOnboardings.find((o) => o.id === id) ?? null),
   });
 }
 

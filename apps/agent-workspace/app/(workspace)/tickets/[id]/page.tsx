@@ -119,10 +119,10 @@ export default function TicketDetailPage() {
     : undefined;
 
   return (
-    <div className="flex h-full min-h-[calc(100vh-3.5rem)] flex-col">
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
       <StatusBar ticket={ticket} />
 
-      <div className="grid flex-1 grid-cols-1 lg:grid-cols-[1fr_360px]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[1fr_360px]">
         <div className="space-y-4 overflow-y-auto p-5">
           <header className="space-y-2">
             <div className="flex items-center gap-2">
