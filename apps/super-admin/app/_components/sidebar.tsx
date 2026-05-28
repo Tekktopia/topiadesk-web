@@ -13,12 +13,15 @@ import {
   LayoutDashboard,
   Lock,
   LogOut,
+  Headset,
   ScrollText,
   Server,
   Settings,
   Shield,
   ShieldCheck,
   SquareStack,
+  Ticket,
+  UserPlus,
   Users,
 } from 'lucide-react';
 import {
@@ -35,6 +38,8 @@ import {
   cn,
 } from '@topiadesk/ui';
 
+import { useRole, type Capability } from '@/lib/role-context';
+
 interface NavItem {
   href: string;
   label: string;
@@ -42,6 +47,8 @@ interface NavItem {
   badge?: string | number;
   badgeVariant?: 'danger' | 'warning' | 'secondary';
   exactMatch?: boolean;
+  /** Required capability — if missing, item is hidden for this role */
+  capability: Capability;
 }
 
 interface NavGroup {
@@ -53,44 +60,57 @@ const NAV: NavGroup[] = [
   {
     label: 'Overview',
     items: [
-      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, exactMatch: true },
+      { href: '/dashboard',     label: 'Dashboard',     icon: LayoutDashboard, exactMatch: true, capability: 'view_dashboard' },
+      { href: '/notifications', label: 'Notifications', icon: Bell,            badge: 3, badgeVariant: 'danger', capability: 'view_notifications' },
     ],
   },
   {
     label: 'Tenants',
     items: [
-      { href: '/tenants', label: 'All tenants', icon: Building2 },
-      { href: '/users',   label: 'All users',   icon: Users },
+      { href: '/tenants',    label: 'All tenants',  icon: Building2, capability: 'view_tenants' },
+      { href: '/users',      label: 'All users',    icon: Users,     capability: 'manage_users' },
+      { href: '/admins/new', label: 'Create admin', icon: UserPlus,  capability: 'create_admins' },
+    ],
+  },
+  {
+    label: 'Customer support',
+    items: [
+      { href: '/support', label: 'Support tickets', icon: Headset, badge: 4, badgeVariant: 'warning', capability: 'handle_support' },
     ],
   },
   {
     label: 'Revenue',
     items: [
-      { href: '/billing', label: 'Billing & revenue', icon: BarChart3 },
-      { href: '/plans',   label: 'Plans & pricing',   icon: SquareStack },
+      { href: '/billing', label: 'Billing & revenue', icon: BarChart3,   capability: 'view_billing' },
+      { href: '/plans',   label: 'Plans & pricing',   icon: SquareStack, capability: 'manage_plans' },
     ],
   },
   {
     label: 'Platform',
     items: [
-      { href: '/feature-flags',  label: 'Feature flags',  icon: Flag },
-      { href: '/announcements',  label: 'Announcements',  icon: Bell },
+      { href: '/feature-flags',  label: 'Feature flags',  icon: Flag, capability: 'manage_feature_flags' },
+      { href: '/announcements',  label: 'Announcements',  icon: Bell, capability: 'manage_announcements' },
     ],
   },
   {
     label: 'Operations',
     items: [
-      { href: '/system',     label: 'System health', icon: Server,     badge: '!', badgeVariant: 'warning' },
-      { href: '/audit-logs', label: 'Audit logs',    icon: ScrollText },
-      { href: '/security',   label: 'Security',      icon: Shield,     badge: 2,   badgeVariant: 'danger' },
+      { href: '/system',     label: 'System health', icon: Server,     badge: '!', badgeVariant: 'warning', capability: 'view_system' },
+      { href: '/audit-logs', label: 'Audit logs',    icon: ScrollText, capability: 'view_audit_logs' },
+      { href: '/security',   label: 'Security',      icon: Shield,     badge: 2,   badgeVariant: 'danger', capability: 'manage_security' },
     ],
   },
 ];
 
-const CURRENT_ADMIN = { name: 'Daniel Oshinubi', email: 'daniel@topiadesk.com', initials: 'DO' };
-
 export function Sidebar() {
   const pathname = usePathname();
+  const { user, can, signOut, setRole } = useRole();
+  const CURRENT_ADMIN = { name: user.name, email: user.email, initials: user.initials };
+
+  // Filter NAV groups based on role capabilities — drop empty groups
+  const filteredNav = NAV
+    .map((group) => ({ ...group, items: group.items.filter((it) => can(it.capability)) }))
+    .filter((g) => g.items.length > 0);
 
   return (
     <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-border/70 sidebar-cream">
@@ -108,7 +128,7 @@ export function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
-        {NAV.map((group) => (
+        {filteredNav.map((group) => (
           <div key={group.label}>
             <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               {group.label}
@@ -199,13 +219,30 @@ export function Sidebar() {
               <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" side="top" className="w-52">
+          <DropdownMenuContent align="end" side="top" className="w-56">
             <DropdownMenuLabel>
               <p className="text-xs font-semibold">{CURRENT_ADMIN.name}</p>
               <p className="text-[10px] font-normal text-muted-foreground">
                 {CURRENT_ADMIN.email}
               </p>
+              <p className="mt-1 inline-block rounded-full bg-coral/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-coral-dark">
+                {user.role.replace('_', ' ')}
+              </p>
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Switch role (dev)
+            </DropdownMenuLabel>
+            {(['super_admin', 'admin', 'csr', 'viewer'] as const).map((r) => (
+              <DropdownMenuItem
+                key={r}
+                onClick={() => setRole(r)}
+                className={cn(user.role === r && 'bg-muted')}
+              >
+                {user.role === r ? '● ' : '○ '}
+                <span className="capitalize">{r.replace('_', ' ')}</span>
+              </DropdownMenuItem>
+            ))}
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <Lock className="h-3.5 w-3.5" />
@@ -216,7 +253,10 @@ export function Sidebar() {
               Security settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600 focus:text-red-600">
+            <DropdownMenuItem
+              className="text-red-600 focus:text-red-600"
+              onClick={signOut}
+            >
               <LogOut className="h-3.5 w-3.5" />
               Sign out
             </DropdownMenuItem>

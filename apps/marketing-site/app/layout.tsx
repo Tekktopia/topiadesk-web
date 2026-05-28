@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   description:
     'Helpdesk, asset management, monitoring and operations - one tenant, one source of truth.',
   icons: {
-    icon: [{ url: '/icons/icon.svg', type: 'image/svg+xml' }],
-    apple: [{ url: '/icons/icon.svg', type: 'image/svg+xml' }],
+    icon: [{ url: '/icons/icon.png', type: 'image/png' }],
+    apple: [{ url: '/icons/icon.png', type: 'image/png' }],
   },
 };
 

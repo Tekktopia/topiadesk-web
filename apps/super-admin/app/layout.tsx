@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   title: 'Topiadesk — Super Admin',
   description: 'Internal platform administration portal',
   icons: {
-    icon: [{ url: '/icons/icon.svg', type: 'image/svg+xml' }],
-    apple: [{ url: '/icons/icon.svg', type: 'image/svg+xml' }],
+    icon: [{ url: '/icons/icon.png', type: 'image/png' }],
+    apple: [{ url: '/icons/icon.png', type: 'image/png' }],
   },
 };
 

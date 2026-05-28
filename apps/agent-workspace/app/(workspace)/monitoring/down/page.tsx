@@ -111,7 +111,7 @@ export default function DownAndProblemsPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
-                <thead>
+                <thead className="sticky top-0 z-10 bg-[#F4EFE6] shadow-[0_1px_0_0_rgba(0,0,0,0.06)]">
                   <tr className="border-b bg-muted/30 text-left text-muted-foreground">
                     <th className="px-4 py-2.5 font-semibold">Device</th>
                     <th className="px-3 py-2.5 font-semibold">Type</th>
@@ -151,7 +151,7 @@ export default function DownAndProblemsPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
-                <thead>
+                <thead className="sticky top-0 z-10 bg-[#F4EFE6] shadow-[0_1px_0_0_rgba(0,0,0,0.06)]">
                   <tr className="border-b bg-muted/30 text-left text-muted-foreground">
                     <th className="px-4 py-2.5 font-semibold">Device</th>
                     <th className="px-3 py-2.5 font-semibold">Type</th>

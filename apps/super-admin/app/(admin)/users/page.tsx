@@ -143,12 +143,12 @@ export default function UsersPage() {
 
       {/* ── Scrollable body (just the table rows) ── */}
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-5">
-        <div className="overflow-x-auto rounded-b-xl border border-t-0 border-border/70 bg-card">
+        <div className="rounded-b-xl border border-t-0 border-border/70 bg-card">
           {users.isLoading ? (
             <div className="space-y-2 p-4">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-10" />)}</div>
           ) : (
             <table className="w-full text-xs">
-              <thead className="sticky top-0 z-10 bg-muted/30">
+              <thead className="sticky top-0 z-10 bg-[#F4EFE6] shadow-[0_1px_0_0_rgba(0,0,0,0.06)]">
                 <tr className="border-b border-border/60 text-left text-muted-foreground">
                   <th className="px-4 py-2.5 font-semibold">User</th>
                   <th className="px-3 py-2.5 font-semibold">Tenant</th>

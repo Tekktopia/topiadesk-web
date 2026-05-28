@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@topiadesk/ui';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+import { RoleProvider } from '@/lib/role-context';
 
 export function Providers({ children }: { children: ReactNode }) {
   const [client] = useState(
@@ -17,7 +18,9 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={client}>
-      <TooltipProvider delayDuration={150}>{children}</TooltipProvider>
+      <RoleProvider>
+        <TooltipProvider delayDuration={150}>{children}</TooltipProvider>
+      </RoleProvider>
     </QueryClientProvider>
   );
 }

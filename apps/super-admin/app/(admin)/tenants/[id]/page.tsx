@@ -312,7 +312,7 @@ export default function TenantDetailPage() {
               <p className="p-6 text-center text-xs text-muted-foreground">No users found for this tenant.</p>
             ) : (
               <table className="w-full text-xs">
-                <thead>
+                <thead className="sticky top-0 z-10 bg-muted/30">
                   <tr className="border-b bg-muted/30 text-left text-muted-foreground">
                     <th className="px-4 py-2.5 font-semibold">Name</th>
                     <th className="px-3 py-2.5 font-semibold">Email</th>

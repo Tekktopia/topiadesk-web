@@ -108,7 +108,7 @@ export default function PlansPage() {
         </CardHeader>
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-xs">
-            <thead>
+            <thead className="sticky top-0 z-10 bg-muted/30">
               <tr className="border-b bg-muted/30 text-muted-foreground">
                 <th className="px-4 py-2.5 text-left font-semibold">Feature</th>
                 {(plans.data ?? []).map((p) => (

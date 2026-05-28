@@ -134,11 +134,11 @@ export default function TenantsPage() {
       </div>
       </div>
 
-      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-5">
+      {/* ── Pinned filter strip ── */}
+      <div className="shrink-0 px-5 pt-5">
 
-            <Card>
-        {/* Filters */}
-        <CardHeader className="border-b py-3">
+        {/* Filter strip — styled like card top */}
+        <div className="rounded-t-xl border border-b-0 border-border/70 bg-card px-4 py-3">
           <div className="flex flex-wrap items-center gap-3">
             {/* Status tabs */}
             <div className="flex rounded-lg border p-0.5 text-xs">
@@ -175,16 +175,19 @@ export default function TenantsPage() {
               )}
             </div>
           </div>
-        </CardHeader>
+        </div>
+      </div>
 
-        <CardContent className="p-0">
+      {/* ── Scrollable table body (sticky thead) ── */}
+      <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-5">
+        <div className="rounded-b-xl border border-t-0 border-border/70 bg-card">
           {tenants.isLoading ? (
             <div className="space-y-2 p-4">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
               <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b bg-muted/30 text-left text-muted-foreground">
+                <thead className="sticky top-0 z-10 bg-[#F4EFE6] shadow-[0_1px_0_0_rgba(0,0,0,0.06)]">
+                  <tr className="border-b border-border/60 text-left text-muted-foreground">
                     <SortTh col="name"      label="Tenant"          sort={sort} onSort={handleSort} className="px-4" />
                     <th className="px-3 py-2.5 font-semibold">Plan</th>
                     <th className="px-3 py-2.5 font-semibold">Status</th>
@@ -278,14 +281,13 @@ export default function TenantsPage() {
               {filtered.length === 0 && (
                 <p className="p-8 text-center text-sm text-muted-foreground">No tenants match your filters.</p>
               )}
-            </div>
+            </>
           )}
           <div className="flex items-center justify-between border-t bg-muted/20 px-4 py-2.5">
             <p className="text-xs text-muted-foreground">Showing {filtered.length} of {tenants.data?.length ?? 0} tenants</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
       </div>
-      </div>
+    </div>
   );
 }

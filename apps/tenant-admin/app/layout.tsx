@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   title: 'Admin · ConsomoAfrica · Topiadesk',
   description: 'Per-tenant administration for the Topiadesk platform',
   icons: {
-    icon: [{ url: '/icons/icon.svg', type: 'image/svg+xml' }],
-    apple: [{ url: '/icons/icon.svg', type: 'image/svg+xml' }],
+    icon: [{ url: '/icons/icon.png', type: 'image/png' }],
+    apple: [{ url: '/icons/icon.png', type: 'image/png' }],
   },
 };
 

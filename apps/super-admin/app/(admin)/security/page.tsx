@@ -136,7 +136,8 @@ export default function SecurityPage() {
       </div>
       </div>
 
-      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-5">
+      {/* ── Pinned KPI + filter strip ── */}
+      <div className="shrink-0 space-y-5 px-5 pt-5">
 
       {/* Alert: open critical / high events */}
       {counts.critical > 0 && (
@@ -168,6 +169,10 @@ export default function SecurityPage() {
           </div>
         ))}
       </div>
+      </div>
+
+      {/* ── Scroll body ── */}
+      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-5">
 
       {/* IP Blocklist */}
       {showBlocklist && (
@@ -196,9 +201,9 @@ export default function SecurityPage() {
         </Card>
       )}
 
-      {/* Events table */}
-      <Card>
-        <CardHeader className="border-b py-3">
+      {/* Events filter strip — sticks to top while events scroll */}
+      <div className="sticky top-0 z-20 -mx-5 bg-canvas px-5 pt-1">
+        <div className="rounded-t-xl border border-b-0 border-border/70 bg-card px-4 py-3">
           <div className="flex flex-wrap items-center gap-3">
             {/* Resolved filter */}
             <div className="flex rounded-lg border p-0.5 text-xs">
@@ -240,9 +245,11 @@ export default function SecurityPage() {
               )}
             </div>
           </div>
-        </CardHeader>
+        </div>
+      </div>
 
-        <CardContent className="p-0">
+      {/* Events list (continues from the filter strip above) */}
+      <div className="rounded-b-xl border border-t-0 border-border/70 bg-card">
           {events.isLoading ? (
             <div className="space-y-2 p-4">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-14" />)}</div>
           ) : (
@@ -326,8 +333,7 @@ export default function SecurityPage() {
               Security events are retained for 90 days.
             </div>
           </div>
-        </CardContent>
-      </Card>
+      </div>
       </div>
     </div>
   );

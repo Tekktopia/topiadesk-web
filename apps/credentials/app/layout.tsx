@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   title: 'Topiadesk - Credentials',
   description: 'Public certification credential verification',
   icons: {
-    icon: [{ url: '/icons/icon.svg', type: 'image/svg+xml' }],
-    apple: [{ url: '/icons/icon.svg', type: 'image/svg+xml' }],
+    icon: [{ url: '/icons/icon.png', type: 'image/png' }],
+    apple: [{ url: '/icons/icon.png', type: 'image/png' }],
   },
 };
 

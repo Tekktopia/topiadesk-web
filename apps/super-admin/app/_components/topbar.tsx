@@ -34,14 +34,14 @@ export function Topbar() {
         {/* Notifications */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <button
-              type="button"
+            <Link
+              href="/notifications"
               className="relative grid h-8 w-8 place-items-center rounded-md transition-colors hover:bg-muted"
               aria-label="Notifications"
             >
               <Bell className="h-4 w-4 text-muted-foreground" />
               <Badge variant="danger" className="absolute -right-1 -top-1 h-4 min-w-[1rem] px-1 text-[10px]">3</Badge>
-            </button>
+            </Link>
           </TooltipTrigger>
           <TooltipContent>3 platform notifications</TooltipContent>
         </Tooltip>

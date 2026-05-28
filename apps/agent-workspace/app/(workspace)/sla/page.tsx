@@ -173,7 +173,7 @@ export default function SLAPage() {
                       <p className="mb-3 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Response &amp; resolution targets</p>
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                          <thead>
+                          <thead className="sticky top-0 z-10 bg-[#F4EFE6] shadow-[0_1px_0_0_rgba(0,0,0,0.06)]">
                             <tr className="border-b border-border/40">
                               <th className="pb-2 text-left text-xs font-semibold text-muted-foreground">Priority</th>
                               <th className="pb-2 text-right text-xs font-semibold text-muted-foreground">First response</th>

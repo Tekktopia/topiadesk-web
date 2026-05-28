@@ -79,7 +79,8 @@ export default function FeatureFlagsPage() {
       </div>
       </div>
 
-      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-5">
+      {/* ── Pinned KPI + filter strip ── */}
+      <div className="shrink-0 space-y-5 px-5 pt-5">
 
       {/* Summary strip */}
       <div className="flex flex-wrap gap-3 text-xs">
@@ -97,40 +98,43 @@ export default function FeatureFlagsPage() {
         ))}
       </div>
 
-      <Card>
-        <CardHeader className="border-b py-3">
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Scope tabs */}
-            <div className="flex rounded-lg border p-0.5 text-xs">
-              {([
-                { key: 'all',      label: `All (${counts.all})` },
-                { key: 'global',   label: 'Global on' },
-                { key: 'plan',     label: 'Plan-gated' },
-                { key: 'override', label: 'Has overrides' },
-                { key: 'off',      label: 'Off' },
-              ] as { key: ScopeFilter; label: string }[]).map((s) => (
-                <button key={s.key} type="button" onClick={() => setScope(s.key)}
-                  className={cn('rounded-md px-2.5 py-1 font-medium transition-colors',
-                    scope === s.key ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground')}>
-                  {s.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="relative ml-auto">
-              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input value={search} onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search flags…" className="h-8 w-56 pl-8 text-xs" />
-              {search && (
-                <button type="button" onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                  <X className="h-3 w-3" />
-                </button>
-              )}
-            </div>
+      {/* Filter strip styled as card top */}
+      <div className="rounded-t-xl border border-b-0 border-border/70 bg-card px-4 py-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Scope tabs */}
+          <div className="flex rounded-lg border p-0.5 text-xs">
+            {([
+              { key: 'all',      label: `All (${counts.all})` },
+              { key: 'global',   label: 'Global on' },
+              { key: 'plan',     label: 'Plan-gated' },
+              { key: 'override', label: 'Has overrides' },
+              { key: 'off',      label: 'Off' },
+            ] as { key: ScopeFilter; label: string }[]).map((s) => (
+              <button key={s.key} type="button" onClick={() => setScope(s.key)}
+                className={cn('rounded-md px-2.5 py-1 font-medium transition-colors',
+                  scope === s.key ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground')}>
+                {s.label}
+              </button>
+            ))}
           </div>
-        </CardHeader>
 
-        <CardContent className="p-0">
+          <div className="relative ml-auto">
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input value={search} onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search flags…" className="h-8 w-56 pl-8 text-xs" />
+            {search && (
+              <button type="button" onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+      </div>
+
+      {/* ── Scroll body ── */}
+      <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-5">
+        <div className="rounded-b-xl border border-t-0 border-border/70 bg-card">
           {flags.isLoading ? (
             <div className="space-y-2 p-4">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-14" />)}</div>
           ) : (
@@ -292,8 +296,7 @@ export default function FeatureFlagsPage() {
           <div className="border-t bg-muted/20 px-4 py-2.5">
             <p className="text-xs text-muted-foreground">Showing {filtered.length} of {flags.data?.length ?? 0} flags</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
       </div>
     </div>
   );

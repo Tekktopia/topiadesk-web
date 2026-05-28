@@ -25,8 +25,8 @@ export const metadata: Metadata = {
   },
   formatDetection: { telephone: false },
   icons: {
-    icon: [{ url: '/icons/icon.svg', type: 'image/svg+xml' }],
-    apple: [{ url: '/icons/icon.svg', type: 'image/svg+xml' }],
+    icon: [{ url: '/icons/icon.png', type: 'image/png' }],
+    apple: [{ url: '/icons/icon.png', type: 'image/png' }],
   },
   other: {
     'mobile-web-app-capable': 'yes',
@@ -39,8 +39,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="light">
       <head>
-        <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
-        <link rel="apple-touch-icon" href="/icons/icon.svg" />
+        <link rel="icon" type="image/png" href="/icons/icon.png" />
+        <link rel="apple-touch-icon" href="/icons/icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>

@@ -127,10 +127,9 @@ export default function AuditLogsPage() {
       </div>
       </div>
 
-      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-5">
-
-      <Card>
-        <CardHeader className="border-b py-3">
+      {/* ── Pinned filter strip ── */}
+      <div className="shrink-0 px-5 pt-5">
+        <div className="rounded-t-xl border border-b-0 border-border/70 bg-card px-4 py-3">
           <div className="flex flex-wrap items-center gap-3">
             {/* Type tabs */}
             <div className="flex flex-wrap rounded-lg border p-0.5 text-xs">
@@ -170,9 +169,12 @@ export default function AuditLogsPage() {
               )}
             </div>
           </div>
-        </CardHeader>
+        </div>
+      </div>
 
-        <CardContent className="p-0">
+      {/* ── Scroll body — logs list ── */}
+      <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-5">
+        <div className="rounded-b-xl border border-t-0 border-border/70 bg-card">
           {logs.isLoading ? (
             <div className="space-y-2 p-4">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
           ) : (
@@ -238,8 +240,7 @@ export default function AuditLogsPage() {
               Audit logs are immutable and retained for 2 years.
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
       </div>
     </div>
   );
