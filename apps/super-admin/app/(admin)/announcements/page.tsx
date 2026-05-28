@@ -89,7 +89,8 @@ export default function AnnouncementsPage() {
   const previewAnn = preview ? (announcements.data ?? []).find((a) => a.id === preview) : null;
 
   return (
-    <div className="space-y-5 p-6">
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
+      <div className="shrink-0 p-5 pb-0">
       {/* Gradient header */}
       <div className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
@@ -105,6 +106,9 @@ export default function AnnouncementsPage() {
           </Button>
         </div>
       </div>
+      </div>
+
+      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-5">
 
       {/* Published/live banners */}
       {(announcements.data ?? []).filter((a) => a.status === 'published').length > 0 && (
@@ -316,6 +320,7 @@ export default function AnnouncementsPage() {
             </Card>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

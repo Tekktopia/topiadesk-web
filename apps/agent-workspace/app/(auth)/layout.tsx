@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { Logo } from '@topiadesk/ui';
 
 /**
  * Brand split layout for unauthenticated pages (login, reset).
@@ -16,9 +17,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
         <div className="relative z-10 p-10">
           <Link href="https://topiadesk.com" className="inline-flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-lg bg-orange shadow-lg shadow-orange/30">
-              <span className="font-display text-lg font-black text-white">T</span>
-            </div>
+            <Logo size={40} className="rounded-lg bg-white/10 p-1" />
             <span className="font-display text-xl font-bold tracking-tight">
               Topiadesk
             </span>
@@ -51,11 +50,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       <main className="flex items-center justify-center bg-background p-6 sm:p-10">
         <div className="w-full max-w-md">
           <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-orange">
-              <span className="font-display text-base font-black text-white">
-                T
-              </span>
-            </div>
+            <Logo size={36} />
             <span className="font-display text-lg font-bold tracking-tight">
               Topiadesk
             </span>

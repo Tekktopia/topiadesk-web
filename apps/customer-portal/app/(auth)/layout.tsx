@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { Logo } from '@topiadesk/ui';
 
 /**
  * Auth layout for customer portal — dark navy split, no PortalHeader/PortalFooter.
@@ -27,9 +28,7 @@ export default function PortalAuthLayout({ children }: { children: ReactNode }) 
         {/* Logo */}
         <div className="relative z-10 p-10">
           <Link href="/" className="inline-flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg shadow-blue-900/40">
-              <span className="font-display text-lg font-black text-white">C</span>
-            </div>
+            <Logo size={40} className="rounded-xl bg-white/10 p-1" />
             <div>
               <p className="font-display text-lg font-bold leading-tight">ConsomoAfrica</p>
               <p className="text-[11px] font-medium text-white/50 tracking-wide">Support Centre</p>
@@ -72,9 +71,7 @@ export default function PortalAuthLayout({ children }: { children: ReactNode }) 
         <div className="w-full max-w-[420px]">
           {/* Mobile logo */}
           <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-700">
-              <span className="font-display text-base font-black text-white">C</span>
-            </div>
+            <Logo size={36} />
             <div>
               <p className="font-display text-base font-bold leading-tight">ConsomoAfrica</p>
               <p className="text-[10px] text-muted-foreground">Support Centre</p>

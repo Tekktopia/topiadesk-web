@@ -4,7 +4,7 @@ import { Providers } from './providers';
 import './globals.css';
 
 export const viewport: Viewport = {
-  themeColor: '#1d4ed8',
+  themeColor: '#1A1B2E',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -24,15 +24,14 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/icons/icon.svg', type: 'image/svg+xml' },
-      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
     ],
     apple: [
-      { url: '/icons/icon-192.png', sizes: '192x192' },
+      { url: '/icons/icon.svg', type: 'image/svg+xml' },
     ],
   },
   other: {
     'mobile-web-app-capable': 'yes',
-    'msapplication-TileColor': '#1d4ed8',
+    'msapplication-TileColor': '#1A1B2E',
     'msapplication-tap-highlight': 'no',
   },
 };
@@ -47,8 +46,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
      */
     <html lang="en" className="light" suppressHydrationWarning>
       <head>
-        {/* PWA splash screens for iOS */}
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        {/* Favicon (Next.js also picks up app/icon.svg automatically) */}
+        <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+        <link rel="apple-touch-icon" href="/icons/icon.svg" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>

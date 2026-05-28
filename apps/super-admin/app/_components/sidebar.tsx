@@ -20,7 +20,6 @@ import {
   ShieldCheck,
   SquareStack,
   Users,
-  Zap,
 } from 'lucide-react';
 import {
   Avatar,
@@ -32,6 +31,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Logo,
   cn,
 } from '@topiadesk/ui';
 
@@ -97,9 +97,7 @@ export function Sidebar() {
 
       {/* Logo */}
       <div className="flex h-14 items-center gap-2.5 border-b border-border/60 px-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-navy">
-          <Zap className="h-4 w-4 text-coral" />
-        </div>
+        <Logo size={32} className="shrink-0" />
         <div className="min-w-0">
           <p className="text-sm font-bold tracking-tight text-foreground">Topiadesk</p>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-coral">

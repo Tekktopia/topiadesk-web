@@ -7,6 +7,10 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Admin · ConsomoAfrica · Topiadesk',
   description: 'Per-tenant administration for the Topiadesk platform',
+  icons: {
+    icon: [{ url: '/icons/icon.svg', type: 'image/svg+xml' }],
+    apple: [{ url: '/icons/icon.svg', type: 'image/svg+xml' }],
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

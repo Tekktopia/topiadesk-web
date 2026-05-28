@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { Logo } from '@topiadesk/ui';
 
 /**
  * Auth split layout for tenant admin — orange brand accent on left panel.
@@ -28,9 +29,7 @@ export default function TenantAuthLayout({ children }: { children: ReactNode }) 
         {/* Logo */}
         <div className="relative z-10 p-10">
           <Link href="https://topiadesk.com" className="inline-flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-navy shadow-lg shadow-orange-900/40">
-              <span className="font-display text-lg font-black text-white">T</span>
-            </div>
+            <Logo size={40} className="rounded-xl bg-white/10 p-1" />
             <span className="font-display text-xl font-bold tracking-tight">Topiadesk</span>
           </Link>
         </div>
@@ -77,9 +76,7 @@ export default function TenantAuthLayout({ children }: { children: ReactNode }) 
         <div className="w-full max-w-[420px]">
           {/* Mobile logo */}
           <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-navy">
-              <span className="font-display text-base font-black text-white">T</span>
-            </div>
+            <Logo size={36} />
             <span className="font-display text-lg font-bold tracking-tight">Topiadesk</span>
           </div>
           {children}

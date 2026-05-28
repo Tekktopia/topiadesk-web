@@ -142,7 +142,8 @@ export default function ContactsPage() {
   }, [contacts.data]);
 
   return (
-    <div className="space-y-5 p-5">
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
+      <div className="shrink-0 p-5 pb-0">
       {/* ── Gradient header ── */}
       <div
         className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15"
@@ -174,6 +175,9 @@ export default function ContactsPage() {
           </Button>
         </div>
       </div>
+      </div>
+
+      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-5">
 
       {/* ── Filters ── */}
       <div className="flex flex-wrap items-center gap-3">
@@ -319,6 +323,7 @@ export default function ContactsPage() {
             </CardContent>
           </Card>
         )}
+      </div>
       </div>
     </div>
   );

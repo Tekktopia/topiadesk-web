@@ -14,6 +14,7 @@ export * from './components/empty-state';
 export * from './components/input';
 export * from './components/kbd';
 export * from './components/label';
+export * from './components/logo';
 export * from './components/progress-ring';
 export * from './components/separator';
 export * from './components/skeleton';

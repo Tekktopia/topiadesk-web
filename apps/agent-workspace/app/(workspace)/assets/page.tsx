@@ -183,13 +183,16 @@ export default function AssetsPage() {
   const outOfWarranty = (assets ?? []).filter((a) => warrantyHealth(a).status === 'expired').length;
 
   return (
-    <div className="space-y-4 p-5">
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
+      <div className="shrink-0 p-5 pb-0">
       <PageHeader
         total={assets?.length ?? 0}
         expiringSoon={expiringSoon}
         outOfWarranty={outOfWarranty}
       />
+      </div>
 
+      <div className="flex-1 min-h-0 overflow-y-auto p-5 pt-5">
       <Card>
         <ViewTabs tabId={tabId} setTabId={setTabId} counts={tabCounts} setSelected={setSelected} />
 
@@ -284,6 +287,7 @@ export default function AssetsPage() {
           </div>
         </div>
       </Card>
+      </div>
     </div>
   );
 }

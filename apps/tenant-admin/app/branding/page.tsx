@@ -55,6 +55,9 @@ export default function BrandingPage() {
           <p className="mt-0.5 text-sm text-white/70">Control how your tenant looks to customers and in outbound email.</p>
         </div>
       </div>
+      </div>
+
+      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-5">
 
       <div className="px-5 pb-5 lg:px-6 lg:pb-6 space-y-5">
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_360px]">
@@ -257,7 +260,8 @@ export default function BrandingPage() {
                   {TENANT.name} support
                 </p>
               </div>
-              <div className="space-y-3 p-4">
+              <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
+      <div className="shrink-0 p-5 pb-0">
                 <button
                   type="button"
                   className="w-full rounded-md px-3 py-2 text-sm font-medium text-white"
@@ -303,6 +307,7 @@ export default function BrandingPage() {
             </CardContent>
           </Card>
         </aside>
+      </div>
       </div>
       </div>
     </div>

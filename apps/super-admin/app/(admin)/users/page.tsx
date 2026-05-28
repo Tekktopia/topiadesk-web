@@ -70,7 +70,8 @@ export default function UsersPage() {
   }, [users.data]);
 
   return (
-    <div className="space-y-5 p-6">
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
+      <div className="shrink-0 p-5 pb-0">
       {/* Gradient header */}
       <div className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
@@ -84,6 +85,10 @@ export default function UsersPage() {
           <Button size="sm" className="bg-coral text-white hover:bg-white/90">Invite user</Button>
         </div>
       </div>
+      </div>
+
+      {/* ── Pinned KPI + filter strip ── */}
+      <div className="shrink-0 space-y-5 px-5 pt-5">
 
       {/* Summary */}
       <div className="flex flex-wrap gap-3 text-xs">
@@ -100,99 +105,100 @@ export default function UsersPage() {
         ))}
       </div>
 
-      <Card>
-        <CardHeader className="border-b py-3">
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Status tabs */}
-            <div className="flex rounded-lg border p-0.5 text-xs">
-              {(['all', 'active', 'invited', 'inactive'] as const).map((s) => (
-                <button key={s} type="button" onClick={() => setStatusFilter(s)}
-                  className={cn('rounded-md px-2.5 py-1 font-medium capitalize transition-colors',
-                    statusFilter === s ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground')}>
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
-                </button>
-              ))}
-            </div>
-
-            {/* Role filter */}
-            <div className="flex items-center gap-1">
-              <Filter className="h-3.5 w-3.5 text-muted-foreground" />
-              <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value as typeof roleFilter)}
-                className="h-8 rounded-md border bg-background px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring">
-                <option value="all">All roles</option>
-                <option value="super_admin">Super Admin</option>
-                <option value="admin">Admin</option>
-                <option value="agent">Agent</option>
-              </select>
-            </div>
-
-            <div className="relative ml-auto">
-              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input value={search} onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search name, email, tenant…" className="h-8 w-60 pl-8 text-xs" />
-              {search && <button type="button" onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"><X className="h-3 w-3" /></button>}
-            </div>
+      {/* Filter strip — styled like the top of a card */}
+      <div className="rounded-t-xl border border-b-0 border-border/70 bg-card px-4 py-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Status tabs */}
+          <div className="flex rounded-lg border p-0.5 text-xs">
+            {(['all', 'active', 'invited', 'inactive'] as const).map((s) => (
+              <button key={s} type="button" onClick={() => setStatusFilter(s)}
+                className={cn('rounded-md px-2.5 py-1 font-medium capitalize transition-colors',
+                  statusFilter === s ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground')}>
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </button>
+            ))}
           </div>
-        </CardHeader>
 
-        <CardContent className="p-0">
+          {/* Role filter */}
+          <div className="flex items-center gap-1">
+            <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+            <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value as typeof roleFilter)}
+              className="h-8 rounded-md border bg-background px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring">
+              <option value="all">All roles</option>
+              <option value="super_admin">Super Admin</option>
+              <option value="admin">Admin</option>
+              <option value="agent">Agent</option>
+            </select>
+          </div>
+
+          <div className="relative ml-auto">
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input value={search} onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search name, email, tenant…" className="h-8 w-60 pl-8 text-xs" />
+            {search && <button type="button" onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"><X className="h-3 w-3" /></button>}
+          </div>
+        </div>
+      </div>
+      </div>
+
+      {/* ── Scrollable body (just the table rows) ── */}
+      <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-5">
+        <div className="overflow-x-auto rounded-b-xl border border-t-0 border-border/70 bg-card">
           {users.isLoading ? (
             <div className="space-y-2 p-4">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-10" />)}</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b bg-muted/30 text-left text-muted-foreground">
-                    <th className="px-4 py-2.5 font-semibold">User</th>
-                    <th className="px-3 py-2.5 font-semibold">Tenant</th>
-                    <th className="px-3 py-2.5 font-semibold">Plan</th>
-                    <th className="px-3 py-2.5 font-semibold">Role</th>
-                    <th className="px-3 py-2.5 font-semibold">Status</th>
-                    <th className="px-3 py-2.5 font-semibold">Last login</th>
-                    <th className="px-3 py-2.5" />
+            <table className="w-full text-xs">
+              <thead className="sticky top-0 z-10 bg-muted/30">
+                <tr className="border-b border-border/60 text-left text-muted-foreground">
+                  <th className="px-4 py-2.5 font-semibold">User</th>
+                  <th className="px-3 py-2.5 font-semibold">Tenant</th>
+                  <th className="px-3 py-2.5 font-semibold">Plan</th>
+                  <th className="px-3 py-2.5 font-semibold">Role</th>
+                  <th className="px-3 py-2.5 font-semibold">Status</th>
+                  <th className="px-3 py-2.5 font-semibold">Last login</th>
+                  <th className="px-3 py-2.5" />
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {filtered.map((u) => (
+                  <tr key={u.id} className="transition-colors hover:bg-muted/40">
+                    <td className="px-4 py-2.5">
+                      <p className="font-semibold">{u.name}</p>
+                      <p className="text-muted-foreground">{u.email}</p>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      {u.tenantId ? (
+                        <Link href={`/tenants/${u.tenantId}`} className="text-primary hover:underline">{u.tenantName}</Link>
+                      ) : (
+                        <span className="text-muted-foreground">{u.tenantName}</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      {u.tenantId ? (
+                        <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize', PLAN_STYLES[u.tenantPlan])}>{u.tenantPlan}</span>
+                      ) : <span className="text-muted-foreground">—</span>}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <Badge variant={ROLE_META[u.role].variant} className="text-[10px]">{ROLE_META[u.role].label}</Badge>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <Badge variant={STATUS_META[u.status].variant} className="text-[10px] capitalize">{u.status}</Badge>
+                    </td>
+                    <td className="px-3 py-2.5 text-muted-foreground">{u.lastLoginAt ? formatAgo(u.lastLoginAt) : 'Never'}</td>
+                    <td className="px-3 py-2.5">
+                      <Button size="sm" variant="outline" className="h-6 px-2 text-[10px]">Actions</Button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {filtered.map((u) => (
-                    <tr key={u.id} className="transition-colors hover:bg-muted/40">
-                      <td className="px-4 py-2.5">
-                        <p className="font-semibold">{u.name}</p>
-                        <p className="text-muted-foreground">{u.email}</p>
-                      </td>
-                      <td className="px-3 py-2.5">
-                        {u.tenantId ? (
-                          <Link href={`/tenants/${u.tenantId}`} className="text-primary hover:underline">{u.tenantName}</Link>
-                        ) : (
-                          <span className="text-muted-foreground">{u.tenantName}</span>
-                        )}
-                      </td>
-                      <td className="px-3 py-2.5">
-                        {u.tenantId ? (
-                          <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize', PLAN_STYLES[u.tenantPlan])}>{u.tenantPlan}</span>
-                        ) : <span className="text-muted-foreground">—</span>}
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <Badge variant={ROLE_META[u.role].variant} className="text-[10px]">{ROLE_META[u.role].label}</Badge>
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <Badge variant={STATUS_META[u.status].variant} className="text-[10px] capitalize">{u.status}</Badge>
-                      </td>
-                      <td className="px-3 py-2.5 text-muted-foreground">{u.lastLoginAt ? formatAgo(u.lastLoginAt) : 'Never'}</td>
-                      <td className="px-3 py-2.5">
-                        <Button size="sm" variant="outline" className="h-6 px-2 text-[10px]">Actions</Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {filtered.length === 0 && <p className="p-8 text-center text-sm text-muted-foreground">No users match your filters.</p>}
-            </div>
+                ))}
+              </tbody>
+            </table>
           )}
+          {!users.isLoading && filtered.length === 0 && <p className="p-8 text-center text-sm text-muted-foreground">No users match your filters.</p>}
           <div className="border-t bg-muted/20 px-4 py-2.5">
             <p className="text-xs text-muted-foreground">Showing {filtered.length} of {users.data?.length ?? 0} users</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

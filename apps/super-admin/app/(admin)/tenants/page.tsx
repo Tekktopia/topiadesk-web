@@ -115,7 +115,8 @@ export default function TenantsPage() {
   }, [tenants.data]);
 
   return (
-    <div className="space-y-5">
+    <div className="flex h-[calc(100vh-3rem)] flex-col overflow-hidden">
+      <div className="shrink-0 p-5 pb-0">
       {/* Gradient header */}
       <div className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
@@ -131,9 +132,11 @@ export default function TenantsPage() {
           </Button>
         </div>
       </div>
+      </div>
 
-      <div className="px-6 pb-6 space-y-5">
-      <Card>
+      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-5">
+
+            <Card>
         {/* Filters */}
         <CardHeader className="border-b py-3">
           <div className="flex flex-wrap items-center gap-3">
@@ -283,6 +286,6 @@ export default function TenantsPage() {
         </CardContent>
       </Card>
       </div>
-    </div>
+      </div>
   );
 }

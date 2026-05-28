@@ -67,7 +67,8 @@ export default function AuditsPage() {
   const overallPct = totalAssets > 0 ? Math.round((totalVerified / totalAssets) * 100) : 0;
 
   return (
-    <div className="space-y-5 p-5">
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
+      <div className="shrink-0 p-5 pb-0">
       {/* ── Gradient header ── */}
       <div
         className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15"
@@ -99,6 +100,9 @@ export default function AuditsPage() {
           </Button>
         </div>
       </div>
+      </div>
+
+      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-5">
 
       {/* ── Overview strip ── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -275,6 +279,7 @@ export default function AuditsPage() {
           <p className="text-xs text-muted-foreground">No audits match the selected filter.</p>
         </div>
       )}
+      </div>
     </div>
   );
 }
