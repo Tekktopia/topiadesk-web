@@ -57,6 +57,7 @@ import {
   TabsList,
   TabsTrigger,
   Textarea,
+  RichEmailEditor,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -87,6 +88,38 @@ const RELATED_TICKETS = [
 
 const REQUESTER_TICKETS = 12;
 const REQUESTER_OPEN = 2;
+
+/** Pretty labels for the customer-ID field IDs defined in tenant-admin → Ticket fields. */
+const CUSTOMER_ID_LABELS: Record<string, string> = {
+  'cust-org':      'Company / Account ID',
+  'cust-contract': 'Contract number',
+  'cust-asset':    'Asset tag',
+  'cust-site':     'Site / branch code',
+};
+
+/** Mailboxes the agent can send "From" — first one is the default fallback */
+const FROM_MAILBOXES: { name?: string; email: string }[] = [
+  { name: 'Support', email: 'support@consomoafrica.com' },
+  { name: 'Help',    email: 'help@consomoafrica.com' },
+  { name: 'IT Ops',  email: 'itops@consomoafrica.com' },
+];
+
+/**
+ * Parse a comma- or semicolon-separated list of recipients.
+ * Accepts: "Name <email@x.com>", "email@x.com", "a, b; c".
+ */
+function parseAddrs(input: string): { name?: string; email: string }[] {
+  return input
+    .split(/[,;]+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((token) => {
+      const m = token.match(/^\s*(.+?)\s*<\s*([^>]+)\s*>\s*$/);
+      if (m) return { name: m[1], email: m[2]! };
+      return { email: token };
+    })
+    .filter((a) => /.+@.+\..+/.test(a.email));
+}
 
 export default function TicketDetailPage() {
   const params = useParams<{ id: string }>();
@@ -123,53 +156,66 @@ export default function TicketDetailPage() {
       <StatusBar ticket={ticket} />
 
       <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[1fr_360px]">
-        <div className="space-y-4 overflow-y-auto p-5">
-          <header className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Link
-                href="/tickets"
-                className="text-xs font-medium text-muted-foreground hover:text-foreground"
-              >
-                Tickets
-              </Link>
-              <span className="text-xs text-muted-foreground">/</span>
-              <span className="font-mono text-xs text-muted-foreground">
-                {ticket.number}
-              </span>
-            </div>
-            <div className="flex flex-wrap items-start gap-2">
-              <h1 className="font-display text-2xl font-bold leading-tight">
-                {ticket.subject}
-              </h1>
-              <PendingBadge entityId={ticket.id} className="mt-1.5" />
-            </div>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5">
-                <Clock className="h-3 w-3" />
-                Opened {relativeTime(ticket.createdAt)} by{' '}
-                <span className="font-medium text-foreground">
-                  {ticket.requester.name}
-                </span>
-              </span>
-              <span aria-hidden>·</span>
-              <span>{ticket.category}</span>
-              <span aria-hidden>·</span>
-              <span>via Email</span>
-              {ticket.slaStatus === 'at_risk' && (
-                <Badge variant="warning" className="ml-1 h-4 px-1.5 text-[9px]">
-                  SLA at risk
-                </Badge>
-              )}
-              {ticket.slaStatus === 'breached' && (
-                <Badge variant="danger" className="ml-1 h-4 px-1.5 text-[9px]">
-                  SLA breached
-                </Badge>
-              )}
-            </div>
-          </header>
-
+        <div className="space-y-4 overflow-y-auto px-5 pb-5">
           <Tabs defaultValue="conversation" className="space-y-4">
-            <div className="flex items-center justify-between gap-3 border-b pb-2">
+            <div className="sticky top-0 z-50 -mx-5 space-y-4 border-b border-b-slate-200/80 bg-background px-5 pb-4 pt-5 shadow-sm">
+              <header className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/tickets"
+                  className="text-xs font-medium text-muted-foreground hover:text-foreground"
+                >
+                  Tickets
+                </Link>
+                <span className="text-xs text-muted-foreground">/</span>
+                <span className="font-mono text-xs text-muted-foreground">
+                  {ticket.number}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-start gap-2">
+                <h1 className="font-display text-2xl font-bold leading-tight">
+                  {ticket.subject}
+                </h1>
+                <PendingBadge entityId={ticket.id} className="mt-1.5" />
+              </div>
+              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="h-3 w-3" />
+                  Opened {relativeTime(ticket.createdAt)} by{' '}
+                  <span className="font-medium text-foreground">
+                    {ticket.requester.name}
+                  </span>
+                </span>
+                <span aria-hidden>·</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="text-[10px] uppercase tracking-wide">Category</span>
+                  <Badge variant="secondary" className="h-5 gap-1 px-1.5 text-[10px] font-semibold">
+                    <Tag className="h-2.5 w-2.5" />
+                    {ticket.category}
+                    {ticket.subcategory && (
+                      <>
+                        <span className="opacity-50">›</span>
+                        <span>{ticket.subcategory}</span>
+                      </>
+                    )}
+                  </Badge>
+                </span>
+                <span aria-hidden>·</span>
+                <span>via Email</span>
+                {ticket.slaStatus === 'at_risk' && (
+                  <Badge variant="warning" className="ml-1 h-4 px-1.5 text-[9px]">
+                    SLA at risk
+                  </Badge>
+                )}
+                {ticket.slaStatus === 'breached' && (
+                  <Badge variant="danger" className="ml-1 h-4 px-1.5 text-[9px]">
+                    SLA breached
+                  </Badge>
+                )}
+              </div>
+            </header>
+
+            <div className="flex items-center justify-between gap-3 border-t pt-3">
               <TabsList>
                 <TabsTrigger value="conversation">
                   Conversation
@@ -227,11 +273,10 @@ export default function TicketDetailPage() {
                 </DropdownMenu>
               </div>
             </div>
+            </div>
 
             <TabsContent value="conversation" className="space-y-4">
-              <ConversationThread
-                ticket={ticket}
-              />
+              <ConversationThread ticket={ticket} />
               <AISuggestionPanel ticketId={ticket.id} />
               <Composer ticket={ticket} />
             </TabsContent>
@@ -276,15 +321,37 @@ function StatusBar({ ticket }: { ticket: MockTicket }) {
   const resolved = resolveOp.status === 'success' || resolveOp.status === 'queued';
 
   return (
-    <div className="flex shrink-0 flex-wrap items-center gap-2 border-b bg-background/90 backdrop-blur-sm shadow-sm px-5 py-2.5">
+    <div className="sticky top-0 z-50 w-full flex shrink-0 flex-wrap items-center gap-2 border-b bg-background backdrop-blur-sm shadow-sm px-5 py-2.5">
       <InlineSelect label="Status" current={<StatusPill status={ticket.status} />} options={['New', 'Open', 'In progress', 'Pending', 'Resolved', 'Closed']} />
       <Separator orientation="vertical" className="h-5" />
       <InlineSelect label="Priority" current={<PriorityIndicator priority={ticket.priority} />} options={['Low', 'Medium', 'High', 'Urgent']} />
       <Separator orientation="vertical" className="h-5" />
       <InlineSelect
+        label="Category"
+        current={
+          <span className="inline-flex items-center gap-1 text-xs">
+            <Tag className="h-3 w-3 text-coral" />
+            <span className="font-medium">{ticket.category}</span>
+            {ticket.subcategory && (
+              <>
+                <span className="text-muted-foreground/60">›</span>
+                <span>{ticket.subcategory}</span>
+              </>
+            )}
+          </span>
+        }
+        options={[
+          'Support', 'Maintenance', 'Inquiry', 'Request for information',
+          'New item request', 'New solution request', 'Incident',
+          // legacy values still selectable so existing tickets render correctly
+          ticket.category,
+        ].filter((v, i, a) => a.indexOf(v) === i)}
+      />
+      <Separator orientation="vertical" className="h-5" />
+      <InlineSelect
         label="Group"
         current={<span className="text-xs">{ticket.group}</span>}
-        options={['Tier 1 Support', 'Field Support', 'Security Ops', 'IT Operations']}
+        options={['Tier 1 Support', 'Field Support', 'Security Ops', 'IT Operations', 'Billing', 'Identity & Access']}
       />
       <Separator orientation="vertical" className="h-5" />
       <InlineSelect
@@ -375,6 +442,16 @@ interface ConversationThreadProps {
   ticket: MockTicket;
 }
 
+function ConversationThread({ ticket }: ConversationThreadProps) {
+  return (
+    <div className="space-y-3">
+      {ticket.conversations.map((m, i) => (
+        <MessageCard key={m.id} m={m} isOpening={i === 0} />
+      ))}
+    </div>
+  );
+}
+
 /** Format an EmailAddress as "Name <email>" or "email" */
 function formatAddr(a: { name?: string; email: string }) {
   return a.name ? `${a.name} <${a.email}>` : a.email;
@@ -394,7 +471,7 @@ function AddressList({
   return (
     <div className={cn('flex gap-2 text-xs', className)}>
       <span className="w-10 shrink-0 font-medium text-muted-foreground">{label}:</span>
-      <span className="min-w-0 break-words text-foreground/90">
+      <span className="min-w-0 wrap-break-word text-foreground/90">
         {addrs.map((a, i) => (
           <span key={a.email}>
             {a.name ? <span className="font-medium">{a.name}</span> : null}
@@ -466,81 +543,51 @@ function MessageCard({ m, isOpening }: { m: ConversationMessage; isOpening?: boo
               </p>
             )}
             {!open && !isEmail && (
-              <p className="mt-0.5 truncate text-[11px] text-muted-foreground">{m.body.slice(0, 80)}{m.body.length > 80 ? '…' : ''}</p>
+              <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                {m.body.slice(0, 120)}
+              </p>
             )}
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <span className="hidden text-[11px] text-muted-foreground sm:inline">
-            {relativeTime(m.createdAt)}
-          </span>
-          <ChevronDown className={cn('h-3.5 w-3.5 text-muted-foreground transition-transform', open && 'rotate-180')} />
+        <div className="flex shrink-0 items-center gap-2 text-[11px] text-muted-foreground">
+          <span>{relativeTime(m.createdAt)}</span>
+          <ChevronDown
+            className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-180')}
+          />
         </div>
       </button>
 
+      {/* Expanded body */}
       {open && (
-        <div className="border-t border-border/60 px-4 py-3 space-y-3">
-          {/* Email headers block */}
+        <div className="border-t border-border/60 px-4 py-3 text-sm">
           {isEmail && (
-            <div className="space-y-1 rounded-lg bg-muted/30 px-3 py-2">
-              {m.from && (
-                <div className="flex gap-2 text-xs">
-                  <span className="w-10 shrink-0 font-medium text-muted-foreground">From:</span>
-                  <span className="min-w-0 break-words text-foreground/90">
-                    <span className="font-medium">{m.from.name ?? ''}</span>{m.from.name ? ' ' : ''}
-                    <span className="text-muted-foreground">&lt;{m.from.email}&gt;</span>
-                  </span>
-                </div>
+            <div className="mb-3 space-y-0.5 rounded-md border border-border/50 bg-muted/30 px-3 py-2 text-[11px] text-muted-foreground">
+              <p>
+                <span className="font-semibold text-foreground/80">From:</span>{' '}
+                {m.from ? formatAddr(m.from) : m.author.name}
+              </p>
+              {m.to && m.to.length > 0 && (
+                <p>
+                  <span className="font-semibold text-foreground/80">To:</span>{' '}
+                  {m.to.map(formatAddr).join(', ')}
+                </p>
               )}
-              <AddressList label="To"  addrs={m.to ?? []} />
-              <AddressList label="Cc"  addrs={m.cc ?? []} />
-              <AddressList label="Bcc" addrs={m.bcc ?? []} />
+              {m.cc && m.cc.length > 0 && (
+                <p>
+                  <span className="font-semibold text-foreground/80">Cc:</span>{' '}
+                  {m.cc.map(formatAddr).join(', ')}
+                </p>
+              )}
               {m.subject && (
-                <div className="flex gap-2 text-xs">
-                  <span className="w-10 shrink-0 font-medium text-muted-foreground">Subj:</span>
-                  <span className="min-w-0 break-words font-medium text-foreground">{m.subject}</span>
-                </div>
+                <p>
+                  <span className="font-semibold text-foreground/80">Subject:</span>{' '}
+                  {m.subject}
+                </p>
               )}
-              <div className="flex gap-2 text-[10px] text-muted-foreground pt-1">
-                <span className="w-10 shrink-0">Date:</span>
-                <span>{absoluteDateTime(m.createdAt)}</span>
-              </div>
             </div>
           )}
-
-          {/* Body */}
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{m.body}</p>
-
-          {/* Attachments */}
-          {m.attachments && m.attachments.length > 0 && (
-            <div className="flex flex-wrap gap-2 pt-1">
-              {m.attachments.map((att) => (
-                <a
-                  key={att.name}
-                  href="#"
-                  className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-2.5 py-1.5 text-xs transition-colors hover:bg-muted"
-                >
-                  <Paperclip className="h-3 w-3 text-muted-foreground" />
-                  <span className="font-medium text-foreground">{att.name}</span>
-                  <span className="text-muted-foreground">{att.sizeKb} KB</span>
-                </a>
-              ))}
-            </div>
-          )}
-
-          {/* Per-message actions */}
-          <div className="flex items-center gap-1 pt-1">
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
-              <Reply className="h-3 w-3" /> Reply
-            </Button>
-            {isEmail && (
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
-                <ExternalLink className="h-3 w-3" /> Forward
-              </Button>
-            )}
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
-              <Copy className="h-3 w-3" /> Copy
-            </Button>
+          <div className="whitespace-pre-wrap leading-relaxed text-foreground/90">
+            {m.body}
           </div>
         </div>
       )}
@@ -548,60 +595,7 @@ function MessageCard({ m, isOpening }: { m: ConversationMessage; isOpening?: boo
   );
 }
 
-function ConversationThread({ ticket }: ConversationThreadProps) {
-  // Build the opening message from the ticket description, but enrich with email metadata if available.
-  const opening: ConversationMessage = {
-    id: 'opening',
-    author: ticket.requester,
-    authorType: 'customer',
-    channel: ticket.channel === 'email' ? 'email' : undefined,
-    from:    ticket.emailFrom,
-    to:      ticket.emailTo,
-    cc:      ticket.emailCc,
-    subject: ticket.emailSubject ?? ticket.subject,
-    body:    ticket.description,
-    isInternal: false,
-    createdAt:  ticket.createdAt,
-  };
-  // If the conversation already contains the first message (which we now do for email tickets), skip the synthetic opening.
-  const hasFirstAlready = ticket.conversations.length > 0
-    && ticket.conversations[0]!.authorType === 'customer'
-    && Math.abs(new Date(ticket.conversations[0]!.createdAt).getTime() - new Date(ticket.createdAt).getTime()) < 60_000;
-
-  const all = hasFirstAlready ? ticket.conversations : [opening, ...ticket.conversations];
-  // Keep the most-recent message open by default; collapse older ones for an email-thread feel.
-  return (
-    <div className="space-y-2.5">
-      {all.map((m, i) => (
-        <MessageCard key={m.id} m={m} isOpening={i === all.length - 1} />
-      ))}
-    </div>
-  );
-}
-
-/** Mailbox options the agent can send From */
-const FROM_MAILBOXES = [
-  { name: 'IT Support',      email: 'support@consomoafrica.com'  },
-  { name: 'Helpdesk',        email: 'helpdesk@consomoafrica.com' },
-  { name: 'Field Services',  email: 'field@consomoafrica.com'    },
-  { name: 'Security Ops',    email: 'security@consomoafrica.com' },
-];
-
-/** Pretty parser for "Name <email>" or just "email" lists */
-function parseAddrs(s: string): { name?: string; email: string }[] {
-  if (!s.trim()) return [];
-  return s
-    .split(/[,;\n]/)
-    .map((raw) => raw.trim())
-    .filter(Boolean)
-    .map((token) => {
-      const m = token.match(/^(.*?)\s*<\s*([^>]+)\s*>$/);
-      if (m) return { name: m[1]!.trim() || undefined, email: m[2]!.trim() };
-      return { email: token };
-    });
-}
-
-/** Inline pill list editor for To/Cc/Bcc fields */
+/** Editable email-style address field — tag input with name/email parsing */
 function RecipientField({
   label,
   value,
@@ -846,45 +840,10 @@ function Composer({ ticket }: { ticket: MockTicket }) {
       )}
 
       {/* Toolbar */}
-      <div className="flex items-center gap-1 border-b border-border/50 px-3 py-1.5">
-        {[
-          { icon: Bold,       tip: 'Bold'          },
-          { icon: Italic,     tip: 'Italic'        },
-          { icon: Underline,  tip: 'Underline'     },
-          { icon: Link2,      tip: 'Link'          },
-          { icon: ListChecks, tip: 'Bulleted list' },
-        ].map(({ icon: Icon, tip }) => (
-          <Tooltip key={tip}>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7"><Icon className="h-3 w-3" /></Button>
-            </TooltipTrigger>
-            <TooltipContent>{tip}</TooltipContent>
-          </Tooltip>
-        ))}
-        <Separator orientation="vertical" className="mx-1 h-4" />
-        {[
-          { icon: Paperclip, tip: 'Attach file'   },
-          { icon: Smile,     tip: 'Emoji'         },
-          { icon: AtSign,    tip: 'Mention agent' },
-        ].map(({ icon: Icon, tip }) => (
-          <Tooltip key={tip}>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7"><Icon className="h-3 w-3" /></Button>
-            </TooltipTrigger>
-            <TooltipContent>{tip}</TooltipContent>
-          </Tooltip>
-        ))}
-        <Separator orientation="vertical" className="mx-1 h-4" />
-        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
-          <FileText className="h-3 w-3" /> Canned
-        </Button>
-        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-coral">
-          <Sparkles className="h-3 w-3" /> AI suggest
-        </Button>
-      </div>
-
-      {/* Body */}
-      <Textarea
+      {/* Rich email editor with Outlook-style paste + signatures */}
+      <RichEmailEditor
+        value={body}
+        onChange={setBody}
         placeholder={
           isNote
             ? 'Type an internal note — only visible to agents…'
@@ -892,11 +851,18 @@ function Composer({ ticket }: { ticket: MockTicket }) {
               ? 'Type your reply — it will be queued and sent when you reconnect…'
               : 'Type your reply…'
         }
-        rows={6}
-        className="resize-none border-0 px-4 py-3 shadow-none focus-visible:ring-0"
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        disabled={sending}
+        minRows={6}
+        disableSignatures={isNote}
+        toolbarExtras={
+          <>
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
+              <FileText className="h-3 w-3" /> Canned
+            </Button>
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-coral">
+              <Sparkles className="h-3 w-3" /> AI suggest
+            </Button>
+          </>
+        }
       />
 
       {/* Send bar */}
@@ -1042,7 +1008,21 @@ function RightRail({
           label="Priority"
           value={<PriorityIndicator priority={ticket.priority} />}
         />
-        <PropertyRow label="Category" value={ticket.category} />
+        <PropertyRow
+          label="Category"
+          value={
+            <span className="inline-flex items-center gap-1 text-xs">
+              <Tag className="h-3 w-3 text-coral" />
+              <span className="font-semibold">{ticket.category}</span>
+            </span>
+          }
+        />
+        {ticket.subcategory && (
+          <PropertyRow
+            label="Subcategory"
+            value={<span className="text-xs">{ticket.subcategory}</span>}
+          />
+        )}
         <PropertyRow label="Group" value={ticket.group} />
         <PropertyRow
           label="Channel"
@@ -1062,6 +1042,22 @@ function RightRail({
           }
         />
       </SidebarSection>
+
+      {/* Customer IDs — populated from tenant-admin "Ticket fields" config */}
+      {ticket.customerIds && Object.keys(ticket.customerIds).length > 0 && (
+        <SidebarSection title="Customer identifiers">
+          <div className="space-y-1.5">
+            {Object.entries(ticket.customerIds).map(([id, value]) => (
+              <div key={id} className="flex items-center justify-between gap-2 rounded-md border bg-background px-3 py-1.5">
+                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  {CUSTOMER_ID_LABELS[id] ?? id}
+                </span>
+                <span className="font-mono text-[11px] font-semibold">{value}</span>
+              </div>
+            ))}
+          </div>
+        </SidebarSection>
+      )}
 
       {linkedAsset && (
         <SidebarSection title="Linked asset">

@@ -96,7 +96,7 @@ export default function KnowledgePage() {
       <div className="shrink-0 p-5 pb-0">
       {/* ── Gradient header ── */}
       <div
-        className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15"
+        className="topiadesk-hero relative overflow-hidden rounded-2xl px-6 py-5"
       >
         <div
           className="pointer-events-none absolute inset-0"

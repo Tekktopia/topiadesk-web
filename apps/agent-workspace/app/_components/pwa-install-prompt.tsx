@@ -1,7 +1,7 @@
 'use client';
 
 import { Download, X, Smartphone } from 'lucide-react';
-import { Button } from '@topiadesk/ui';
+import { Button, Logo } from '@topiadesk/ui';
 import { usePWAInstall } from '../_hooks/use-pwa-install';
 
 /**
@@ -27,9 +27,7 @@ export function PWAInstallPrompt() {
         </button>
 
         <div className="flex items-start gap-3 pr-6">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-navy shadow-md">
-            <span className="font-display text-lg font-black text-white">T</span>
-          </div>
+          <Logo size={40} className="shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-foreground">Install Topiadesk</p>
             <p className="mt-0.5 text-xs text-muted-foreground">

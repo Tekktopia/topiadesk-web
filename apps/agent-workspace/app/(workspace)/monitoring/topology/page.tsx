@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   ChevronRight,
   Info,
+  Plus,
 } from 'lucide-react';
 import {
   Badge,
@@ -13,6 +14,14 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
   Skeleton,
   cn,
 } from '@topiadesk/ui';
@@ -27,7 +36,8 @@ const STATUS_COLORS: Record<DeviceStatus, string> = {
   unknown: '#cbd5e1',
 };
 
-const SITES = ['Lagos HQ', 'Ikeja Branch', 'Nairobi Office'];
+const BUILTIN_SITES = ['Lagos HQ', 'Ikeja Branch', 'Nairobi Office'];
+const CUSTOM_SITES_KEY = 'topiadesk.topology.custom-sites';
 
 // ─── SVG Node ─────────────────────────────────────────────────────────────────
 
@@ -94,8 +104,35 @@ function TopoNode({
 export default function TopologyPage() {
   const [site, setSite] = useState('Lagos HQ');
   const [selected, setSelected] = useState<TopologyNode | null>(null);
+  const [customSites, setCustomSites] = useState<string[]>([]);
+  const [addSiteOpen, setAddSiteOpen] = useState(false);
+  const [newSiteName, setNewSiteName] = useState('');
   const topology = useTopology(site);
   const devices  = useDevices();
+
+  // Hydrate custom sites from localStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const stored = JSON.parse(window.localStorage.getItem(CUSTOM_SITES_KEY) ?? '[]');
+      if (Array.isArray(stored)) setCustomSites(stored.filter((s) => typeof s === 'string'));
+    } catch {}
+  }, []);
+
+  const allSites = useMemo(() => [...BUILTIN_SITES, ...customSites], [customSites]);
+
+  const handleAddSite = () => {
+    const name = newSiteName.trim();
+    if (!name || allSites.includes(name)) return;
+    const next = [...customSites, name];
+    setCustomSites(next);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(CUSTOM_SITES_KEY, JSON.stringify(next));
+    }
+    setSite(name);
+    setNewSiteName('');
+    setAddSiteOpen(false);
+  };
 
   const topo = topology.data;
 
@@ -119,7 +156,7 @@ export default function TopologyPage() {
     <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
       <div className="shrink-0 p-5 pb-0">
       {/* Gradient header */}
-      <div className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
+      <div className="topiadesk-hero relative overflow-hidden rounded-2xl px-6 py-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
@@ -128,9 +165,16 @@ export default function TopologyPage() {
             <h1 className="font-display text-2xl font-bold tracking-tight text-white">Network Topology</h1>
             <p className="mt-0.5 text-sm text-white/70">Visual map of your network infrastructure per site</p>
           </div>
-          <Button variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white" asChild>
-            <Link href="/monitoring/devices">View device list</Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white" asChild>
+              <Link href="/monitoring/devices?add=1">
+                <Plus className="h-3 w-3" />Add device
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white" asChild>
+              <Link href="/monitoring/devices">View device list</Link>
+            </Button>
+          </div>
         </div>
       </div>
       </div>
@@ -138,20 +182,28 @@ export default function TopologyPage() {
       <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-5">
 
       {/* Site tabs */}
-      <div className="flex rounded-lg border p-0.5 text-xs w-fit">
-        {SITES.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => { setSite(s); setSelected(null); }}
-            className={cn(
-              'rounded-md px-3 py-1.5 font-medium transition-colors',
-              site === s ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            {s}
-          </button>
-        ))}
+      <div className="flex items-center gap-2">
+        <div className="flex flex-wrap rounded-lg border p-0.5 text-xs">
+          {allSites.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => { setSite(s); setSelected(null); }}
+              className={cn(
+                'rounded-md px-3 py-1.5 font-medium transition-colors',
+                site === s ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {s}
+              {customSites.includes(s) && (
+                <span className="ml-1 inline-block rounded-full bg-coral/15 px-1 text-[9px] font-semibold uppercase tracking-wide text-coral-dark">new</span>
+              )}
+            </button>
+          ))}
+        </div>
+        <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setAddSiteOpen(true)}>
+          <Plus className="h-3 w-3" />Add site
+        </Button>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-4">
@@ -335,6 +387,43 @@ export default function TopologyPage() {
         </div>
       </div>
       </div>
+
+      {/* Add site dialog */}
+      <Dialog open={addSiteOpen} onOpenChange={setAddSiteOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add a new site</DialogTitle>
+            <DialogDescription>
+              Add a branch office, data centre, or remote location to your topology. You can then attach devices to it from the device list.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="site-name" className="text-xs">Site name</Label>
+            <Input
+              id="site-name"
+              autoFocus
+              value={newSiteName}
+              onChange={(e) => setNewSiteName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleAddSite(); }}
+              placeholder="e.g. Abuja Office, London DC"
+            />
+            {newSiteName.trim() && allSites.includes(newSiteName.trim()) && (
+              <p className="text-[11px] text-red-600">A site with this name already exists.</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => { setAddSiteOpen(false); setNewSiteName(''); }}>Cancel</Button>
+            <Button
+              size="sm"
+              className="bg-coral text-white hover:bg-coral-dark"
+              disabled={!newSiteName.trim() || allSites.includes(newSiteName.trim())}
+              onClick={handleAddSite}
+            >
+              <Plus className="h-3 w-3" />Add site
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

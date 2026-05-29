@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   BarChart3,
   Download,
@@ -12,6 +12,13 @@ import {
   ShieldCheck,
   ArrowUpRight,
   ArrowDownRight,
+  Users,
+  Target,
+  TrendingDown,
+  PieChart,
+  Filter,
+  Award,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   Avatar,
@@ -110,6 +117,683 @@ function VolumeChart({ data }: { data: { label: string; created: number; resolve
   );
 }
 
+// ─── SLA TARGETS (set by tenant admin in /sla policy) ───────────────────────
+// These come from the tenant-admin SLA policy. Hardcoded here for now;
+// in production these would be fetched from the same source.
+const SLA_TARGETS = {
+  firstResponseSla: 90,
+  resolutionSla:    85,
+};
+
+// ─── SLA by group/agent (Freshdesk-style) ────────────────────────────────────
+
+interface AgentSlaStat {
+  id: string;
+  name: string;
+  avatar: string;
+  tickets: number;
+  firstResponseSla: number; // %
+  resolutionSla: number;    // %
+  breached: number;
+}
+
+interface GroupSlaStat {
+  group: string;
+  totalTickets: number;
+  firstResponseSla: number; // %
+  resolutionSla: number;    // %
+  breached: number;
+  agents: AgentSlaStat[];
+}
+
+const GROUP_SLA: GroupSlaStat[] = [
+  {
+    group: 'Tier 1 Support', totalTickets: 142, firstResponseSla: 94.4, resolutionSla: 88.7, breached: 16,
+    agents: [
+      { id: 'a1', name: 'Tunde Bakare',    avatar: 'TB', tickets: 82, firstResponseSla: 96.3, resolutionSla: 91.5, breached: 3 },
+      { id: 'a3', name: 'Kwame Mensah',    avatar: 'KM', tickets: 60, firstResponseSla: 91.7, resolutionSla: 84.9, breached: 13 },
+    ],
+  },
+  {
+    group: 'Tier 2 Support', totalTickets: 98, firstResponseSla: 91.8, resolutionSla: 85.2, breached: 14,
+    agents: [
+      { id: 'a2', name: 'Adaeze Nwosu',    avatar: 'AN', tickets: 54, firstResponseSla: 94.4, resolutionSla: 88.9, breached: 6 },
+      { id: 'a5', name: 'Chinedu Okafor',  avatar: 'CO', tickets: 44, firstResponseSla: 88.6, resolutionSla: 80.7, breached: 8 },
+    ],
+  },
+  {
+    group: 'IT Operations', totalTickets: 76, firstResponseSla: 96.1, resolutionSla: 92.4, breached: 6,
+    agents: [
+      { id: 'a1', name: 'Tunde Bakare',    avatar: 'TB', tickets: 38, firstResponseSla: 97.4, resolutionSla: 94.7, breached: 2 },
+      { id: 'a4', name: 'Fatima Suleiman', avatar: 'FS', tickets: 38, firstResponseSla: 94.7, resolutionSla: 90.0, breached: 4 },
+    ],
+  },
+  {
+    group: 'Field Support', totalTickets: 54, firstResponseSla: 88.9, resolutionSla: 79.6, breached: 11,
+    agents: [
+      { id: 'a3', name: 'Kwame Mensah',    avatar: 'KM', tickets: 30, firstResponseSla: 90.0, resolutionSla: 80.0, breached: 6 },
+      { id: 'a5', name: 'Chinedu Okafor',  avatar: 'CO', tickets: 24, firstResponseSla: 87.5, resolutionSla: 79.2, breached: 5 },
+    ],
+  },
+  {
+    group: 'Security Ops', totalTickets: 42, firstResponseSla: 97.6, resolutionSla: 95.2, breached: 2,
+    agents: [
+      { id: 'a4', name: 'Fatima Suleiman', avatar: 'FS', tickets: 24, firstResponseSla: 100,  resolutionSla: 95.8, breached: 1 },
+      { id: 'a2', name: 'Adaeze Nwosu',    avatar: 'AN', tickets: 18, firstResponseSla: 94.4, resolutionSla: 94.4, breached: 1 },
+    ],
+  },
+  {
+    group: 'Billing', totalTickets: 28, firstResponseSla: 92.9, resolutionSla: 89.3, breached: 3,
+    agents: [
+      { id: 'a2', name: 'Adaeze Nwosu',    avatar: 'AN', tickets: 28, firstResponseSla: 92.9, resolutionSla: 89.3, breached: 3 },
+    ],
+  },
+  {
+    group: 'Identity & Access', totalTickets: 21, firstResponseSla: 90.5, resolutionSla: 85.7, breached: 3,
+    agents: [
+      { id: 'a4', name: 'Fatima Suleiman', avatar: 'FS', tickets: 21, firstResponseSla: 90.5, resolutionSla: 85.7, breached: 3 },
+    ],
+  },
+];
+
+function slaTone(pct: number) {
+  if (pct >= 95) return 'text-emerald-600';
+  if (pct >= 90) return 'text-amber-600';
+  return 'text-red-600';
+}
+function slaBg(pct: number) {
+  if (pct >= 95) return 'bg-emerald-500';
+  if (pct >= 90) return 'bg-amber-500';
+  return 'bg-red-500';
+}
+
+function SlaByGroupSection() {
+  const [group, setGroup] = useState<'all' | string>('all');
+  const [agentId, setAgentId] = useState<'all' | string>('all');
+
+  // Aggregate when "all" is selected
+  const overall = useMemo(() => {
+    const totalT = GROUP_SLA.reduce((s, g) => s + g.totalTickets, 0);
+    const fr = GROUP_SLA.reduce((s, g) => s + g.firstResponseSla * g.totalTickets, 0) / Math.max(1, totalT);
+    const rs = GROUP_SLA.reduce((s, g) => s + g.resolutionSla    * g.totalTickets, 0) / Math.max(1, totalT);
+    const br = GROUP_SLA.reduce((s, g) => s + g.breached, 0);
+    return { totalT, firstResponseSla: fr, resolutionSla: rs, breached: br };
+  }, []);
+
+  const selectedGroup = useMemo(() => GROUP_SLA.find((g) => g.group === group), [group]);
+  const selectedAgent = useMemo(
+    () => selectedGroup?.agents.find((a) => a.id === agentId),
+    [selectedGroup, agentId],
+  );
+
+  // Active metrics — group, agent, or overall
+  const view = useMemo(() => {
+    if (selectedAgent) {
+      return {
+        scope: `${selectedAgent.name} · ${selectedGroup!.group}`,
+        tickets: selectedAgent.tickets,
+        firstResponseSla: selectedAgent.firstResponseSla,
+        resolutionSla: selectedAgent.resolutionSla,
+        breached: selectedAgent.breached,
+      };
+    }
+    if (selectedGroup) {
+      return {
+        scope: `Group: ${selectedGroup.group}`,
+        tickets: selectedGroup.totalTickets,
+        firstResponseSla: selectedGroup.firstResponseSla,
+        resolutionSla: selectedGroup.resolutionSla,
+        breached: selectedGroup.breached,
+      };
+    }
+    return {
+      scope: 'All groups',
+      tickets: overall.totalT,
+      firstResponseSla: overall.firstResponseSla,
+      resolutionSla: overall.resolutionSla,
+      breached: overall.breached,
+    };
+  }, [selectedAgent, selectedGroup, overall]);
+
+  // Reset agent filter when group changes
+  const handleSelectGroup = (g: string) => {
+    setGroup(g);
+    setAgentId('all');
+  };
+
+  return (
+    <Card>
+      <CardHeader className="border-b pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Target className="h-4 w-4 text-coral" />
+            <CardTitle className="text-sm font-semibold">SLA performance by group</CardTitle>
+          </div>
+          <Badge variant="secondary" className="text-[10px]">SLA target: 90%</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4 p-5">
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <Users className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-muted-foreground">Group</span>
+            <select
+              value={group}
+              onChange={(e) => handleSelectGroup(e.target.value)}
+              className="h-8 rounded-md border bg-background px-2 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              <option value="all">All groups</option>
+              {GROUP_SLA.map((g) => <option key={g.group} value={g.group}>{g.group}</option>)}
+            </select>
+          </div>
+          {selectedGroup && (
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">Agent</span>
+              <select
+                value={agentId}
+                onChange={(e) => setAgentId(e.target.value)}
+                className="h-8 rounded-md border bg-background px-2 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                <option value="all">All agents in group</option>
+                {selectedGroup.agents.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              </select>
+            </div>
+          )}
+          <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+            {view.scope} · {view.tickets} tickets
+          </span>
+        </div>
+
+        {/* KPI tiles with achieved/missed vs target */}
+        <div className="grid gap-3 sm:grid-cols-3">
+          <SlaKpiTile
+            label="First response SLA %"
+            actual={view.firstResponseSla}
+            target={SLA_TARGETS.firstResponseSla}
+          />
+          <SlaKpiTile
+            label="Resolution SLA %"
+            actual={view.resolutionSla}
+            target={SLA_TARGETS.resolutionSla}
+          />
+          <div className="rounded-xl border bg-card p-4">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">SLA breached</p>
+            <p className={cn('mt-1.5 text-3xl font-bold tabular-nums', view.breached === 0 ? 'text-emerald-600' : 'text-red-600')}>
+              {view.breached}
+            </p>
+            <p className="mt-1.5 text-[10px] text-muted-foreground">
+              {((view.breached / Math.max(1, view.tickets)) * 100).toFixed(1)}% of tickets
+            </p>
+          </div>
+        </div>
+
+        {/* Breakdown table */}
+        <div className="overflow-hidden rounded-xl border">
+          <table className="w-full text-xs">
+            <thead className="bg-muted/40 text-left text-muted-foreground">
+              <tr className="border-b">
+                <th className="px-3 py-2 font-semibold">{group === 'all' ? 'Group' : 'Agent'}</th>
+                <th className="px-3 py-2 text-right font-semibold">Tickets</th>
+                <th className="px-3 py-2 text-right font-semibold">First response SLA</th>
+                <th className="px-3 py-2 text-right font-semibold">Resolution SLA</th>
+                <th className="px-3 py-2 text-right font-semibold">Breached</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {group === 'all'
+                ? GROUP_SLA.map((g) => (
+                    <tr key={g.group} className="hover:bg-muted/30">
+                      <td className="px-3 py-2.5 font-semibold">
+                        <button type="button" onClick={() => handleSelectGroup(g.group)} className="hover:text-primary hover:underline">
+                          {g.group}
+                        </button>
+                      </td>
+                      <td className="px-3 py-2.5 text-right tabular-nums">{g.totalTickets}</td>
+                      <td className="px-3 py-2.5 text-right">
+                        <span className={cn('font-semibold tabular-nums', slaTone(g.firstResponseSla))}>
+                          {g.firstResponseSla.toFixed(1)}%
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 text-right">
+                        <span className={cn('font-semibold tabular-nums', slaTone(g.resolutionSla))}>
+                          {g.resolutionSla.toFixed(1)}%
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 text-right">
+                        <Badge variant={g.breached === 0 ? 'default' : g.breached <= 5 ? 'warning' : 'danger'} className="text-[10px]">
+                          {g.breached}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))
+                : selectedGroup?.agents
+                    .filter((a) => agentId === 'all' || a.id === agentId)
+                    .map((a) => (
+                      <tr key={a.id} className="hover:bg-muted/30">
+                        <td className="px-3 py-2.5">
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarFallback className="bg-blue-100 text-[9px] font-bold text-blue-700">{a.avatar}</AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">{a.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2.5 text-right tabular-nums">{a.tickets}</td>
+                        <td className="px-3 py-2.5 text-right">
+                          <span className={cn('font-semibold tabular-nums', slaTone(a.firstResponseSla))}>
+                            {a.firstResponseSla.toFixed(1)}%
+                          </span>
+                        </td>
+                        <td className="px-3 py-2.5 text-right">
+                          <span className={cn('font-semibold tabular-nums', slaTone(a.resolutionSla))}>
+                            {a.resolutionSla.toFixed(1)}%
+                          </span>
+                        </td>
+                        <td className="px-3 py-2.5 text-right">
+                          <Badge variant={a.breached === 0 ? 'default' : a.breached <= 3 ? 'warning' : 'danger'} className="text-[10px]">
+                            {a.breached}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+            </tbody>
+          </table>
+        </div>
+        {group !== 'all' && (
+          <p className="text-[11px] text-muted-foreground">
+            Showing {selectedGroup?.agents.filter((a) => agentId === 'all' || a.id === agentId).length ?? 0} agent(s) in {selectedGroup?.group}.
+            <button type="button" onClick={() => { setGroup('all'); setAgentId('all'); }} className="ml-2 text-primary hover:underline">
+              ← Back to all groups
+            </button>
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function SlaKpiTile({ label, actual, target }: { label: string; actual: number; target: number }) {
+  const achieved = actual >= target;
+  const delta = actual - target;
+  return (
+    <div className="rounded-xl border bg-card p-4">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
+        <span className={cn(
+          'inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide',
+          achieved ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700',
+        )}>
+          {achieved ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
+          {achieved ? 'Achieved' : 'Missed'}
+        </span>
+      </div>
+      <p className={cn('mt-1.5 text-3xl font-bold tabular-nums', slaTone(actual))}>
+        {actual.toFixed(1)}%
+      </p>
+      <div className="relative mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+        <div className={cn('h-full rounded-full transition-all', slaBg(actual))}
+          style={{ width: `${actual}%` }} />
+        {/* Target marker */}
+        <div className="absolute top-0 bottom-0 w-px bg-foreground/40" style={{ left: `${target}%` }} />
+      </div>
+      <p className="mt-1.5 flex items-center justify-between text-[10px] text-muted-foreground">
+        <span>Target: <span className="font-semibold text-foreground">{target}%</span></span>
+        <span className={achieved ? 'text-emerald-600' : 'text-red-600'}>
+          {delta >= 0 ? '+' : ''}{delta.toFixed(1)} pts
+        </span>
+      </p>
+    </div>
+  );
+}
+
+// ─── SLA detail breakdown (drill-down by priority / channel / type) ──────────
+
+interface SlaDimensionRow {
+  label: string;
+  tickets: number;
+  firstResponseSla: number;
+  resolutionSla: number;
+}
+
+const SLA_BY_PRIORITY: SlaDimensionRow[] = [
+  { label: 'Urgent', tickets: 32,  firstResponseSla: 96.9, resolutionSla: 87.5 },
+  { label: 'High',   tickets: 98,  firstResponseSla: 94.9, resolutionSla: 89.8 },
+  { label: 'Medium', tickets: 168, firstResponseSla: 92.3, resolutionSla: 86.9 },
+  { label: 'Low',    tickets: 84,  firstResponseSla: 88.1, resolutionSla: 81.0 },
+];
+const SLA_BY_CHANNEL: SlaDimensionRow[] = [
+  { label: 'Email',     tickets: 165, firstResponseSla: 92.7, resolutionSla: 87.3 },
+  { label: 'Web portal',tickets: 98,  firstResponseSla: 95.9, resolutionSla: 89.8 },
+  { label: 'WhatsApp',  tickets: 54,  firstResponseSla: 90.7, resolutionSla: 83.3 },
+  { label: 'Chat',      tickets: 41,  firstResponseSla: 97.6, resolutionSla: 92.7 },
+  { label: 'Phone',     tickets: 24,  firstResponseSla: 100,  resolutionSla: 87.5 },
+];
+const SLA_BY_CATEGORY: SlaDimensionRow[] = [
+  { label: 'Network / VPN',  tickets: 58, firstResponseSla: 93.1, resolutionSla: 84.5 },
+  { label: 'Hardware',       tickets: 42, firstResponseSla: 90.5, resolutionSla: 81.0 },
+  { label: 'Software',       tickets: 39, firstResponseSla: 94.9, resolutionSla: 89.7 },
+  { label: 'Access Request', tickets: 34, firstResponseSla: 97.1, resolutionSla: 94.1 },
+  { label: 'Security',       tickets: 28, firstResponseSla: 96.4, resolutionSla: 92.9 },
+  { label: 'Email',          tickets: 22, firstResponseSla: 95.5, resolutionSla: 90.9 },
+  { label: 'Other',          tickets: 39, firstResponseSla: 89.7, resolutionSla: 82.1 },
+];
+
+const SLA_TREND: { day: string; firstResponseSla: number; resolutionSla: number }[] = [
+  { day: 'Apr 30', firstResponseSla: 88.5, resolutionSla: 82.0 },
+  { day: 'May 03', firstResponseSla: 91.2, resolutionSla: 84.5 },
+  { day: 'May 06', firstResponseSla: 90.0, resolutionSla: 83.8 },
+  { day: 'May 09', firstResponseSla: 93.4, resolutionSla: 86.1 },
+  { day: 'May 12', firstResponseSla: 94.7, resolutionSla: 88.2 },
+  { day: 'May 15', firstResponseSla: 92.1, resolutionSla: 85.9 },
+  { day: 'May 18', firstResponseSla: 95.3, resolutionSla: 89.7 },
+  { day: 'May 21', firstResponseSla: 96.0, resolutionSla: 91.4 },
+  { day: 'May 24', firstResponseSla: 93.8, resolutionSla: 87.5 },
+  { day: 'May 27', firstResponseSla: 94.4, resolutionSla: 88.0 },
+];
+
+function SlaTrendChart() {
+  const W = 700;
+  const H = 180;
+  const pad = { t: 16, r: 32, b: 28, l: 36 };
+  const xs = W - pad.l - pad.r;
+  const ys = H - pad.t - pad.b;
+  const yMin = 75;
+  const yMax = 100;
+  const yRange = yMax - yMin;
+
+  const ptsFor = (key: 'firstResponseSla' | 'resolutionSla') =>
+    SLA_TREND.map((d, i) => ({
+      x: pad.l + (i / (SLA_TREND.length - 1)) * xs,
+      y: pad.t + (1 - (d[key] - yMin) / yRange) * ys,
+    }));
+
+  const frPts = ptsFor('firstResponseSla');
+  const rsPts = ptsFor('resolutionSla');
+  const path = (p: { x: number; y: number }[]) => p.map((q, i) => `${i === 0 ? 'M' : 'L'}${q.x.toFixed(1)},${q.y.toFixed(1)}`).join(' ');
+
+  const targetY = (target: number) => pad.t + (1 - (target - yMin) / yRange) * ys;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {/* Y gridlines */}
+      {[80, 85, 90, 95, 100].map((v) => {
+        const y = pad.t + (1 - (v - yMin) / yRange) * ys;
+        return (
+          <g key={v}>
+            <line x1={pad.l} y1={y} x2={pad.l + xs} y2={y} stroke="currentColor" strokeOpacity={0.08} />
+            <text x={pad.l - 6} y={y + 3} textAnchor="end" fontSize={8} fill="currentColor" opacity={0.5}>{v}%</text>
+          </g>
+        );
+      })}
+      {/* Target lines */}
+      <g>
+        <line x1={pad.l} y1={targetY(SLA_TARGETS.firstResponseSla)} x2={pad.l + xs} y2={targetY(SLA_TARGETS.firstResponseSla)}
+          stroke="#2563eb" strokeWidth={1} strokeDasharray="3 3" opacity={0.5} />
+        <text x={pad.l + xs + 2} y={targetY(SLA_TARGETS.firstResponseSla) + 3} fontSize={7} fill="#2563eb">FRT {SLA_TARGETS.firstResponseSla}%</text>
+        <line x1={pad.l} y1={targetY(SLA_TARGETS.resolutionSla)} x2={pad.l + xs} y2={targetY(SLA_TARGETS.resolutionSla)}
+          stroke="#7c3aed" strokeWidth={1} strokeDasharray="3 3" opacity={0.5} />
+        <text x={pad.l + xs + 2} y={targetY(SLA_TARGETS.resolutionSla) + 3} fontSize={7} fill="#7c3aed">RST {SLA_TARGETS.resolutionSla}%</text>
+      </g>
+      {/* Lines */}
+      <path d={path(frPts)} fill="none" stroke="#2563eb" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      <path d={path(rsPts)} fill="none" stroke="#7c3aed" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      {/* Dots + x labels */}
+      {SLA_TREND.map((d, i) => {
+        const fr = frPts[i]!;
+        const rs = rsPts[i]!;
+        return (
+          <g key={d.day}>
+            <circle cx={fr.x} cy={fr.y} r={3} fill="#2563eb" stroke="#fff" strokeWidth={1.5} />
+            <circle cx={rs.x} cy={rs.y} r={3} fill="#7c3aed" stroke="#fff" strokeWidth={1.5} />
+            <text x={fr.x} y={H - 4} textAnchor="middle" fontSize={7} fill="currentColor" opacity={0.5}>{d.day}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function SlaDetailSection() {
+  const [dim, setDim] = useState<'priority' | 'channel' | 'category'>('priority');
+  const rows =
+    dim === 'priority' ? SLA_BY_PRIORITY :
+    dim === 'channel'  ? SLA_BY_CHANNEL :
+                         SLA_BY_CATEGORY;
+  const dimLabel = dim === 'priority' ? 'Priority' : dim === 'channel' ? 'Channel' : 'Category';
+
+  return (
+    <Card>
+      <CardHeader className="border-b pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Award className="h-4 w-4 text-coral" />
+            <CardTitle className="text-sm font-semibold">SLA detail breakdown</CardTitle>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <span className="h-2 w-3 rounded bg-blue-600" /> First response
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <span className="h-2 w-3 rounded bg-violet-600" /> Resolution
+            </span>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4 p-5">
+        {/* Trend chart */}
+        <div>
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">SLA % trend — last 30 days</p>
+          <div className="text-foreground/70">
+            <SlaTrendChart />
+          </div>
+        </div>
+
+        {/* Dimension selector */}
+        <div className="flex items-center gap-2 border-t pt-3">
+          <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-[11px] text-muted-foreground">Break down by</span>
+          <div className="flex rounded-lg border p-0.5 text-xs">
+            {(['priority', 'channel', 'category'] as const).map((d) => (
+              <button key={d} type="button" onClick={() => setDim(d)}
+                className={cn('rounded-md px-2.5 py-1 font-medium capitalize transition-colors',
+                  dim === d ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground')}>
+                {d}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Breakdown table */}
+        <div className="overflow-hidden rounded-xl border">
+          <table className="w-full text-xs">
+            <thead className="bg-muted/40 text-left text-muted-foreground">
+              <tr className="border-b">
+                <th className="px-3 py-2 font-semibold">{dimLabel}</th>
+                <th className="px-3 py-2 text-right font-semibold">Tickets</th>
+                <th className="px-3 py-2 font-semibold">First response SLA</th>
+                <th className="px-3 py-2 font-semibold">Resolution SLA</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {rows.map((r) => (
+                <tr key={r.label} className="hover:bg-muted/30">
+                  <td className="px-3 py-2 font-medium">{r.label}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{r.tickets}</td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                        <div className={cn('h-full', slaBg(r.firstResponseSla))} style={{ width: `${r.firstResponseSla}%` }} />
+                      </div>
+                      <span className={cn('w-12 text-right font-semibold tabular-nums', slaTone(r.firstResponseSla))}>
+                        {r.firstResponseSla.toFixed(1)}%
+                      </span>
+                      {r.firstResponseSla >= SLA_TARGETS.firstResponseSla
+                        ? <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                        : <AlertTriangle className="h-3 w-3 text-red-600" />}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                        <div className={cn('h-full', slaBg(r.resolutionSla))} style={{ width: `${r.resolutionSla}%` }} />
+                      </div>
+                      <span className={cn('w-12 text-right font-semibold tabular-nums', slaTone(r.resolutionSla))}>
+                        {r.resolutionSla.toFixed(1)}%
+                      </span>
+                      {r.resolutionSla >= SLA_TARGETS.resolutionSla
+                        ? <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                        : <AlertTriangle className="h-3 w-3 text-red-600" />}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Tickets by Category donut + insights ────────────────────────────────────
+
+interface CategorySlice {
+  label: string;
+  count: number;
+  color: string;
+}
+
+const CATEGORY_PALETTE = ['#2563eb', '#7c3aed', '#0891b2', '#059669', '#d97706', '#dc2626', '#475569'];
+
+function TicketCategoryDonut() {
+  const [dim, setDim] = useState<'category' | 'priority' | 'channel' | 'status'>('category');
+
+  const data: CategorySlice[] = useMemo(() => {
+    if (dim === 'category') {
+      return [
+        { label: 'Network / VPN',  count: 58, color: CATEGORY_PALETTE[0]! },
+        { label: 'Hardware',       count: 42, color: CATEGORY_PALETTE[1]! },
+        { label: 'Software',       count: 39, color: CATEGORY_PALETTE[2]! },
+        { label: 'Access Request', count: 34, color: CATEGORY_PALETTE[3]! },
+        { label: 'Security',       count: 28, color: CATEGORY_PALETTE[4]! },
+        { label: 'Email',          count: 22, color: CATEGORY_PALETTE[5]! },
+        { label: 'Other',          count: 39, color: CATEGORY_PALETTE[6]! },
+      ];
+    }
+    if (dim === 'priority') {
+      return [
+        { label: 'Urgent', count: 32,  color: '#dc2626' },
+        { label: 'High',   count: 98,  color: '#d97706' },
+        { label: 'Medium', count: 168, color: '#2563eb' },
+        { label: 'Low',    count: 84,  color: '#64748b' },
+      ];
+    }
+    if (dim === 'channel') {
+      return [
+        { label: 'Email',     count: 165, color: '#2563eb' },
+        { label: 'Portal',    count: 98,  color: '#7c3aed' },
+        { label: 'WhatsApp',  count: 54,  color: '#059669' },
+        { label: 'Chat',      count: 41,  color: '#0891b2' },
+        { label: 'Phone',     count: 24,  color: '#d97706' },
+      ];
+    }
+    return [
+      { label: 'Open',        count: 84,  color: '#2563eb' },
+      { label: 'Pending',     count: 41,  color: '#d97706' },
+      { label: 'Resolved',    count: 198, color: '#059669' },
+      { label: 'Closed',      count: 59,  color: '#64748b' },
+    ];
+  }, [dim]);
+
+  const total = data.reduce((s, d) => s + d.count, 0);
+  const cx = 100, cy = 100, rOuter = 90, rInner = 56;
+  let angle = -Math.PI / 2;
+  const arcs = data.map((d) => {
+    const pct = d.count / total;
+    const start = angle;
+    const end = angle + pct * Math.PI * 2;
+    angle = end;
+    const large = end - start > Math.PI ? 1 : 0;
+    const x1o = cx + rOuter * Math.cos(start);
+    const y1o = cy + rOuter * Math.sin(start);
+    const x2o = cx + rOuter * Math.cos(end);
+    const y2o = cy + rOuter * Math.sin(end);
+    const x1i = cx + rInner * Math.cos(end);
+    const y1i = cy + rInner * Math.sin(end);
+    const x2i = cx + rInner * Math.cos(start);
+    const y2i = cy + rInner * Math.sin(start);
+    const path = `M${x1o},${y1o} A${rOuter},${rOuter} 0 ${large} 1 ${x2o},${y2o} L${x1i},${y1i} A${rInner},${rInner} 0 ${large} 0 ${x2i},${y2i} Z`;
+    return { d, pct, path };
+  });
+
+  return (
+    <Card>
+      <CardHeader className="border-b pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <PieChart className="h-4 w-4 text-coral" />
+            <CardTitle className="text-sm font-semibold">Tickets by {dim}</CardTitle>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground">Group by</span>
+            <select
+              value={dim}
+              onChange={(e) => setDim(e.target.value as typeof dim)}
+              className="h-7 rounded-md border bg-background px-2 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              <option value="category">Category</option>
+              <option value="priority">Priority</option>
+              <option value="channel">Channel / Source</option>
+              <option value="status">Status</option>
+            </select>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-5">
+        <div className="grid items-center gap-6 sm:grid-cols-2">
+          <div className="relative mx-auto">
+            <svg viewBox="0 0 200 200" className="h-56 w-56">
+              {arcs.map((a, i) => (
+                <path
+                  key={i}
+                  d={a.path}
+                  fill={a.d.color}
+                  stroke="#fff"
+                  strokeWidth={1.5}
+                  aria-label={`${a.d.label}: ${a.d.count} (${(a.pct * 100).toFixed(1)}%)`}
+                >
+                  <title>{`${a.d.label}: ${a.d.count} (${(a.pct * 100).toFixed(1)}%)`}</title>
+                </path>
+              ))}
+            </svg>
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Total</p>
+              <p className="font-display text-2xl font-bold tabular-nums">{total}</p>
+            </div>
+          </div>
+          <ul className="space-y-2 text-xs">
+            {data
+              .slice()
+              .sort((a, b) => b.count - a.count)
+              .map((d) => {
+                const pct = (d.count / total) * 100;
+                return (
+                  <li key={d.label} className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: d.color }} />
+                    <span className="min-w-0 flex-1 truncate font-medium">{d.label}</span>
+                    <span className="tabular-nums text-muted-foreground">{d.count}</span>
+                    <span className="w-12 text-right font-semibold tabular-nums">{pct.toFixed(1)}%</span>
+                  </li>
+                );
+              })}
+          </ul>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ReportsPage() {
@@ -129,7 +813,7 @@ export default function ReportsPage() {
     <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
       {/* ── Fixed header ── */}
       <div className="shrink-0 p-5 pb-0">
-      <header className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
+      <header className="topiadesk-hero relative overflow-hidden rounded-2xl px-6 py-5">
         <div
           className="pointer-events-none absolute inset-0"
           style={{
@@ -306,6 +990,15 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ── SLA by group + per-agent filter (Freshdesk-style) ── */}
+      <SlaByGroupSection />
+
+      {/* ── SLA detail breakdown: trend chart + by priority/channel/category ── */}
+      <SlaDetailSection />
+
+      {/* ── Tickets by Category donut (configurable group-by) ── */}
+      <TicketCategoryDonut />
 
       {/* ── Agent leaderboard ── */}
       <Card>

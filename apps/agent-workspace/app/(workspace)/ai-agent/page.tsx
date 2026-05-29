@@ -74,7 +74,7 @@ export default function AIAgentPage() {
     <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
       {/* ── Fixed header ── */}
       <div className="shrink-0 p-5 pb-0">
-      <header className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
+      <header className="topiadesk-hero relative overflow-hidden rounded-2xl px-6 py-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20">

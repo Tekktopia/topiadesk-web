@@ -1,4 +1,6 @@
 'use client';
+/* fixed-jsx-structure */
+/* end-fix-applied */
 
 import { useState } from 'react';
 import {
@@ -46,7 +48,7 @@ export default function BusinessHoursPage() {
     <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
       <div className="shrink-0 p-5 pb-0">
       {/* Gradient header */}
-      <div className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
+      <div className="topiadesk-hero relative overflow-hidden rounded-2xl px-6 py-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative">
@@ -54,7 +56,6 @@ export default function BusinessHoursPage() {
           <h1 className="font-display text-2xl font-bold tracking-tight text-white">Business hours</h1>
           <p className="mt-0.5 text-sm text-white/70">Used by SLA calculations, after-hours automations, and the customer portal status banner.</p>
         </div>
-      </div>
       </div>
       </div>
 
@@ -207,6 +208,8 @@ export default function BusinessHoursPage() {
         <Button variant="ghost">Discard changes</Button>
         <Button>Save business hours</Button>
       </div>
+      </div>
+
       </div>
     </div>
   );

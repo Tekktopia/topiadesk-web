@@ -303,7 +303,7 @@ export default function OnboardingDetailPage(props: { params: Promise<{ id: stri
 
       {/* ── Fixed header ── */}
       <div className="shrink-0 p-5 pb-0">
-      <header className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
+      <header className="topiadesk-hero relative overflow-hidden rounded-2xl px-6 py-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.1),transparent_55%)]" />
         <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative">

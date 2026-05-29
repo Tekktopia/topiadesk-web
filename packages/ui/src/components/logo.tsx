@@ -2,12 +2,27 @@ import * as React from 'react';
 import { cn } from '../lib/cn';
 
 /**
- * Topiadesk brand mark.
+ * Topiadesk brand mark — the default "T" symbol shown across every Topiadesk
+ * surface until a tenant uploads their own logo via Branding settings.
  *
- * Renders the PNG logo from `/icons/icon.png` (each app is expected to have
- * that file in its public directory). Falls back to the brand initial if the
- * image fails to load (e.g. file not yet copied to a new app).
+ * Renders the PNG at `<basePath>/icons/icon.png`. Each Next.js app ships that
+ * file in its own `public/icons/` directory. Apps mounted at a sub-path
+ * (e.g. tenant-admin → `basePath: '/admin'`) need the URL prefixed; Next.js
+ * bakes the prefix into `process.env.__NEXT_ROUTER_BASEPATH` at build time,
+ * so we read it once here and the same component works in every app.
+ *
+ * If a caller passes `src`, that overrides the default — this is how a
+ * tenant's uploaded logo replaces the Topiadesk T once configured.
  */
+
+// Next.js inlines `process.env.__NEXT_ROUTER_BASEPATH` at build time when the
+// host app sets `basePath` (e.g. tenant-admin → "/admin"). For apps with no
+// basePath it inlines to `""`. We declare a local ambient `process` type so
+// the UI package doesn't need to take a dependency on `@types/node`.
+declare const process: { env: { __NEXT_ROUTER_BASEPATH?: string } };
+const BASE_PATH: string =
+  (typeof process !== 'undefined' ? process.env.__NEXT_ROUTER_BASEPATH : undefined) ?? '';
+
 export interface LogoProps {
   /** Visual size in px. Renders square. Defaults to 24. */
   size?: number;
@@ -15,13 +30,16 @@ export interface LogoProps {
   label?: string;
   /** Extra classes applied to the wrapper. */
   className?: string;
+  /** Override URL — when the tenant has uploaded a custom logo. */
+  src?: string;
 }
 
-export function Logo({ size = 24, label = 'Topiadesk', className }: LogoProps) {
+export function Logo({ size = 24, label = 'Topiadesk', className, src }: LogoProps) {
+  const resolvedSrc = src ?? `${BASE_PATH}/icons/icon.png`;
   return (
     /* eslint-disable-next-line @next/next/no-img-element */
     <img
-      src="/icons/icon.png"
+      src={resolvedSrc}
       alt={label}
       width={size}
       height={size}

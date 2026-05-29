@@ -348,3 +348,72 @@ html.light{
   background-image: radial-gradient(#1A1B2E0A 1px, transparent 1px);
   background-size: 24px 24px;
 }
+
+/* ── Rich email editor + signature manager — placeholder text ───────────── */
+.rich-email-editor:empty::before,
+[contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: rgb(122 117 104 / 0.55);
+  pointer-events: none;
+}
+/* Preserve Outlook/Word table/font styling that comes through paste */
+.rich-email-editor table,
+.rich-email-editor td,
+.rich-email-editor th {
+  border-color: inherit;
+}
+.rich-email-editor img { max-width: 100%; height: auto; }
+
+/* ── Hero title bar — used across every page in the Topiadesk surfaces ───── */
+/*
+ * Replaces the plain bg-navy block with a warm navy → coral gradient
+ * sprinkled with subtle topographic dot grid + sunrise glow + a soft
+ * orange glow on the right edge so the bar feels alive rather than flat.
+ */
+.topiadesk-hero {
+  position: relative;
+  color: #fff;
+  background:
+    /* sunrise glow top-right */
+    radial-gradient(120% 80% at 100% 0%, rgba(255, 142, 96, 0.55) 0%, transparent 55%),
+    /* coral pool bottom-left */
+    radial-gradient(80% 100% at 0% 100%, rgba(255, 107, 74, 0.32) 0%, transparent 60%),
+    /* deep navy base */
+    linear-gradient(135deg, #1A1B2E 0%, #232545 45%, #2D2B4A 100%);
+  box-shadow:
+    0 12px 28px -12px rgba(26, 27, 46, 0.55),
+    0 4px 10px -6px rgba(255, 107, 74, 0.25);
+  overflow: hidden;
+  isolation: isolate;
+}
+.topiadesk-hero::before {
+  /* dot grid layer */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.075) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: center;
+  pointer-events: none;
+  z-index: 0;
+}
+.topiadesk-hero::after {
+  /* diagonal coral streak — adds the "natural" feel */
+  content: '';
+  position: absolute;
+  inset: -20% -10% auto auto;
+  width: 60%;
+  height: 200%;
+  background: linear-gradient(115deg,
+    transparent 0%,
+    rgba(255, 142, 96, 0.18) 38%,
+    rgba(255, 107, 74, 0.28) 55%,
+    transparent 75%);
+  transform: rotate(15deg);
+  pointer-events: none;
+  z-index: 0;
+}
+.topiadesk-hero > * {
+  position: relative;
+  z-index: 1;
+}

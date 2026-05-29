@@ -1,5 +1,8 @@
 'use client';
+/* fixed-jsx-structure */
+/* end-fix-applied */
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
   ArrowDown,
@@ -97,7 +100,7 @@ export default function AgentsPage() {
     <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
       <div className="shrink-0 p-5 pb-0">
       {/* Gradient header */}
-      <div className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
+      <div className="topiadesk-hero relative overflow-hidden rounded-2xl px-6 py-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
@@ -115,13 +118,14 @@ export default function AgentsPage() {
               <Upload className="h-3 w-3" />
               Bulk import CSV
             </Button>
-            <Button size="sm" className="bg-coral text-white hover:bg-white/90">
-              <UserPlus className="h-3 w-3" />
-              Invite agent
+            <Button size="sm" className="bg-coral text-white hover:bg-coral-dark" asChild>
+              <Link href="/agents/new">
+                <UserPlus className="h-3 w-3" />
+                Create agent
+              </Link>
             </Button>
           </div>
         </div>
-      </div>
       </div>
       </div>
 
@@ -338,6 +342,8 @@ export default function AgentsPage() {
           </Button>
         </div>
       </Card>
+      </div>
+
       </div>
     </div>
   );

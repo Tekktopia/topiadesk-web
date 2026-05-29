@@ -46,26 +46,20 @@ export default function TenantSettingsPage() {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
       <div className="shrink-0 p-5 pb-0">
-      {/* Gradient header */}
-      <div className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
-        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-        <div className="relative">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">Workspace</p>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-white">Tenant settings</h1>
-          <p className="mt-0.5 text-sm text-white/70">General configuration that applies across this Topiadesk tenant.</p>
+        <div className="topiadesk-hero relative overflow-hidden rounded-2xl px-6 py-5">
+          <div className="relative">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">Workspace</p>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-white">Tenant settings</h1>
+            <p className="mt-0.5 text-sm text-white/80">General configuration that applies across this Topiadesk tenant.</p>
+          </div>
         </div>
       </div>
-      </div>
-      </div>
 
-      <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-5">
-
-      <div className="px-5 pb-5 lg:px-6 lg:pb-6 space-y-5">
-      <form
-        onSubmit={handleSave}
-        className="space-y-5"
-      >
+      <div className="flex-1 min-h-0 overflow-y-auto p-5">
+        <form
+          onSubmit={handleSave}
+          className="space-y-5"
+        >
         <Card>
           <CardHeader className="border-b py-3">
             <CardTitle className="flex items-center gap-2 text-sm">

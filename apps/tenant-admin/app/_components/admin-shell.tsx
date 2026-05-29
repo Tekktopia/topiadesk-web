@@ -50,15 +50,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   Input,
+  Logo,
   cn,
 } from '@topiadesk/ui';
-import { CURRENT_ADMIN, TENANT } from '@/lib/mock-data';
-import { initials } from '@/lib/format';
+import { TENANT } from '@/lib/mock-data';
+import { useRole, TENANT_ROLES, ROLE_META, type Capability, type TenantRole } from '@/lib/role-context';
 
 interface NavItem {
   href: string;
   label: string;
   icon: ComponentType<{ className?: string }>;
+  /** Required capability — if the current user lacks it, the link is hidden. */
+  capability: Capability;
 }
 
 interface NavSection {
@@ -69,40 +72,42 @@ interface NavSection {
 const SECTIONS: NavSection[] = [
   {
     label: 'Overview',
-    items: [{ href: '/', label: 'Dashboard', icon: LayoutDashboard }],
+    items: [{ href: '/', label: 'Dashboard', icon: LayoutDashboard, capability: 'view_dashboard' }],
   },
   {
     label: 'Workspace',
     items: [
-      { href: '/settings',       label: 'Tenant settings', icon: Settings },
-      { href: '/branding',       label: 'Branding',        icon: Brush },
-      { href: '/business-hours', label: 'Business hours',  icon: Calendar },
+      { href: '/settings',       label: 'Tenant settings', icon: Settings, capability: 'view_settings' },
+      { href: '/branding',       label: 'Branding',        icon: Brush,    capability: 'view_branding' },
+      { href: '/business-hours', label: 'Business hours',  icon: Calendar, capability: 'view_business_hours' },
+      { href: '/migration',      label: 'Migration tool',  icon: History,  capability: 'view_migration' },
     ],
   },
   {
     label: 'Ticketing',
     items: [
-      { href: '/sla',         label: 'SLA policies', icon: Timer },
-      { href: '/automations', label: 'Automations',  icon: Workflow },
+      { href: '/ticket-fields', label: 'Ticket fields', icon: Ticket,   capability: 'view_ticket_fields' },
+      { href: '/sla',           label: 'SLA policies',  icon: Timer,    capability: 'view_sla' },
+      { href: '/automations',   label: 'Automations',   icon: Workflow, capability: 'view_automations' },
     ],
   },
   {
     label: 'People',
     items: [
-      { href: '/agents', label: 'Agents & users',     icon: Users },
-      { href: '/roles',  label: 'Roles & permissions', icon: Shield },
+      { href: '/agents', label: 'Agents & users',     icon: Users,  capability: 'view_agents' },
+      { href: '/roles',  label: 'Roles & permissions', icon: Shield, capability: 'view_roles' },
     ],
   },
   {
     label: 'Connect',
     items: [
-      { href: '/channels',     label: 'Email channels', icon: Mail },
-      { href: '/integrations', label: 'Integrations',   icon: Plug },
+      { href: '/channels',     label: 'Email channels', icon: Mail, capability: 'view_channels' },
+      { href: '/integrations', label: 'Integrations',   icon: Plug, capability: 'view_integrations' },
     ],
   },
   {
     label: 'Security',
-    items: [{ href: '/audit', label: 'Audit log', icon: History }],
+    items: [{ href: '/audit', label: 'Audit log', icon: History, capability: 'view_audit_log' }],
   },
 ];
 
@@ -127,6 +132,13 @@ function Sidebar({
   onClose: () => void;
 }) {
   const pathname = usePathname();
+  const { can } = useRole();
+
+  // Drop nav items the current role lacks; drop sections that go empty as a result.
+  const visibleSections = SECTIONS
+    .map((s) => ({ ...s, items: s.items.filter((it) => can(it.capability)) }))
+    .filter((s) => s.items.length > 0);
+
   return (
     <>
       {mobileOpen && (
@@ -142,17 +154,16 @@ function Sidebar({
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         )}
       >
-        {/* Logo / brand */}
-        <div className="flex h-14 items-center gap-3 border-b border-border/60 px-4">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-navy text-xl">
-            {TENANT.emoji}
-          </div>
+        {/* Logo / brand — defaults to the Topiadesk "T" until a tenant uploads
+            their own logo via /branding, in which case we'd pass src here. */}
+        <div className="flex h-14 items-center gap-2.5 border-b border-border/60 px-4">
+          <Logo size={36} className="shrink-0" />
           <div className="min-w-0 flex-1 leading-tight">
             <p className="truncate text-sm font-semibold text-foreground">
               {TENANT.name}
             </p>
-            <p className="truncate text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Admin · {TENANT.plan}
+            <p className="truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-coral">
+              Tenant Admin
             </p>
           </div>
           <button
@@ -167,7 +178,7 @@ function Sidebar({
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-3 py-3">
-          {SECTIONS.map((section) => (
+          {visibleSections.map((section) => (
             <div key={section.label} className="mb-4">
               <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 {section.label}
@@ -235,6 +246,7 @@ function Sidebar({
 }
 
 function Topbar({ onToggleMobile }: { onToggleMobile: () => void }) {
+  const { user, setRole, signOut } = useRole();
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/60 bg-card/70 px-4 backdrop-blur-xl lg:px-6">
       <button
@@ -271,29 +283,44 @@ function Topbar({ onToggleMobile }: { onToggleMobile: () => void }) {
           >
             <Avatar className="h-7 w-7">
               <AvatarFallback className="bg-coral text-[11px] font-bold text-white">
-                {initials(CURRENT_ADMIN.name)}
+                {user.initials}
               </AvatarFallback>
             </Avatar>
             <span className="hidden text-sm font-medium md:inline">
-              {CURRENT_ADMIN.name}
+              {user.name}
             </span>
             <ChevronDown className="hidden h-3 w-3 text-muted-foreground md:inline" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuContent align="end" className="w-60">
           <DropdownMenuLabel>
-            <div className="text-sm font-medium text-foreground">
-              {CURRENT_ADMIN.name}
-            </div>
-            <div className="text-xs font-normal text-muted-foreground">
-              {CURRENT_ADMIN.email} · {CURRENT_ADMIN.role}
+            <div className="text-sm font-medium text-foreground">{user.name}</div>
+            <div className="text-xs font-normal text-muted-foreground">{user.email}</div>
+            <div className="mt-1.5">
+              <span className={cn(
+                'inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+                ROLE_META[user.role].tone.bg,
+                ROLE_META[user.role].tone.text,
+              )}>
+                {ROLE_META[user.role].label}
+              </span>
             </div>
           </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className="text-[9px] uppercase tracking-wider text-muted-foreground">
+            Switch role (dev)
+          </DropdownMenuLabel>
+          {TENANT_ROLES.map((r: TenantRole) => (
+            <DropdownMenuItem key={r} onClick={() => setRole(r)} className={cn(user.role === r && 'bg-muted')}>
+              {user.role === r ? '● ' : '○ '}
+              <span>{ROLE_META[r].label}</span>
+            </DropdownMenuItem>
+          ))}
           <DropdownMenuSeparator />
           <DropdownMenuItem>Profile preferences</DropdownMenuItem>
           <DropdownMenuItem>Switch tenant</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={signOut} className="text-red-600 focus:text-red-600">
             <LogOut className="h-4 w-4" />
             Sign out
           </DropdownMenuItem>

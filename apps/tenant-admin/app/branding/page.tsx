@@ -46,7 +46,7 @@ export default function BrandingPage() {
   return (
     <div className="space-y-5">
       {/* Gradient header */}
-      <div className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
+      <div className="topiadesk-hero relative overflow-hidden rounded-2xl px-6 py-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative">
@@ -54,7 +54,6 @@ export default function BrandingPage() {
           <h1 className="font-display text-2xl font-bold tracking-tight text-white">Branding</h1>
           <p className="mt-0.5 text-sm text-white/70">Control how your tenant looks to customers and in outbound email.</p>
         </div>
-      </div>
       </div>
 
       <div className="flex-1 min-h-0 space-y-5 overflow-y-auto p-5 pt-5">
@@ -260,8 +259,7 @@ export default function BrandingPage() {
                   {TENANT.name} support
                 </p>
               </div>
-              <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
-      <div className="shrink-0 p-5 pb-0">
+              <div className="space-y-2 p-4">
                 <button
                   type="button"
                   className="w-full rounded-md px-3 py-2 text-sm font-medium text-white"

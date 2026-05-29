@@ -78,7 +78,15 @@ export interface MockTicket {
   description: string;
   status: TicketStatus;
   priority: TicketPriority;
+  /** Top-level category from the tenant's taxonomy (Support, Maintenance, Inquiry, Request for information, New item request, New solution request, Incident…) */
   category: string;
+  /** Optional subcategory drilling into the chosen category */
+  subcategory?: string;
+  /**
+   * Custom customer-identifier values keyed by the tenant-admin field id
+   * (e.g. { 'cust-org': 'ACME-001', 'cust-asset': 'AT-00042' }).
+   */
+  customerIds?: Record<string, string>;
   channel: TicketChannel;
   requester: Person;
   assignee?: Person;
@@ -132,7 +140,9 @@ export const mockTickets: MockTicket[] = [
       'I received my new MacBook yesterday and cannot connect to the corporate VPN. The Cisco AnyConnect client returns "Login Failed" every time, even after a fresh install. Other devices work fine on the same network.',
     status: 'open',
     priority: 'high',
-    category: 'Network / VPN',
+    category: 'Support',
+    subcategory: 'Network / VPN',
+    customerIds: { 'cust-org': 'ACME-001', 'cust-asset': 'AT-00042' },
     channel: 'email',
     requester: customers[0]!,
     assignee: agents[0]!,
@@ -233,7 +243,9 @@ export const mockTickets: MockTicket[] = [
     description: 'Manager approval received yesterday. Please grant access.',
     status: 'pending',
     priority: 'low',
-    category: 'Access Request',
+    category: 'New item request',
+    subcategory: 'User account',
+    customerIds: { 'cust-org': 'FLAIR-014' },
     channel: 'portal',
     requester: customers[5]!,
     assignee: agents[2]!,
@@ -440,7 +452,9 @@ export const mockTickets: MockTicket[] = [
     description: 'Subject "URGENT — Payroll update". Blocked at gateway after first report.',
     status: 'escalated',
     priority: 'urgent',
-    category: 'Security / Phishing',
+    category: 'Incident',
+    subcategory: 'Security incident',
+    customerIds: { 'cust-org': 'SAF-KE-007', 'cust-site': 'NBO-OFC' },
     channel: 'email',
     requester: customers[1]!,
     assignee: agents[3]!,
@@ -553,7 +567,9 @@ export const mockTickets: MockTicket[] = [
     description: 'Card declined repeatedly. Customer is high-tier.',
     status: 'open',
     priority: 'urgent',
-    category: 'Billing',
+    category: 'Inquiry',
+    subcategory: 'Billing',
+    customerIds: { 'cust-org': 'DKR-2210', 'cust-contract': 'CT-2026-00091' },
     channel: 'whatsapp',
     requester: customers[7]!,
     assignee: agents[0]!,

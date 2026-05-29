@@ -72,6 +72,18 @@ export type Capability =
   | 'view_audit_logs'
   | 'view_security'             // read-only security events
   | 'manage_security'
+  | 'view_roles'                // RBAC role management
+  | 'manage_roles'
+  | 'view_status_page'          // public status page editor
+  | 'manage_status_page'
+  | 'view_knowledge_base'       // help articles CMS
+  | 'manage_knowledge_base'
+  | 'view_changelog'            // product release notes
+  | 'manage_changelog'
+  | 'view_backups'              // backup & DR
+  | 'manage_backups'
+  | 'view_tenant_onboarding'    // onboarding flow editor
+  | 'manage_tenant_onboarding'
   | 'edit_settings'
   | 'perform_actions';          // master "can do anything that mutates" flag — false for Viewer
 
@@ -81,7 +93,11 @@ const PERMISSIONS: Record<AdminRole, Capability[]> = {
     'handle_support','view_support','view_billing','manage_billing','manage_plans','view_plans','manage_feature_flags','manage_announcements',
     'view_analytics','view_integrations','manage_integrations','view_email_templates','manage_email_templates','view_api_keys','manage_api_keys',
     'view_compliance','manage_compliance',
-    'view_system','view_audit_logs','view_security','manage_security','edit_settings','perform_actions',
+    'view_system','view_audit_logs','view_security','manage_security',
+    'view_roles','manage_roles','view_status_page','manage_status_page',
+    'view_knowledge_base','manage_knowledge_base','view_changelog','manage_changelog',
+    'view_backups','manage_backups','view_tenant_onboarding','manage_tenant_onboarding',
+    'edit_settings','perform_actions',
   ],
   admin: [
     'view_dashboard','view_notifications','manage_tenants','view_tenants','view_users',          // users read-only
@@ -89,11 +105,14 @@ const PERMISSIONS: Record<AdminRole, Capability[]> = {
     'view_billing','view_plans',                                                                  // billing & plans read-only
     'view_analytics','view_integrations','view_email_templates','view_api_keys',
     'view_system','view_audit_logs','view_security',                                              // security read-only
+    'view_roles','view_status_page','manage_status_page','view_knowledge_base','manage_knowledge_base',
+    'view_changelog','manage_changelog','view_backups','view_tenant_onboarding',
     'perform_actions',
   ],
   csr: [
     'view_dashboard','view_notifications','view_tenants',
     'handle_support','view_support',
+    'view_knowledge_base',                   // CSRs read help articles to assist customers
     'perform_actions',
   ],
   viewer: [
@@ -102,6 +121,7 @@ const PERMISSIONS: Record<AdminRole, Capability[]> = {
     'view_billing','view_plans',
     'view_analytics',
     'view_system','view_audit_logs','view_security',
+    'view_roles','view_status_page','view_knowledge_base','view_changelog','view_backups','view_tenant_onboarding',
     // No 'perform_actions' — strict read-only across the board.
   ],
 };

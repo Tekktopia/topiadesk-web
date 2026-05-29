@@ -201,6 +201,16 @@ export interface AdminSla {
   active: boolean;
   ticketsThisMonth: number;
   complianceRate: number;
+  /** Target % the team commits to hit. Tickets ≥ target = SLA achieved, < target = missed. */
+  targets: {
+    firstResponseSla: number;
+    resolutionSla:    number;
+  };
+  /** Current period actuals — used by agent workspace to show achieved/missed pills */
+  actuals?: {
+    firstResponseSla: number;
+    resolutionSla:    number;
+  };
 }
 
 export const adminSlas: AdminSla[] = [
@@ -223,6 +233,8 @@ export const adminSlas: AdminSla[] = [
     active: true,
     ticketsThisMonth: 312,
     complianceRate: 94,
+    targets: { firstResponseSla: 90, resolutionSla: 85 },
+    actuals: { firstResponseSla: 93.6, resolutionSla: 87.2 },
   },
   {
     id: 's2',
@@ -243,6 +255,8 @@ export const adminSlas: AdminSla[] = [
     active: true,
     ticketsThisMonth: 41,
     complianceRate: 98,
+    targets: { firstResponseSla: 98, resolutionSla: 95 },
+    actuals: { firstResponseSla: 98.2, resolutionSla: 96.5 },
   },
   {
     id: 's3',
@@ -263,6 +277,8 @@ export const adminSlas: AdminSla[] = [
     active: true,
     ticketsThisMonth: 89,
     complianceRate: 91,
+    targets: { firstResponseSla: 85, resolutionSla: 80 },
+    actuals: { firstResponseSla: 91.4, resolutionSla: 83.1 },
   },
 ];
 

@@ -52,6 +52,7 @@ import {
   Separator,
   Skeleton,
   Textarea,
+  RichEmailEditor,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -136,7 +137,7 @@ export default function CsrTicketDetailPage(props: { params: Promise<{ id: strin
     <div className="flex h-[calc(100vh-3rem)] flex-col overflow-hidden">
       {/* Hero */}
       <div className="shrink-0 p-5 pb-0">
-        <header className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
+        <header className="topiadesk-hero relative overflow-hidden rounded-2xl px-6 py-5">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08),transparent_50%)]" />
           <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
           <div className="relative">
@@ -325,27 +326,17 @@ export default function CsrTicketDetailPage(props: { params: Promise<{ id: strin
               </>
             )}
 
-            {/* Toolbar */}
-            <div className="flex items-center gap-1 px-3 py-1.5">
-              {[Bold, Italic, Underline, LinkIcon, Code].map((Icon, i) => (
-                <Button key={i} variant="ghost" size="icon" className="h-7 w-7"><Icon className="h-3 w-3" /></Button>
-              ))}
-              <Separator orientation="vertical" className="mx-1 h-4" />
-              {[Paperclip, AtSign].map((Icon, i) => (
-                <Button key={i} variant="ghost" size="icon" className="h-7 w-7"><Icon className="h-3 w-3" /></Button>
-              ))}
-            </div>
-
-            <Textarea
+            {/* Rich email editor with Outlook-style paste + signatures */}
+            <RichEmailEditor
+              value={body}
+              onChange={setBody}
               placeholder={
                 mode === 'note' ? 'Add an internal note for the team…' :
                 mode === 'forward' ? 'Forward this ticket — add context for the recipient…' :
                 'Type your reply to the tenant…'
               }
-              rows={4}
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              className="resize-none border-0 px-4 py-2 shadow-none focus-visible:ring-0"
+              minRows={5}
+              disableSignatures={mode === 'note'}
             />
 
             <div className="flex items-center justify-between gap-2 border-t border-border/60 bg-muted/20 px-3 py-2">

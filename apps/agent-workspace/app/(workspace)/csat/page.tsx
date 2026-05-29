@@ -75,7 +75,7 @@ export default function CSATPage() {
     <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
       {/* ── Fixed header ── */}
       <div className="shrink-0 p-5 pb-0">
-      <header className="relative overflow-hidden rounded-2xl bg-navy px-6 py-5 shadow-lg shadow-navy/15">
+      <header className="topiadesk-hero relative overflow-hidden rounded-2xl px-6 py-5">
         <div
           className="pointer-events-none absolute inset-0"
           style={{

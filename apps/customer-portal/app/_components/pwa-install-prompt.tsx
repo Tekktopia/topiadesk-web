@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { Download, X, Smartphone } from 'lucide-react';
+import { Logo } from '@topiadesk/ui';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -60,9 +61,7 @@ export function PWAInstallPrompt() {
           <X className="h-4 w-4" />
         </button>
         <div className="flex items-start gap-3 pr-6">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 shadow-md">
-            <span className="font-display text-lg font-black text-white">C</span>
-          </div>
+          <Logo size={40} className="shrink-0" />
           <div>
             <p className="text-sm font-semibold text-foreground">Install Support Portal</p>
             <p className="mt-0.5 text-xs text-muted-foreground">
