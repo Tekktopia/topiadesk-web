@@ -13,7 +13,11 @@ import {
   LayoutDashboard,
   Lock,
   LogOut,
+  FileText,
   Headset,
+  LineChart,
+  Mail,
+  Plug,
   ScrollText,
   Server,
   Settings,
@@ -23,6 +27,7 @@ import {
   Ticket,
   UserPlus,
   Users,
+  Webhook,
 } from 'lucide-react';
 import {
   Avatar,
@@ -75,21 +80,25 @@ const NAV: NavGroup[] = [
   {
     label: 'Customer support',
     items: [
-      { href: '/support', label: 'Support tickets', icon: Headset, badge: 4, badgeVariant: 'warning', capability: 'handle_support' },
+      { href: '/support', label: 'Support tickets', icon: Headset, badge: 4, badgeVariant: 'warning', capability: 'view_support' },
     ],
   },
   {
     label: 'Revenue',
     items: [
-      { href: '/billing', label: 'Billing & revenue', icon: BarChart3,   capability: 'view_billing' },
-      { href: '/plans',   label: 'Plans & pricing',   icon: SquareStack, capability: 'manage_plans' },
+      { href: '/billing',   label: 'Billing & revenue', icon: BarChart3,   capability: 'view_billing' },
+      { href: '/plans',     label: 'Plans & pricing',   icon: SquareStack, capability: 'view_plans' },
+      { href: '/analytics', label: 'Analytics',         icon: LineChart,   capability: 'view_analytics' },
     ],
   },
   {
     label: 'Platform',
     items: [
-      { href: '/feature-flags',  label: 'Feature flags',  icon: Flag, capability: 'manage_feature_flags' },
-      { href: '/announcements',  label: 'Announcements',  icon: Bell, capability: 'manage_announcements' },
+      { href: '/feature-flags',   label: 'Feature flags',  icon: Flag,    capability: 'manage_feature_flags' },
+      { href: '/announcements',   label: 'Announcements',  icon: Bell,    capability: 'manage_announcements' },
+      { href: '/email-templates', label: 'Email templates',icon: Mail,    capability: 'view_email_templates' },
+      { href: '/integrations',    label: 'Integrations',   icon: Plug,    capability: 'view_integrations' },
+      { href: '/api-keys',        label: 'API & webhooks', icon: Webhook, capability: 'view_api_keys' },
     ],
   },
   {
@@ -97,7 +106,8 @@ const NAV: NavGroup[] = [
     items: [
       { href: '/system',     label: 'System health', icon: Server,     badge: '!', badgeVariant: 'warning', capability: 'view_system' },
       { href: '/audit-logs', label: 'Audit logs',    icon: ScrollText, capability: 'view_audit_logs' },
-      { href: '/security',   label: 'Security',      icon: Shield,     badge: 2,   badgeVariant: 'danger', capability: 'manage_security' },
+      { href: '/security',   label: 'Security',      icon: Shield,     badge: 2,   badgeVariant: 'danger',  capability: 'view_security' },
+      { href: '/compliance', label: 'Compliance',    icon: FileText,   capability: 'view_compliance' },
     ],
   },
 ];

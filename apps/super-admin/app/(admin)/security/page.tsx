@@ -201,9 +201,9 @@ export default function SecurityPage() {
         </Card>
       )}
 
-      {/* Events filter strip — sticks to top while events scroll */}
-      <div className="sticky top-0 z-20 -mx-5 bg-canvas px-5 pt-1">
-        <div className="rounded-t-xl border border-b-0 border-border/70 bg-card px-4 py-3">
+      {/* Events filter strip — sticks to top of scroll while events scroll under it */}
+      <div className="sticky top-0 z-20 -mx-5 -mt-5 border-b border-border/60 bg-[rgb(251_250_247/0.92)] px-5 py-3 backdrop-blur-md">
+        <div className="rounded-xl border border-border/70 bg-card px-4 py-2.5 shadow-sm">
           <div className="flex flex-wrap items-center gap-3">
             {/* Resolved filter */}
             <div className="flex rounded-lg border p-0.5 text-xs">
@@ -248,8 +248,8 @@ export default function SecurityPage() {
         </div>
       </div>
 
-      {/* Events list (continues from the filter strip above) */}
-      <div className="rounded-b-xl border border-t-0 border-border/70 bg-card">
+      {/* Events list — own card now that filter strip is sticky/standalone */}
+      <div className="mt-4 rounded-xl border border-border/70 bg-card">
           {events.isLoading ? (
             <div className="space-y-2 p-4">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-14" />)}</div>
           ) : (

@@ -141,6 +141,44 @@ html.light{
   h1, h2, h3, h4, h5, h6 {
     @apply font-display text-foreground;
   }
+
+  /* ── Thin, blending scrollbar (Chromium / WebKit) ──────────────────────────
+   * Default browser scrollbars (~15px wide) create a visible "cut" between
+   * scrollable cards and non-scroll siblings (e.g. fixed headers). Slim them
+   * to 8px and tint to match the cream canvas so the gutter disappears. */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(122, 117, 104, 0.25);   /* tinted slate — matches muted-foreground */
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(122, 117, 104, 0.45);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(122, 117, 104, 0.3) transparent;
+  }
+
+  /* Always reserve scrollbar space so layout doesn't shift when content
+   * grows past the viewport. Eliminates the visible "cut" at right edge. */
+  .scroll-area,
+  [data-scroll-area="true"] {
+    scrollbar-gutter: stable;
+  }
 }
 
 /* ── Canvas gradient — warm cream → white → soft lavender ────────────────── */
