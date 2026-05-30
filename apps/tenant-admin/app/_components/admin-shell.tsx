@@ -101,8 +101,9 @@ const SECTIONS: NavSection[] = [
   {
     label: 'Connect',
     items: [
-      { href: '/channels',     label: 'Email channels', icon: Mail, capability: 'view_channels' },
-      { href: '/integrations', label: 'Integrations',   icon: Plug, capability: 'view_integrations' },
+      { href: '/channels',     label: 'Email channels',          icon: Mail,        capability: 'view_channels' },
+      { href: '/integrations', label: 'Integrations',            icon: Plug,        capability: 'view_integrations' },
+      { href: '/device-sync',  label: 'Device sync (Entra/MDM)', icon: Smartphone,  capability: 'view_integrations' },
     ],
   },
   {

@@ -113,9 +113,10 @@ const NAV_SECTIONS: NavSection[] = [
     label: 'Infrastructure',
     defaultOpen: false,
     links: [
-      { href: '/assets',     label: 'Asset inventory', icon: Boxes },
-      { href: '/inventory',  label: 'Inventory',       icon: Server },
-      { href: '/audits',     label: 'Audits',          icon: Filter },
+      { href: '/assets',          label: 'Asset inventory', icon: Boxes },
+      { href: '/assets/sync',     label: 'Device sync inbox', icon: Server, badge: 3 },
+      { href: '/inventory',       label: 'Inventory',       icon: Server },
+      { href: '/audits',          label: 'Audits',          icon: Filter },
     ],
   },
   {

@@ -5,6 +5,7 @@ import {
   BarChart3,
   Download,
   Calendar,
+  CalendarDays,
   TrendingUp,
   Clock,
   CheckCircle2,
@@ -796,8 +797,70 @@ function TicketCategoryDonut() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+type Preset = '7d' | '30d' | '90d' | 'today' | 'yesterday' | 'this-week' | 'last-week' | 'this-month' | 'last-month' | 'qtd' | 'ytd' | 'custom';
+
+/** Compute a [from, to] ISO date pair for any preset. `to` is inclusive end-of-day. */
+function rangeFor(preset: Preset, customFrom?: string, customTo?: string): { from: Date; to: Date; label: string } {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const endOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+
+  switch (preset) {
+    case '7d':         return { from: startOf(new Date(today.getTime() - 6  * 864e5)), to: endOf(today), label: 'Last 7 days' };
+    case '30d':        return { from: startOf(new Date(today.getTime() - 29 * 864e5)), to: endOf(today), label: 'Last 30 days' };
+    case '90d':        return { from: startOf(new Date(today.getTime() - 89 * 864e5)), to: endOf(today), label: 'Last 90 days' };
+    case 'today':      return { from: startOf(today), to: endOf(today), label: 'Today' };
+    case 'yesterday':  {
+      const y = new Date(today.getTime() - 864e5);
+      return { from: startOf(y), to: endOf(y), label: 'Yesterday' };
+    }
+    case 'this-week':  {
+      const dow = (today.getDay() + 6) % 7; // Monday = 0
+      const monday = new Date(today.getTime() - dow * 864e5);
+      return { from: startOf(monday), to: endOf(today), label: 'This week (Mon–today)' };
+    }
+    case 'last-week':  {
+      const dow = (today.getDay() + 6) % 7;
+      const lastMon = new Date(today.getTime() - (dow + 7) * 864e5);
+      const lastSun = new Date(lastMon.getTime() + 6 * 864e5);
+      return { from: startOf(lastMon), to: endOf(lastSun), label: 'Last week' };
+    }
+    case 'this-month': return { from: new Date(today.getFullYear(), today.getMonth(), 1), to: endOf(today), label: 'This month' };
+    case 'last-month': {
+      const first = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const last  = new Date(today.getFullYear(), today.getMonth(),     0, 23, 59, 59, 999);
+      return { from: first, to: last, label: 'Last month' };
+    }
+    case 'qtd': {
+      const q = Math.floor(today.getMonth() / 3);
+      return { from: new Date(today.getFullYear(), q * 3, 1), to: endOf(today), label: 'Quarter-to-date' };
+    }
+    case 'ytd':        return { from: new Date(today.getFullYear(), 0, 1), to: endOf(today), label: 'Year-to-date' };
+    case 'custom': {
+      const from = customFrom ? new Date(customFrom + 'T00:00:00') : startOf(today);
+      const to   = customTo   ? new Date(customTo   + 'T23:59:59') : endOf(today);
+      return { from, to, label: `${formatDate(from)} – ${formatDate(to)}` };
+    }
+  }
+}
+
+function formatDate(d: Date) {
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+function toInputValue(d: Date) {
+  // YYYY-MM-DD for <input type="date">
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export default function ReportsPage() {
-  const [period, setPeriod] = useState<'7d' | '30d' | '90d'>('30d');
+  const [preset, setPreset] = useState<Preset>('30d');
+  const [customFrom, setCustomFrom] = useState<string>(toInputValue(new Date(Date.now() - 29 * 864e5)));
+  const [customTo,   setCustomTo]   = useState<string>(toInputValue(new Date()));
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  const range = useMemo(() => rangeFor(preset, customFrom, customTo), [preset, customFrom, customTo]);
+  const daysInRange = Math.max(1, Math.round((range.to.getTime() - range.from.getTime()) / 864e5));
 
   const summary = useReportSummary();
   const volume = useTicketVolume();
@@ -832,18 +895,25 @@ export default function ReportsPage() {
               Reports &amp; Analytics
             </h1>
             <p className="mt-0.5 text-sm text-white/70">
-              {s ? s.periodLabel : 'Loading…'} · {s ? s.totalCreated : '—'} tickets created
+              <span className="font-medium text-white">{range.label}</span>
+              <span className="mx-1.5 opacity-50">·</span>
+              {formatDate(range.from)} → {formatDate(range.to)}
+              <span className="mx-1.5 opacity-50">·</span>
+              {daysInRange} day{daysInRange === 1 ? '' : 's'}
+              <span className="mx-1.5 opacity-50">·</span>
+              {s ? s.totalCreated : '—'} tickets
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {/* Quick preset toggle */}
             <div className="flex rounded-lg border border-white/20 bg-white/10 p-0.5">
               {(['7d', '30d', '90d'] as const).map((p) => (
                 <button
                   key={p}
-                  onClick={() => setPeriod(p)}
+                  onClick={() => { setPreset(p); setPickerOpen(false); }}
                   className={cn(
                     'rounded-md px-3 py-1 text-xs font-semibold transition-all',
-                    period === p
+                    preset === p
                       ? 'bg-coral text-white shadow-sm'
                       : 'text-white/70 hover:text-white',
                   )}
@@ -851,6 +921,19 @@ export default function ReportsPage() {
                   {p}
                 </button>
               ))}
+              <button
+                onClick={() => setPickerOpen((o) => !o)}
+                className={cn(
+                  'inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-semibold transition-all',
+                  preset !== '7d' && preset !== '30d' && preset !== '90d'
+                    ? 'bg-coral text-white shadow-sm'
+                    : 'text-white/70 hover:text-white',
+                )}
+                title="Choose any date range"
+              >
+                <CalendarDays className="h-3 w-3" />
+                Custom
+              </button>
             </div>
             <Button
               size="sm"
@@ -863,6 +946,90 @@ export default function ReportsPage() {
           </div>
         </div>
       </header>
+
+      {/* Custom date-range picker — drops down under the header */}
+      {pickerOpen && (
+        <div className="relative -mt-2 rounded-xl border border-border/70 bg-card p-4 shadow-md">
+          <div className="grid gap-4 lg:grid-cols-[1fr_auto]">
+            <div>
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Quick presets
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {([
+                  { k: 'today',      label: 'Today' },
+                  { k: 'yesterday',  label: 'Yesterday' },
+                  { k: 'this-week',  label: 'This week' },
+                  { k: 'last-week',  label: 'Last week' },
+                  { k: 'this-month', label: 'This month' },
+                  { k: 'last-month', label: 'Last month' },
+                  { k: 'qtd',        label: 'Quarter-to-date' },
+                  { k: 'ytd',        label: 'Year-to-date' },
+                  { k: '7d',         label: 'Last 7 days' },
+                  { k: '30d',        label: 'Last 30 days' },
+                  { k: '90d',        label: 'Last 90 days' },
+                ] as { k: Preset; label: string }[]).map((p) => (
+                  <button
+                    key={p.k}
+                    onClick={() => {
+                      setPreset(p.k);
+                      // Sync the date inputs so the user sees what range got picked
+                      const r = rangeFor(p.k);
+                      setCustomFrom(toInputValue(r.from));
+                      setCustomTo(toInputValue(r.to));
+                    }}
+                    className={cn(
+                      'rounded-md border px-2.5 py-1 text-[11px] font-medium transition-colors',
+                      preset === p.k
+                        ? 'border-coral bg-coral/10 text-coral-dark'
+                        : 'border-border bg-background text-foreground hover:bg-muted/40',
+                    )}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  From
+                </label>
+                <input
+                  type="date"
+                  value={customFrom}
+                  max={customTo}
+                  onChange={(e) => { setCustomFrom(e.target.value); setPreset('custom'); }}
+                  className="mt-1 h-9 rounded-md border bg-background px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  To
+                </label>
+                <input
+                  type="date"
+                  value={customTo}
+                  min={customFrom}
+                  max={toInputValue(new Date())}
+                  onChange={(e) => { setCustomTo(e.target.value); setPreset('custom'); }}
+                  className="mt-1 h-9 rounded-md border bg-background px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                />
+              </div>
+              <Button size="sm" className="bg-coral text-white hover:bg-coral-dark" onClick={() => setPickerOpen(false)}>
+                Apply
+              </Button>
+            </div>
+          </div>
+
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            Showing data for <span className="font-semibold text-foreground">{range.label}</span> —{' '}
+            {formatDate(range.from)} to {formatDate(range.to)} ({daysInRange} day{daysInRange === 1 ? '' : 's'}).
+            All KPIs, charts and tables below recalculate automatically.
+          </p>
+        </div>
+      )}
       </div>
 
       {/* ── Scrollable content ── */}
