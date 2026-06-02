@@ -2,22 +2,16 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
-  AlertTriangle,
   Bell,
   Check,
   CheckCircle2,
-  ChevronRight,
   Cloud,
-  Cpu,
-  Globe,
   Inbox,
   KeyRound,
   Loader2,
   Mail,
   Plus,
   RefreshCw,
-  Server,
-  Shield,
   ShieldCheck,
   Smartphone,
   Trash2,
@@ -183,7 +177,7 @@ export default function DeviceSyncPage() {
     if (typeof window !== 'undefined') window.localStorage.setItem(STORAGE_REC, JSON.stringify(next));
   };
 
-  const connectedIds = new Set(connections.map((c) => c.providerId));
+  const _connectedIds = new Set(connections.map((c) => c.providerId));
 
   const upsertConnection = (c: Connection) => {
     const exists = connections.some((x) => x.providerId === c.providerId);
@@ -443,7 +437,7 @@ export default function DeviceSyncPage() {
       <ConnectProviderDialog
         provider={connectingProvider}
         onClose={() => setConnectingProvider(null)}
-        onConnect={(creds) => {
+        onConnect={(_creds) => {
           if (!connectingProvider) return;
           const newConn: Connection = {
             providerId: connectingProvider.id, status: 'connected',

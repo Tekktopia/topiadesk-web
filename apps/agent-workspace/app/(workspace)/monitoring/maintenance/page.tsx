@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import {
   CalendarClock,
   CheckCircle2,
@@ -175,8 +176,8 @@ export default function MaintenancePage() {
             <h1 className="font-display text-2xl font-bold tracking-tight text-white">Maintenance Windows</h1>
             <p className="mt-0.5 text-sm text-white/70">Schedule downtime to suppress alerts during planned maintenance</p>
           </div>
-          <Button size="sm" className="bg-coral text-white hover:bg-white/90">
-            <Plus className="h-3 w-3" />New window
+          <Button asChild size="sm" className="bg-coral text-white hover:bg-white/90">
+            <Link href="/monitoring/maintenance/new"><Plus className="h-3 w-3" />New window</Link>
           </Button>
         </div>
       </div>

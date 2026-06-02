@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { Search, X, ToggleLeft, ToggleRight, ChevronDown, ChevronUp, Users, Globe } from 'lucide-react';
 import {
   Badge,
@@ -74,7 +75,7 @@ export default function FeatureFlagsPage() {
             <h1 className="font-display text-2xl font-bold tracking-tight text-white">Feature Flags</h1>
             <p className="mt-0.5 text-sm text-white/70">Control feature availability per plan, tenant, and rollout percentage.</p>
           </div>
-          <Button size="sm" className="bg-coral text-white hover:bg-white/90">New flag</Button>
+          <Button asChild size="sm" className="bg-coral text-white hover:bg-white/90"><Link href="/feature-flags/new">New flag</Link></Button>
         </div>
       </div>
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import {
   AlertOctagon,
   Boxes,
@@ -9,10 +10,8 @@ import {
   ChevronRight,
   CircleDot,
   Edit3,
-  FileBadge,
   FileSignature,
   Flag,
-  Globe,
   GripVertical,
   Hash,
   Inbox,
@@ -1354,14 +1353,22 @@ function CategoriesTab({
                 Top-level taxonomy agents pick from when classifying a ticket.
               </p>
             </div>
-            <Button
-              size="sm"
-              className="bg-coral text-white hover:bg-coral-dark"
-              onClick={() => setShowNew(true)}
-            >
-              <Plus className="h-3 w-3" />
-              New category
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button asChild size="sm" variant="outline">
+                <Link href="/ticket-fields/new">
+                  <Plus className="h-3 w-3" />
+                  New custom field
+                </Link>
+              </Button>
+              <Button
+                size="sm"
+                className="bg-coral text-white hover:bg-coral-dark"
+                onClick={() => setShowNew(true)}
+              >
+                <Plus className="h-3 w-3" />
+                New category
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">

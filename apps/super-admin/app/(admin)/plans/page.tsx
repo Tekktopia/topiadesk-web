@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Check, Edit3, HardDrive, Users } from 'lucide-react';
 import {
   Badge,
@@ -36,7 +37,7 @@ export default function PlansPage() {
             <h1 className="font-display text-2xl font-bold tracking-tight text-white">Plans & Pricing</h1>
             <p className="mt-0.5 text-sm text-white/70">Manage subscription tiers, feature entitlements, and limits.</p>
           </div>
-          <Button size="sm" className="bg-coral text-white hover:bg-white/90">Add plan</Button>
+          <Button asChild size="sm" className="bg-coral text-white hover:bg-white/90"><Link href="/plans/new">Add plan</Link></Button>
         </div>
       </div>
       </div>

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Star, MessageSquare, ThumbsUp, TrendingUp, Download, Filter } from 'lucide-react';
+import Link from 'next/link';
+import { Star, MessageSquare, ThumbsUp, TrendingUp, Download, Filter, Plus } from 'lucide-react';
 import {
   Avatar,
   AvatarFallback,
@@ -104,6 +105,12 @@ export default function CSATPage() {
           >
             <Download className="mr-1.5 h-3.5 w-3.5" />
             Export
+          </Button>
+          <Button asChild size="sm" className="bg-coral text-white hover:bg-white/90">
+            <Link href="/csat/new">
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              New survey
+            </Link>
           </Button>
         </div>
       </header>

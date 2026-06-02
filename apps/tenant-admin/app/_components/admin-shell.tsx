@@ -38,7 +38,6 @@ import {
   Webhook,
   Workflow,
   X,
-  Zap,
 } from 'lucide-react';
 import {
   Avatar,

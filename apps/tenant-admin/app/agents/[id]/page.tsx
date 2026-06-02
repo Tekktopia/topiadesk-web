@@ -73,7 +73,7 @@ const priorityColor: Record<string, string> = {
 
 export default function AgentDetailPage(props: { params: Promise<{ id: string }> }) {
   const { id } = use(props.params);
-  const agent = adminAgents.find((a) => a.id === id) ?? adminAgents[0];
+  const agent = adminAgents.find((a) => a.id === id) ?? adminAgents[0]!;
   const [status, setStatus] = useState(agent.status);
   const [actionMsg, setActionMsg] = useState('');
 

@@ -159,7 +159,7 @@ export default function OnboardingPage() {
         {/* ── Sidebar ── */}
         <nav className="flex shrink-0 gap-2 overflow-x-auto border-b border-border bg-muted/20 px-4 py-3 lg:w-64 lg:flex-col lg:gap-1 lg:border-b-0 lg:border-r lg:px-4 lg:py-6">
           {STEPS.map((s, i) => {
-            const Icon = s.icon;
+            const _Icon = s.icon;
             const done = i < stepIndex;
             const active = i === stepIndex;
             return (

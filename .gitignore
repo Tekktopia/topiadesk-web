@@ -7,6 +7,14 @@ node_modules/
 out/
 next-env.d.ts
 
+# PWA build artifacts (next-pwa / workbox — generated on build)
+apps/*/public/sw.js
+apps/*/public/sw.js.map
+apps/*/public/workbox-*.js
+apps/*/public/workbox-*.js.map
+apps/*/public/fallback-*.js
+apps/*/public/swe-worker-*.js
+
 # Build / cache
 dist/
 build/

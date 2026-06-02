@@ -89,8 +89,8 @@ export default function AlertRulesPage() {
               {counts.enabled} active rule{counts.enabled !== 1 ? 's' : ''} · {counts.disabled} disabled
             </p>
           </div>
-          <Button size="sm" className="bg-coral text-white hover:bg-white/90">
-            <Plus className="h-3 w-3" />New rule
+          <Button asChild size="sm" className="bg-coral text-white hover:bg-white/90">
+            <Link href="/monitoring/alerts/rules/new"><Plus className="h-3 w-3" />New rule</Link>
           </Button>
         </div>
       </div>

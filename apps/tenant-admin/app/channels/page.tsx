@@ -3,6 +3,7 @@
 /* end-fix-applied */
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   CheckCircle2,
   ChevronDown,
@@ -172,26 +173,34 @@ export default function ChannelsPage() {
               Add email addresses that automatically create tickets when customers write in.
             </p>
           </div>
-          <Button
-            size="sm"
-            variant={showAddForm ? 'outline' : 'default'}
-            className={showAddForm
-              ? 'border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white'
-              : 'bg-coral text-white hover:bg-white/90'}
-            onClick={() => setShowAddForm((v) => !v)}
-          >
-            {showAddForm ? (
-              <>
-                <X className="h-3.5 w-3.5" />
-                Cancel
-              </>
-            ) : (
-              <>
+          <div className="flex items-center gap-2">
+            <Button asChild size="sm" variant="outline" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white">
+              <Link href="/channels/new">
                 <Plus className="h-3.5 w-3.5" />
-                Add inbox
-              </>
-            )}
-          </Button>
+                Other channel
+              </Link>
+            </Button>
+            <Button
+              size="sm"
+              variant={showAddForm ? 'outline' : 'default'}
+              className={showAddForm
+                ? 'border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white'
+                : 'bg-coral text-white hover:bg-white/90'}
+              onClick={() => setShowAddForm((v) => !v)}
+            >
+              {showAddForm ? (
+                <>
+                  <X className="h-3.5 w-3.5" />
+                  Cancel
+                </>
+              ) : (
+                <>
+                  <Plus className="h-3.5 w-3.5" />
+                  Add inbox
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   Activity,
   AlertCircle,
@@ -214,8 +215,8 @@ export default function ApiKeysPage() {
                 {counts.keys.active} active keys · {counts.hooks.healthy} healthy webhooks · {fmtNum(counts.keys.requests)} API calls today
               </p>
             </div>
-            <Button size="sm" className="bg-coral text-white hover:bg-coral-dark">
-              <Plus className="h-3 w-3" />{tab === 'keys' ? 'New API key' : 'New webhook'}
+            <Button asChild size="sm" className="bg-coral text-white hover:bg-coral-dark">
+              <Link href="/api-keys/new"><Plus className="h-3 w-3" />{tab === 'keys' ? 'New API key' : 'New webhook'}</Link>
             </Button>
           </div>
         </header>

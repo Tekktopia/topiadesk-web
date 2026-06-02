@@ -127,8 +127,8 @@ export default function TenantsPage() {
             <h1 className="font-display text-2xl font-bold tracking-tight text-white">Tenants</h1>
             <p className="mt-0.5 text-sm text-white/70">{counts.all} tenants · {counts.active} active · {counts.trialing} trialling</p>
           </div>
-          <Button size="sm" className="bg-coral text-white hover:bg-white/90">
-            <Plus className="h-3 w-3" />Create tenant
+          <Button asChild size="sm" className="bg-coral text-white hover:bg-white/90">
+            <Link href="/tenants/new"><Plus className="h-3 w-3" />Create tenant</Link>
           </Button>
         </div>
       </div>

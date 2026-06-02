@@ -3,6 +3,7 @@
 /* end-fix-applied */
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   Calendar,
   CalendarOff,
@@ -101,9 +102,17 @@ export default function BusinessHoursPage() {
               holding&rdquo; SLA policy.
             </p>
           </div>
-          <Button variant="outline" size="sm">
-            Copy from another tenant
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild size="sm" variant="outline">
+              <Link href="/business-hours/new">
+                <Plus className="h-3 w-3" />
+                New calendar
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm">
+              Copy from another tenant
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <ul className="divide-y">
