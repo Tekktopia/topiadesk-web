@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import {
   AlertTriangle,
   ArrowDown,
@@ -322,9 +323,17 @@ function PageHeader({
             <QrCode className="h-3 w-3" />
             Scan
           </Button>
-          <Button size="sm" className="bg-coral text-white hover:bg-white/90">
-            <Plus className="h-3 w-3" />
-            Add asset
+          <Button asChild variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white">
+            <Link href="/assets/vendors/new">Vendor</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white">
+            <Link href="/assets/licenses/new">License</Link>
+          </Button>
+          <Button asChild size="sm" className="bg-coral text-white hover:bg-white/90">
+            <Link href="/assets/new">
+              <Plus className="h-3 w-3" />
+              Add asset
+            </Link>
           </Button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   AlertCircle,
   ChevronRight,
@@ -243,8 +244,8 @@ export default function EmailTemplatesPage() {
                 {counts.enabled} active · {fmtNum(counts.sent30d)} sent in last 30 days · {counts.all} templates
               </p>
             </div>
-            <Button size="sm" className="bg-coral text-white hover:bg-coral-dark">
-              <Plus className="h-3 w-3" />New template
+            <Button asChild size="sm" className="bg-coral text-white hover:bg-coral-dark">
+              <Link href="/email-templates/new"><Plus className="h-3 w-3" />New template</Link>
             </Button>
           </div>
         </header>

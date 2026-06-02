@@ -260,7 +260,7 @@ export default function CsrTenantDetailPage(props: { params: Promise<{ id: strin
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
                   <AvatarFallback className="bg-coral text-xs font-bold text-white">
-                    {tenant.primaryEmail.split('@')[0].slice(0, 2).toUpperCase()}
+                    {(tenant.primaryEmail.split('@')[0] ?? '').slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0">
@@ -340,7 +340,7 @@ export default function CsrTenantDetailPage(props: { params: Promise<{ id: strin
             <CardContent className="p-0">
               <ul className="divide-y divide-border/60">
                 {tenant.timeline.map((ev) => {
-                  const meta = TIMELINE_ICON[ev.type] ?? TIMELINE_ICON.login;
+                  const meta = (TIMELINE_ICON[ev.type] ?? TIMELINE_ICON.login)!;
                   const Icon = meta.icon;
                   return (
                     <li key={ev.id} className="flex items-start gap-3 px-4 py-2.5 text-xs">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { AlertTriangle, Bell, Calendar, CheckCircle2, Clock, Info, Megaphone, Plus, Wrench, X } from 'lucide-react';
 import {
   Badge,
@@ -101,8 +102,8 @@ export default function AnnouncementsPage() {
             <h1 className="font-display text-2xl font-bold tracking-tight text-white">Announcements</h1>
             <p className="mt-0.5 text-sm text-white/70">Broadcast messages to tenants by plan or globally.</p>
           </div>
-          <Button size="sm" className="bg-coral text-white hover:bg-white/90">
-            <Plus className="h-3.5 w-3.5" />New announcement
+          <Button asChild size="sm" className="bg-coral text-white hover:bg-white/90">
+            <Link href="/announcements/new"><Plus className="h-3.5 w-3.5" />New announcement</Link>
           </Button>
         </div>
       </div>

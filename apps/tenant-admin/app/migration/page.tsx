@@ -7,7 +7,6 @@ import {
   Check,
   CheckCircle2,
   ChevronRight,
-  Clock,
   Database,
   Download,
   FileSpreadsheet,
@@ -32,12 +31,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
   Input,
   Label,
   Switch,
@@ -1005,7 +998,7 @@ function MapStep({
 // ─── Step 4: preview / dry-run ───────────────────────────────────────────────
 
 function PreviewStep({
-  source, mappings, opts, onBack, onRun,
+  source, mappings: _mappings, opts, onBack, onRun,
 }: {
   source: MigrationSource;
   mappings: FieldMapping[];
