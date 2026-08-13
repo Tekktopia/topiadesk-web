@@ -14,7 +14,7 @@ import {
   Loader2,
   X,
 } from 'lucide-react';
-import { Button, Input, Label, cn } from '@topiadesk/ui';
+import { Button, Input, Label, Logo, cn } from '@topiadesk/ui';
 
 type Step = 1 | 2 | 3;
 
@@ -38,22 +38,29 @@ const PLANS = [
   {
     id: 'starter',
     name: 'Starter',
-    price: 'Free 14-day trial',
-    seats: 'Up to 3 agents',
+    subtitle: 'Free 14-day trial',
+    seats: 'Up to 3 seats',
     recommended: false,
   },
   {
-    id: 'growth',
-    name: 'Growth',
-    price: '$29 per agent / month',
-    seats: 'Most popular for small teams',
+    id: 'standard',
+    name: 'Standard',
+    subtitle: 'Best for single-branch broking',
+    seats: 'Up to 25 seats',
     recommended: true,
   },
   {
-    id: 'business',
-    name: 'Business',
-    price: '$59 per agent / month',
-    seats: 'Asset CMDB and automations',
+    id: 'professional',
+    name: 'Professional',
+    subtitle: 'Best for multi-branch brokers',
+    seats: 'Up to 100 seats',
+    recommended: false,
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    subtitle: 'For large / regulated groups',
+    seats: 'Unlimited seats',
     recommended: false,
   },
 ] as const;
@@ -70,7 +77,7 @@ export default function SignupPage() {
   // Step 1 state
   const [companyName, setCompanyName] = useState('');
   const [subdomain, setSubdomain] = useState('');
-  const [planId, setPlanId] = useState<(typeof PLANS)[number]['id']>('growth');
+  const [planId, setPlanId] = useState<(typeof PLANS)[number]['id']>('standard');
   const [subdomainState, setSubdomainState] = useState<SubdomainState>({
     status: 'idle',
   });
@@ -134,30 +141,33 @@ export default function SignupPage() {
 
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[5fr_6fr]">
-      <aside className="relative hidden flex-col justify-between overflow-hidden bg-navy bg-dot-navy text-white lg:flex">
+      <aside className="relative hidden flex-col justify-between overflow-hidden bg-navy text-white lg:flex">
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-blue/20 blur-3xl" />
-          <div className="absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-orange/15 blur-3xl" />
+          <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-coral/25 blur-[120px]" />
+          <div className="absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-lavender/15 blur-[110px]" />
+          <div
+            className="absolute inset-0 opacity-[0.15]"
+            style={{
+              backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)',
+              backgroundSize: '24px 24px',
+            }}
+          />
         </div>
 
         <div className="relative z-10 p-10">
-          <Link href="/" className="inline-flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-lg bg-orange shadow-lg shadow-orange/30">
-              <span className="font-display text-lg font-black text-white">
-                T
-              </span>
-            </div>
-            <span className="font-display text-xl font-bold tracking-tight">
+          <Link href="/" className="inline-flex items-center gap-2.5">
+            <Logo size={32} className="shrink-0" />
+            <span className="font-display text-xl font-bold tracking-tight text-white">
               Topiadesk
             </span>
           </Link>
         </div>
 
         <div className="relative z-10 space-y-6 p-10">
-          <h2 className="font-display text-4xl font-bold leading-tight">
+          <h2 className="font-display text-4xl font-bold leading-tight text-white">
             Spin up your own Topiadesk tenant in under two minutes.
           </h2>
-          <ul className="space-y-3 text-sm text-white/80">
+          <ul className="space-y-3.5 text-sm text-white/85">
             {[
               'Fully isolated tenant on your own subdomain',
               'Unlimited end customers and tickets',
@@ -165,39 +175,28 @@ export default function SignupPage() {
               'No credit card required for the 14-day trial',
             ].map((line) => (
               <li key={line} className="flex items-start gap-3">
-                <span className="mt-0.5 grid h-5 w-5 place-items-center rounded-full bg-orange/20 text-orange">
+                <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-coral text-white">
                   <Check className="h-3 w-3" />
                 </span>
                 {line}
               </li>
             ))}
           </ul>
-          <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-xs text-white/60">
-            &ldquo;Topiadesk replaced our patchwork of Freshdesk and three
-            spreadsheets in a single weekend.&rdquo;
-            <div className="mt-2 text-white/80">
-              — Adaeze N., IT Lead, ConsomoAfrica
-            </div>
-          </div>
         </div>
 
-        <div className="relative z-10 p-10 text-xs text-white/40">
+        <div className="relative z-10 p-10 text-xs text-white/55">
           &copy; {new Date().getFullYear()} Tekktopia. All rights reserved.
         </div>
       </aside>
 
       <main className="flex items-start justify-center bg-background p-6 sm:p-10 lg:items-center">
         <div className="w-full max-w-md">
-          <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-orange">
-              <span className="font-display text-base font-black text-white">
-                T
-              </span>
-            </div>
-            <span className="font-display text-lg font-bold tracking-tight">
+          <Link href="/" className="mb-8 flex items-center gap-2.5 lg:hidden">
+            <Logo size={28} className="shrink-0" />
+            <span className="font-display text-lg font-bold tracking-tight text-foreground">
               Topiadesk
             </span>
-          </div>
+          </Link>
 
           {step !== 3 && (
             <ol className="mb-8 flex items-center gap-3 text-xs font-medium">
@@ -251,18 +250,6 @@ export default function SignupPage() {
           )}
 
           {step === 3 && <Step3 subdomain={subdomain} />}
-
-          {step !== 3 && (
-            <p className="mt-8 text-center text-sm text-muted-foreground">
-              Already have a tenant?{' '}
-              <a
-                href="https://app.topiadesk.com/login"
-                className="font-medium text-primary hover:underline"
-              >
-                Sign in
-              </a>
-            </p>
-          )}
         </div>
       </main>
     </div>
@@ -387,11 +374,11 @@ function Step1({
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground">{p.seats}</p>
+                  <p className="text-xs text-muted-foreground">{p.subtitle}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-right text-xs text-muted-foreground">
-                    {p.price}
+                  <span className="text-right text-xs font-medium text-foreground">
+                    {p.seats}
                   </span>
                   <input
                     type="radio"

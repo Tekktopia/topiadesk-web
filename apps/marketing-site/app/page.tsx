@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ArrowRight,
   BarChart3,
@@ -17,10 +18,13 @@ import {
   Workflow,
 } from 'lucide-react';
 import { Button, Card, CardContent, Logo, cn } from '@topiadesk/ui';
-import { WaitlistForm } from './_components/waitlist-form';
+import { CapabilitiesShowcase } from './_components/capabilities-showcase';
 
-// Pricing is hidden while the product is pre-launch (coming-soon page).
-// Flip to `true` to restore the pricing section and its nav link.
+// Free-trial CTAs route into the local self-serve signup wizard.
+const TRIAL_URL = '/signup';
+
+// Pricing is hidden for now. Flip to `true` to restore the pricing section
+// and its nav link.
 const SHOW_PRICING = false;
 
 // ─── Brand icons ───────────────────────────────────────────────────────────────
@@ -232,9 +236,9 @@ export default function MarketingPage() {
           <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-0.5 md:flex">
             {[
               { label: 'Features', href: '#features' },
+              { label: 'Capabilities', href: '#capabilities' },
               { label: 'Monitoring', href: '#channels' },
-              { label: 'Docs', href: '#' },
-              { label: 'Blog', href: '#' },
+              { label: 'Contact', href: '/contact' },
             ].map((item) => (
               <Link
                 key={item.label}
@@ -246,13 +250,20 @@ export default function MarketingPage() {
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              asChild
+              variant="ghost"
+              className="hidden rounded-full text-white/80 hover:bg-white/10 hover:text-white sm:inline-flex"
+            >
+              <Link href="/contact">Request a demo</Link>
+            </Button>
             <Button
               asChild
               className="rounded-full bg-white text-navy shadow-sm hover:bg-white/90"
             >
-              <Link href="#waitlist">
-                Notify me
+              <Link href={TRIAL_URL}>
+                Free trial
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -281,10 +292,10 @@ export default function MarketingPage() {
         <div className="relative mx-auto max-w-5xl px-4 text-center lg:px-8">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-coral/20 bg-coral/10 px-4 py-1.5 text-sm font-medium text-coral-light">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-coral opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-coral" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
             </span>
-            Launching soon
+            Now live
           </div>
 
           <h1 className="mx-auto max-w-4xl font-display text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl">
@@ -300,10 +311,29 @@ export default function MarketingPage() {
             actually work in low-bandwidth environments.
           </p>
 
-          <div className="mt-10 flex flex-col items-center gap-3">
-            <WaitlistForm />
+          <div className="mt-10 flex flex-col items-center gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button
+                asChild
+                variant="coral"
+                size="lg"
+                className="font-semibold shadow-lg shadow-coral/25"
+              >
+                <Link href={TRIAL_URL}>
+                  Start free trial
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                className="border border-white/20 bg-white/5 text-white hover:bg-white/10"
+              >
+                <Link href="/contact">Request a demo</Link>
+              </Button>
+            </div>
             <p className="text-xs text-white/40">
-              Be the first to know when we launch — no spam, ever.
+              Free trial · No credit card required
             </p>
           </div>
 
@@ -537,6 +567,25 @@ export default function MarketingPage() {
         </div>
       </section>
 
+      {/* ── Capabilities showcase (interactive) ── */}
+      <section id="capabilities" className="scroll-mt-20 px-3 py-20 sm:px-4">
+        <div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-navy px-4 py-16 sm:px-8 lg:px-12">
+          <div className="mb-12 max-w-2xl">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-coral">
+              What Topiadesk provides
+            </p>
+            <h2 className="font-display text-4xl font-bold tracking-tight text-white">
+              A platform that already does the hard parts
+            </h2>
+            <p className="mt-4 leading-relaxed text-white/60">
+              From multitenant architecture to in-country compliance — explore
+              the capabilities that make Topiadesk ready for your business today.
+            </p>
+          </div>
+          <CapabilitiesShowcase />
+        </div>
+      </section>
+
       {/* ── Channels highlight ── */}
       <section id="channels" className="scroll-mt-20 py-20">
         <div className="mx-auto max-w-5xl px-4 lg:px-8">
@@ -712,25 +761,42 @@ export default function MarketingPage() {
       </section>
       )}
 
-      {/* ── Waitlist / notify block ── */}
-      <section id="waitlist" className="relative scroll-mt-20 overflow-hidden bg-navy py-24 text-center">
+      {/* ── Final CTA block ── */}
+      <section id="get-started" className="relative scroll-mt-20 overflow-hidden bg-navy py-24 text-center">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute left-1/2 top-1/2 h-[500px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-coral/15 blur-[100px]" />
         </div>
         <div className="relative mx-auto max-w-2xl px-4">
           <h2 className="font-display text-4xl font-bold text-white sm:text-5xl">
-            Be the first to know
+            Ready to get started?
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-lg text-white/60">
-            Topiadesk is launching soon. Leave your email and we&rsquo;ll let you
-            know the moment early access opens.
+            Spin up your workspace in minutes, or talk to us about migrating your
+            whole book to Topiadesk.
           </p>
-          <div className="mt-10 flex flex-col items-center gap-3">
-            <WaitlistForm className="mx-auto" />
-            <p className="text-xs text-white/40">
-              No spam · Unsubscribe anytime
-            </p>
+          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button
+              asChild
+              variant="coral"
+              size="lg"
+              className="font-semibold shadow-lg shadow-coral/25"
+            >
+              <Link href={TRIAL_URL}>
+                Start free trial
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              className="border border-white/20 bg-white/5 text-white hover:bg-white/10"
+            >
+              <Link href="/contact">Request a demo</Link>
+            </Button>
           </div>
+          <p className="mt-4 text-xs text-white/40">
+            Free trial · No credit card required
+          </p>
         </div>
       </section>
 
@@ -756,8 +822,8 @@ export default function MarketingPage() {
                   size="sm"
                   className="bg-coral text-white shadow-sm shadow-coral/20 hover:bg-coral-dark"
                 >
-                  <Link href="#waitlist">
-                    Notify me at launch
+                  <Link href={TRIAL_URL}>
+                    Start free trial
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
@@ -791,17 +857,24 @@ export default function MarketingPage() {
             <p className="text-xs text-muted-foreground">
               &copy; {new Date().getFullYear()} Tekktopia Ltd. All rights reserved.
             </p>
-            <p className="text-xs text-muted-foreground">
-              Powered by{' '}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>Powered by</span>
               <a
                 href="https://www.tekktopia.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-semibold text-coral transition-colors hover:text-coral-dark"
+                aria-label="Tekktopia"
+                className="inline-flex items-center opacity-90 transition-opacity hover:opacity-100"
               >
-                Tekktopia
+                <Image
+                  src="/tekktopia-logo.png"
+                  alt="Tekktopia"
+                  width={90}
+                  height={35}
+                  className="h-10 w-auto"
+                />
               </a>
-            </p>
+            </div>
             <div className="flex gap-5 text-xs text-muted-foreground">
               {['Privacy', 'Terms', 'Security', 'Status'].map((l) => (
                 <Link key={l} href="#" className="transition-colors hover:text-foreground">
