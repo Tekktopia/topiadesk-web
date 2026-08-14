@@ -986,7 +986,7 @@ function DashboardMockup() {
 
                 <div>
                   <p className="text-[9px] font-bold text-black">Topiadesk</p>
-                  <p className="text-[7px] text-black/35">Acme workspace</p>
+                  <p className="text-[7px] text-black/35">Topiadesk Workspace</p>
                 </div>
               </div>
 
@@ -1000,7 +1000,7 @@ function DashboardMockup() {
                       type="button"
                       onClick={() => setActiveView(id)}
                       aria-pressed={active}
-                      className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[8px] font-medium transition-colors ${
+                      className={`flex w-full items-center gap-2 cursor-pointer rounded-lg px-2 py-2 text-left text-[8px] font-medium transition-colors ${
                         active
                           ? 'bg-black text-white'
                           : 'text-black/45 hover:bg-black/[0.04] hover:text-black/65'
@@ -1083,6 +1083,7 @@ function DashboardMockup() {
     </div>
   );
 }
+
 function Hero() {
   return (
     <section className="relative overflow-hidden bg-[#FCFBF8] pb-20 pt-16 sm:pb-28 sm:pt-20 lg:pt-24">
