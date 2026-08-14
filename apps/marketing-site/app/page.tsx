@@ -1,4 +1,6 @@
-// app/page.tsx
+// apps/marketing-site/app/page.tsx
+
+'use client';
 
 import Link from 'next/link';
 import {
@@ -29,7 +31,8 @@ import {
   Workflow,
 } from 'lucide-react';
 import Image from 'next/image';
-
+import { MotionConfig, motion } from 'motion/react';
+import type { ReactNode } from 'react';
 
 const TRIAL_URL = '/signup';
 
@@ -160,6 +163,65 @@ const testimonials = [
   },
 ];
 
+const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+const EASE_IN = [0.4, 0, 1, 1] as const;
+
+type RevealProps = {
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+  duration?: number;
+  amount?: number;
+  x?: number;
+  y?: number;
+  scale?: number;
+};
+
+function Reveal({
+  children,
+  className,
+  delay = 0,
+  duration = 0.62,
+  amount = 0.22,
+  x = 0,
+  y = 24,
+  scale = 0.985,
+}: RevealProps) {
+  return (
+    <motion.div
+      className={className}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: false, amount }}
+      variants={{
+        hidden: {
+          opacity: 0,
+          x,
+          y,
+          scale,
+          transition: {
+            duration: 0.32,
+            ease: EASE_IN,
+          },
+        },
+        visible: {
+          opacity: 1,
+          x: 0,
+          y: 0,
+          scale: 1,
+          transition: {
+            delay,
+            duration,
+            ease: EASE_OUT,
+          },
+        },
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 function BrandMark() {
   return (
     <Link href="/" className="flex items-center gap-2.5">
@@ -172,16 +234,19 @@ function BrandMark() {
         className="h-8 w-8 object-contain"
       />
 
-      <span className="text-[16px] font-bold tracking-[-0.03em] text-[#111111]">
-        Topiadesk
-      </span>
+      <span className="text-[16px] font-bold tracking-[-0.03em] text-[#111111]">Topiadesk</span>
     </Link>
   );
 }
 
 function Navigation() {
   return (
-    <header className="relative z-50 border-b border-black/[0.045] bg-[#FCFBF8]/90 backdrop-blur-xl">
+    <motion.header
+      className="relative z-50 border-b border-black/[0.045] bg-[#FCFBF8]/90 backdrop-blur-xl"
+      initial={{ opacity: 0, y: -14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.55, ease: EASE_OUT }}
+    >
       <div className="mx-auto flex h-[72px] max-w-[1280px] items-center justify-between px-5 sm:px-8">
         <BrandMark />
 
@@ -232,7 +297,7 @@ function Navigation() {
           </Link>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }
 
@@ -259,9 +324,14 @@ function DashboardMockup() {
           <div className="flex h-[390px] sm:h-[430px]">
             <aside className="hidden w-[148px] shrink-0 border-r border-black/[0.06] bg-[#FBFAF8] p-3 sm:block">
               <div className="mb-5 flex items-center gap-2 px-1">
-                <span className="grid h-7 w-7 place-items-center rounded-lg bg-black text-[10px] font-bold text-white">
-                  T
-                </span>
+                <Image
+                  src="/icons/icon.png"
+                  alt="Topiadesk"
+                  width={32}
+                  height={32}
+                  priority
+                  className="h-8 w-8 object-contain"
+                />
 
                 <div>
                   <p className="text-[9px] font-bold text-black">Topiadesk</p>
@@ -305,9 +375,7 @@ function DashboardMockup() {
                   <div
                     key={label}
                     className={`flex items-center gap-2 rounded-lg px-2 py-2 text-[8px] font-medium ${
-                      active
-                        ? 'bg-black text-white'
-                        : 'text-black/45 hover:bg-black/[0.04]'
+                      active ? 'bg-black text-white' : 'text-black/45 hover:bg-black/[0.04]'
                     }`}
                   >
                     <Icon className="h-3.5 w-3.5" />
@@ -318,9 +386,7 @@ function DashboardMockup() {
 
               <div className="mt-7 rounded-xl bg-[#FFE36D] p-3">
                 <Sparkles className="mb-2 h-4 w-4 text-black/65" />
-                <p className="text-[8px] font-bold text-black">
-                  Automations are working
-                </p>
+                <p className="text-[8px] font-bold text-black">Automations are working</p>
                 <p className="mt-1 text-[7px] leading-relaxed text-black/50">
                   18 tickets routed today
                 </p>
@@ -330,9 +396,7 @@ function DashboardMockup() {
             <main className="min-w-0 flex-1 bg-white p-4 sm:p-5">
               <div className="mb-5 flex items-start justify-between">
                 <div>
-                  <p className="text-[9px] font-medium text-black/35">
-                    Friday, 14 August
-                  </p>
+                  <p className="text-[9px] font-medium text-black/35">Friday, 14 August</p>
                   <h3 className="mt-1 text-[16px] font-bold tracking-[-0.04em] text-black">
                     Good afternoon, Ada
                   </h3>
@@ -370,14 +434,20 @@ function DashboardMockup() {
                     value: '99.9%',
                     delta: '+2.1%',
                   },
-                ].map((item) => (
-                  <div
+                ].map((item, index) => (
+                  <motion.div
                     key={item.label}
                     className="rounded-xl border border-black/[0.06] bg-[#FBFAF8] p-3"
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: false, amount: 0.75 }}
+                    transition={{
+                      delay: 0.08 + index * 0.055,
+                      duration: 0.48,
+                      ease: EASE_OUT,
+                    }}
                   >
-                    <p className="truncate text-[7px] font-medium text-black/35">
-                      {item.label}
-                    </p>
+                    <p className="truncate text-[7px] font-medium text-black/35">{item.label}</p>
                     <div className="mt-2 flex flex-wrap items-end justify-between gap-1">
                       <p className="text-[15px] font-bold tracking-[-0.04em] text-black">
                         {item.value}
@@ -387,7 +457,7 @@ function DashboardMockup() {
                         {item.delta}
                       </span>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
@@ -395,12 +465,8 @@ function DashboardMockup() {
                 <div className="rounded-2xl border border-black/[0.06] p-3.5">
                   <div className="mb-4 flex items-center justify-between">
                     <div>
-                      <p className="text-[9px] font-bold text-black">
-                        Ticket volume
-                      </p>
-                      <p className="text-[7px] text-black/35">
-                        Last 7 days
-                      </p>
+                      <p className="text-[9px] font-bold text-black">Ticket volume</p>
+                      <p className="text-[7px] text-black/35">Last 7 days</p>
                     </div>
 
                     <BarChart3 className="h-3.5 w-3.5 text-black/30" />
@@ -408,15 +474,23 @@ function DashboardMockup() {
 
                   <div className="flex h-[108px] items-end gap-2">
                     {[36, 58, 44, 72, 53, 84, 68].map((height, index) => (
-                      <div
-                        key={`${height}-${index}`}
-                        className="flex flex-1 flex-col justify-end"
-                      >
-                        <div
+                      <div key={`${height}-${index}`} className="flex flex-1 flex-col justify-end">
+                        <motion.div
                           className={`rounded-t-md ${
                             index === 5 ? 'bg-[#111111]' : 'bg-[#E7DEFF]'
                           }`}
-                          style={{ height: `${height}%` }}
+                          initial={{ scaleY: 0 }}
+                          whileInView={{ scaleY: 1 }}
+                          viewport={{ once: false, amount: 0.8 }}
+                          transition={{
+                            delay: index * 0.045,
+                            duration: 0.5,
+                            ease: EASE_OUT,
+                          }}
+                          style={{
+                            height: `${height}%`,
+                            transformOrigin: 'bottom',
+                          }}
                         />
                       </div>
                     ))}
@@ -436,12 +510,8 @@ function DashboardMockup() {
                 <div className="rounded-2xl border border-black/[0.06] p-3.5">
                   <div className="mb-3 flex items-center justify-between">
                     <div>
-                      <p className="text-[9px] font-bold text-black">
-                        Priority inbox
-                      </p>
-                      <p className="text-[7px] text-black/35">
-                        Needs attention
-                      </p>
+                      <p className="text-[9px] font-bold text-black">Priority inbox</p>
+                      <p className="text-[7px] text-black/35">Needs attention</p>
                     </div>
 
                     <span className="rounded-full bg-[#FFD9CB] px-2 py-1 text-[6px] font-bold text-[#A6452F]">
@@ -472,10 +542,18 @@ function DashboardMockup() {
                         time: '14m',
                         bg: 'bg-[#E7DEFF]',
                       },
-                    ].map((ticket) => (
-                      <div
+                    ].map((ticket, index) => (
+                      <motion.div
                         key={ticket.subject}
                         className="flex items-center gap-2 rounded-xl bg-[#FBFAF8] p-2"
+                        initial={{ opacity: 0, x: 10 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: false, amount: 0.7 }}
+                        transition={{
+                          delay: 0.12 + index * 0.06,
+                          duration: 0.46,
+                          ease: EASE_OUT,
+                        }}
                       >
                         <span
                           className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${ticket.bg} text-[7px] font-bold`}
@@ -487,15 +565,11 @@ function DashboardMockup() {
                           <p className="truncate text-[7.5px] font-bold text-black/75">
                             {ticket.subject}
                           </p>
-                          <p className="text-[6px] text-black/30">
-                            {ticket.channel}
-                          </p>
+                          <p className="text-[6px] text-black/30">{ticket.channel}</p>
                         </div>
 
-                        <span className="text-[6px] text-black/30">
-                          {ticket.time}
-                        </span>
-                      </div>
+                        <span className="text-[6px] text-black/30">{ticket.time}</span>
+                      </motion.div>
                     ))}
                   </div>
                 </div>
@@ -503,38 +577,30 @@ function DashboardMockup() {
 
               <div className="mt-3 hidden rounded-2xl border border-black/[0.06] p-3 sm:block">
                 <div className="mb-2 flex items-center justify-between">
-                  <p className="text-[8px] font-bold text-black">
-                    Recent activity
-                  </p>
-                  <span className="text-[7px] font-medium text-black/35">
-                    View all
-                  </span>
+                  <p className="text-[8px] font-bold text-black">Recent activity</p>
+                  <span className="text-[7px] font-medium text-black/35">View all</span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
-                  {[
-                    'Ticket #2481 resolved',
-                    'SLA policy updated',
-                    'New agent invited',
-                  ].map((activity, index) => (
-                    <div
-                      key={activity}
-                      className="flex items-center gap-2 rounded-lg bg-[#FBFAF8] px-2 py-2"
-                    >
-                      <span
-                        className={`h-2 w-2 rounded-full ${
-                          index === 0
-                            ? 'bg-[#8BD5A8]'
-                            : index === 1
-                              ? 'bg-[#FFE36D]'
-                              : 'bg-[#C9B8FF]'
-                        }`}
-                      />
-                      <p className="truncate text-[6.5px] text-black/45">
-                        {activity}
-                      </p>
-                    </div>
-                  ))}
+                  {['Ticket #2481 resolved', 'SLA policy updated', 'New agent invited'].map(
+                    (activity, index) => (
+                      <div
+                        key={activity}
+                        className="flex items-center gap-2 rounded-lg bg-[#FBFAF8] px-2 py-2"
+                      >
+                        <span
+                          className={`h-2 w-2 rounded-full ${
+                            index === 0
+                              ? 'bg-[#8BD5A8]'
+                              : index === 1
+                                ? 'bg-[#FFE36D]'
+                                : 'bg-[#C9B8FF]'
+                          }`}
+                        />
+                        <p className="truncate text-[6.5px] text-black/45">{activity}</p>
+                      </div>
+                    ),
+                  )}
                 </div>
               </div>
             </main>
@@ -553,7 +619,7 @@ function Hero() {
       </div>
 
       <div className="relative mx-auto max-w-[1180px] px-5 sm:px-8">
-        <div className="mx-auto max-w-[790px] text-center">
+        <Reveal className="mx-auto max-w-[790px] text-center" y={22} amount={0.15}>
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-black/[0.07] bg-white px-3 py-1.5 shadow-sm">
             <span className="grid h-5 w-5 place-items-center rounded-full bg-[#FFE36D]">
               <Sparkles className="h-3 w-3" />
@@ -570,8 +636,8 @@ function Hero() {
           </h1>
 
           <p className="mx-auto mt-6 max-w-[620px] text-balance text-[14px] leading-6 text-black/48 sm:text-[15px]">
-            Helpdesk, WhatsApp, SLA monitoring and IT assets in one beautifully
-            simple workspace built for modern African teams.
+            Helpdesk, WhatsApp, SLA monitoring and IT assets in one beautifully simple workspace
+            built for modern African teams.
           </p>
 
           <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -594,35 +660,45 @@ function Hero() {
           <p className="mt-3 text-[10px] font-medium text-black/30">
             14-day free trial · No credit card required
           </p>
-        </div>
+        </Reveal>
 
         <div className="relative mx-auto mt-14 max-w-[1040px] lg:mt-16">
           <div className="pointer-events-none absolute left-1/2 top-[55%] h-[380px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-t-full bg-[#E7DEFF]/85" />
 
-          <div className="absolute left-0 top-5 z-20 hidden w-[184px] rounded-[16px] border border-black/[0.07] bg-[#FFE36D] p-4 shadow-[0_15px_40px_rgba(0,0,0,0.09)] lg:block">
+          <Reveal
+            className="absolute left-0 top-5 z-20 hidden w-[184px] rounded-[16px] border border-black/[0.07] bg-[#FFE36D] p-4 shadow-[0_15px_40px_rgba(0,0,0,0.09)] lg:block"
+            x={-28}
+            y={0}
+            delay={0.12}
+            amount={0.3}
+          >
             <Clock3 className="h-5 w-5 stroke-[1.7]" />
-            <p className="mt-4 text-[25px] font-semibold tracking-[-0.06em] text-black">
-              34.5 Min
-            </p>
-            <p className="mt-1 text-[8px] font-semibold text-black/55">
-              Average resolution time
-            </p>
-          </div>
+            <p className="mt-4 text-[25px] font-semibold tracking-[-0.06em] text-black">34.5 Min</p>
+            <p className="mt-1 text-[8px] font-semibold text-black/55">Average resolution time</p>
+          </Reveal>
 
-          <div className="absolute right-0 top-0 z-20 hidden w-[168px] rounded-[16px] border border-black/[0.07] bg-white p-3 shadow-[0_15px_40px_rgba(0,0,0,0.08)] lg:block">
+          <Reveal
+            className="absolute right-0 top-0 z-20 hidden w-[168px] rounded-[16px] border border-black/[0.07] bg-white p-3 shadow-[0_15px_40px_rgba(0,0,0,0.08)] lg:block"
+            x={28}
+            y={0}
+            delay={0.18}
+            amount={0.3}
+          >
             <div className="grid h-[92px] place-items-center rounded-[12px] bg-[#E7DEFF]">
               <Headphones className="h-11 w-11 stroke-[1.2] text-black/75" />
             </div>
 
-            <p className="mt-3 text-[9px] font-semibold text-black">
-              Priority ticket
-            </p>
-            <p className="mt-0.5 text-[8px] text-black/40">
-              Enterprise customer
-            </p>
-          </div>
+            <p className="mt-3 text-[9px] font-semibold text-black">Priority ticket</p>
+            <p className="mt-0.5 text-[8px] text-black/40">Enterprise customer</p>
+          </Reveal>
 
-          <div className="absolute bottom-16 left-2 z-20 hidden w-[190px] items-center gap-3 rounded-[16px] border border-black/[0.07] bg-white p-3 shadow-[0_15px_40px_rgba(0,0,0,0.09)] lg:flex">
+          <Reveal
+            className="absolute bottom-16 left-2 z-20 hidden w-[190px] items-center gap-3 rounded-[16px] border border-black/[0.07] bg-white p-3 shadow-[0_15px_40px_rgba(0,0,0,0.09)] lg:flex"
+            x={-24}
+            y={0}
+            delay={0.24}
+            amount={0.3}
+          >
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] bg-[#F3F1ED]">
               <CircleUserRound className="h-6 w-6 text-black/65" />
             </span>
@@ -635,21 +711,28 @@ function Hero() {
                 View ticket
               </span>
             </div>
-          </div>
+          </Reveal>
 
-          <div className="absolute bottom-5 right-5 z-20 hidden w-[154px] rounded-[16px] border border-black/[0.06] bg-[#FF7C58] p-4 shadow-[0_15px_40px_rgba(0,0,0,0.09)] lg:block">
+          <Reveal
+            className="absolute bottom-5 right-5 z-20 hidden w-[154px] rounded-[16px] border border-black/[0.06] bg-[#FF7C58] p-4 shadow-[0_15px_40px_rgba(0,0,0,0.09)] lg:block"
+            x={24}
+            y={0}
+            delay={0.3}
+            amount={0.3}
+          >
             <CheckCircle2 className="h-5 w-5 text-black/80" />
-            <p className="mt-4 text-[22px] font-semibold tracking-[-0.05em] text-black">
-              99.9%
-            </p>
-            <p className="mt-0.5 text-[8px] font-semibold text-black/60">
-              SLA compliance
-            </p>
-          </div>
+            <p className="mt-4 text-[22px] font-semibold tracking-[-0.05em] text-black">99.9%</p>
+            <p className="mt-0.5 text-[8px] font-semibold text-black/60">SLA compliance</p>
+          </Reveal>
 
-          <div className="relative z-10 mx-auto max-w-[690px] px-0 lg:px-5">
+          <Reveal
+            className="relative z-10 mx-auto max-w-[690px] px-0 lg:px-5"
+            y={36}
+            scale={0.97}
+            amount={0.16}
+          >
             <DashboardMockup />
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>
@@ -658,29 +741,29 @@ function Hero() {
 
 function CustomerStrip() {
   return (
-    <section
-      id="customers"
-      className="border-y border-black/[0.06] bg-[#FCFBF8]"
-    >
+    <section id="customers" className="border-y border-black/[0.06] bg-[#FCFBF8]">
       <div className="mx-auto max-w-[1180px] px-5 py-8 sm:px-8">
-        <p className="mb-6 text-center text-[9px] font-bold uppercase tracking-[0.18em] text-black/30">
-          Trusted by ambitious teams
-        </p>
+        <Reveal y={14} amount={0.4}>
+          <p className="mb-6 text-center text-[9px] font-bold uppercase tracking-[0.18em] text-black/30">
+            Trusted by ambitious teams
+          </p>
+        </Reveal>
 
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-5 sm:gap-x-12">
           {customers.map((customer, index) => (
-            <span
-              key={customer}
-              className={`font-semibold tracking-[-0.04em] text-black/55 ${
-                index % 3 === 0
-                  ? 'font-serif text-[16px] italic'
-                  : index % 2 === 0
-                    ? 'text-[13px]'
-                    : 'text-[15px]'
-              }`}
-            >
-              {customer}
-            </span>
+            <Reveal key={customer} delay={index * 0.045} y={12} scale={0.97} amount={0.5}>
+              <span
+                className={`font-semibold tracking-[-0.04em] text-black/55 ${
+                  index % 3 === 0
+                    ? 'font-serif text-[16px] italic'
+                    : index % 2 === 0
+                      ? 'text-[13px]'
+                      : 'text-[15px]'
+                }`}
+              >
+                {customer}
+              </span>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -694,19 +777,18 @@ function Stats() {
       <div className="mx-auto max-w-[1100px] px-5 sm:px-8">
         <div className="grid grid-cols-2 gap-y-10 sm:grid-cols-4">
           {stats.map((stat, index) => (
-            <div
+            <Reveal
               key={stat.label}
-              className={`text-center ${
-                index !== 0 ? 'sm:border-l sm:border-black/[0.07]' : ''
-              }`}
+              className={`text-center ${index !== 0 ? 'sm:border-l sm:border-black/[0.07]' : ''}`}
+              delay={index * 0.07}
+              y={20}
+              amount={0.45}
             >
               <p className="text-[36px] font-semibold tracking-[-0.065em] text-[#111111] sm:text-[42px]">
                 {stat.value}
               </p>
-              <p className="mt-1 text-[11px] font-medium text-black/38">
-                {stat.label}
-              </p>
-            </div>
+              <p className="mt-1 text-[11px] font-medium text-black/38">{stat.label}</p>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -716,12 +798,9 @@ function Stats() {
 
 function Features() {
   return (
-    <section
-      id="product"
-      className="bg-[#F5F3EF] py-24 sm:py-28"
-    >
+    <section id="product" className="bg-[#F5F3EF] py-24 sm:py-28">
       <div className="mx-auto max-w-[1120px] px-5 sm:px-8">
-        <div className="mx-auto max-w-[650px] text-center">
+        <Reveal className="mx-auto max-w-[650px] text-center" y={24} amount={0.3}>
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/35">
             One platform
           </p>
@@ -731,36 +810,38 @@ function Features() {
           </h2>
 
           <p className="mx-auto mt-5 max-w-[520px] text-[14px] leading-6 text-black/45">
-            Everything your agents need, with none of the clutter that makes
-            enterprise helpdesk software painful.
+            Everything your agents need, with none of the clutter that makes enterprise helpdesk
+            software painful.
           </p>
-        </div>
+        </Reveal>
 
         <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {features.map(({ icon: Icon, title, description, accent }) => (
-            <article
+          {features.map(({ icon: Icon, title, description, accent }, index) => (
+            <Reveal
               key={title}
-              className="group rounded-[24px] border border-black/[0.065] bg-white p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.07)]"
+              className="h-full"
+              delay={(index % 3) * 0.07}
+              y={28}
+              scale={0.975}
+              amount={0.28}
             >
-              <div
-                className={`grid h-11 w-11 place-items-center rounded-[14px] ${accent}`}
-              >
-                <Icon className="h-5 w-5 stroke-[1.7] text-black/75" />
-              </div>
+              <article className="group h-full rounded-[24px] border border-black/[0.065] bg-white p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.07)]">
+                <div className={`grid h-11 w-11 place-items-center rounded-[14px] ${accent}`}>
+                  <Icon className="h-5 w-5 stroke-[1.7] text-black/75" />
+                </div>
 
-              <h3 className="mt-8 text-[17px] font-semibold tracking-[-0.035em] text-black">
-                {title}
-              </h3>
+                <h3 className="mt-8 text-[17px] font-semibold tracking-[-0.035em] text-black">
+                  {title}
+                </h3>
 
-              <p className="mt-2 text-[12px] leading-5 text-black/42">
-                {description}
-              </p>
+                <p className="mt-2 text-[12px] leading-5 text-black/42">{description}</p>
 
-              <div className="mt-6 flex items-center gap-1.5 text-[10px] font-bold text-black/60">
-                Learn more
-                <ArrowRight className="h-3 w-3 transition group-hover:translate-x-1" />
-              </div>
-            </article>
+                <div className="mt-6 flex items-center gap-1.5 text-[10px] font-bold text-black/60">
+                  Learn more
+                  <ArrowRight className="h-3 w-3 transition group-hover:translate-x-1" />
+                </div>
+              </article>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -772,7 +853,7 @@ function Channels() {
   return (
     <section id="channels" className="bg-white py-24 sm:py-28">
       <div className="mx-auto grid max-w-[1120px] items-center gap-14 px-5 sm:px-8 lg:grid-cols-2">
-        <div className="max-w-[480px]">
+        <Reveal className="max-w-[480px]" x={-34} y={0} amount={0.28}>
           <span className="inline-flex rounded-full bg-[#E7DEFF] px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.13em] text-black/55">
             Omnichannel
           </span>
@@ -784,8 +865,8 @@ function Channels() {
           </h2>
 
           <p className="mt-5 max-w-[440px] text-[14px] leading-6 text-black/45">
-            Customers can contact you however they prefer. Your team still gets
-            one queue, one customer history and one source of truth.
+            Customers can contact you however they prefer. Your team still gets one queue, one
+            customer history and one source of truth.
           </p>
 
           <div className="mt-8 space-y-3">
@@ -805,19 +886,15 @@ function Channels() {
               </div>
             ))}
           </div>
-        </div>
+        </Reveal>
 
-        <div className="relative">
+        <Reveal className="relative" x={34} y={0} amount={0.22}>
           <div className="rounded-[30px] bg-[#F5F3EF] p-3">
             <div className="rounded-[24px] border border-black/[0.07] bg-white p-5 shadow-[0_20px_60px_rgba(0,0,0,0.06)] sm:p-7">
               <div className="mb-7 flex items-center justify-between">
                 <div>
-                  <p className="text-[11px] font-semibold text-black">
-                    Conversations by channel
-                  </p>
-                  <p className="mt-1 text-[9px] text-black/35">
-                    This week
-                  </p>
+                  <p className="text-[11px] font-semibold text-black">Conversations by channel</p>
+                  <p className="mt-1 text-[9px] text-black/35">This week</p>
                 </div>
 
                 <span className="rounded-full border border-black/[0.08] px-3 py-1.5 text-[8px] font-semibold text-black/45">
@@ -826,40 +903,42 @@ function Channels() {
               </div>
 
               <div className="space-y-5">
-                {channelRows.map(
-                  ({
-                    icon: Icon,
-                    channel,
-                    tickets,
-                    percentage,
-                    className,
-                  }) => (
-                    <div key={channel}>
-                      <div className="mb-2 flex items-center gap-3">
-                        <span
-                          className={`grid h-8 w-8 place-items-center rounded-[10px] ${className}`}
-                        >
-                          <Icon className="h-3.5 w-3.5 text-black/70" />
-                        </span>
+                {channelRows.map(({ icon: Icon, channel, tickets, percentage, className }) => (
+                  <div key={channel}>
+                    <div className="mb-2 flex items-center gap-3">
+                      <span
+                        className={`grid h-8 w-8 place-items-center rounded-[10px] ${className}`}
+                      >
+                        <Icon className="h-3.5 w-3.5 text-black/70" />
+                      </span>
 
-                        <span className="flex-1 text-[11px] font-semibold text-black/65">
-                          {channel}
-                        </span>
+                      <span className="flex-1 text-[11px] font-semibold text-black/65">
+                        {channel}
+                      </span>
 
-                        <span className="text-[9px] font-medium text-black/35">
-                          {tickets} tickets
-                        </span>
-                      </div>
-
-                      <div className="ml-11 h-1.5 overflow-hidden rounded-full bg-[#F0EEEA]">
-                        <div
-                          className="h-full rounded-full bg-[#111111]"
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
+                      <span className="text-[9px] font-medium text-black/35">
+                        {tickets} tickets
+                      </span>
                     </div>
-                  ),
-                )}
+
+                    <div className="ml-11 h-1.5 overflow-hidden rounded-full bg-[#F0EEEA]">
+                      <motion.div
+                        className="h-full rounded-full bg-[#111111]"
+                        initial={{ scaleX: 0 }}
+                        whileInView={{ scaleX: 1 }}
+                        viewport={{ once: false, amount: 0.8 }}
+                        transition={{
+                          duration: 0.72,
+                          ease: EASE_OUT,
+                        }}
+                        style={{
+                          width: `${percentage}%`,
+                          transformOrigin: 'left',
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <div className="mt-8 grid grid-cols-3 gap-2">
@@ -868,16 +947,9 @@ function Channels() {
                   ['34.5m', 'Resolution'],
                   ['96%', 'CSAT'],
                 ].map(([value, label]) => (
-                  <div
-                    key={label}
-                    className="rounded-[14px] bg-[#F8F7F4] px-3 py-4 text-center"
-                  >
-                    <p className="text-[17px] font-semibold tracking-[-0.04em]">
-                      {value}
-                    </p>
-                    <p className="mt-1 text-[7px] font-medium text-black/35">
-                      {label}
-                    </p>
+                  <div key={label} className="rounded-[14px] bg-[#F8F7F4] px-3 py-4 text-center">
+                    <p className="text-[17px] font-semibold tracking-[-0.04em]">{value}</p>
+                    <p className="mt-1 text-[7px] font-medium text-black/35">{label}</p>
                   </div>
                 ))}
               </div>
@@ -890,12 +962,10 @@ function Channels() {
             </span>
             <div>
               <p className="text-[8px] font-bold">WhatsApp connected</p>
-              <p className="mt-0.5 text-[7px] text-black/45">
-                Messages syncing live
-              </p>
+              <p className="mt-0.5 text-[7px] text-black/45">Messages syncing live</p>
             </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -903,12 +973,9 @@ function Channels() {
 
 function Testimonials() {
   return (
-    <section
-      id="resources"
-      className="bg-[#F5F3EF] py-24 sm:py-28"
-    >
+    <section id="resources" className="bg-[#F5F3EF] py-24 sm:py-28">
       <div className="mx-auto max-w-[1120px] px-5 sm:px-8">
-        <div className="text-center">
+        <Reveal className="text-center" y={24} amount={0.3}>
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/35">
             Customer stories
           </p>
@@ -916,53 +983,48 @@ function Testimonials() {
           <h2 className="mt-4 text-[38px] font-semibold tracking-[-0.055em] text-black sm:text-[48px]">
             Support teams move faster with Topiadesk
           </h2>
-        </div>
+        </Reveal>
 
         <div className="mt-12 grid gap-4 lg:grid-cols-3">
           {testimonials.map((testimonial, index) => (
-            <article
+            <Reveal
               key={testimonial.author}
-              className="rounded-[24px] border border-black/[0.065] bg-white p-6"
+              className="h-full"
+              delay={index * 0.075}
+              y={26}
+              scale={0.98}
+              amount={0.3}
             >
-              <div
-                className={`mb-7 flex h-10 w-10 items-center justify-center rounded-full ${
-                  index === 0
-                    ? 'bg-[#FFE36D]'
-                    : index === 1
-                      ? 'bg-[#E7DEFF]'
-                      : 'bg-[#DFF4E8]'
-                }`}
-              >
-                <span className="text-[10px] font-black">
-                  {testimonial.author
-                    .split(' ')
-                    .map((part) => part[0])
-                    .join('')}
-                </span>
-              </div>
+              <article className="h-full rounded-[24px] border border-black/[0.065] bg-white p-6">
+                <div
+                  className={`mb-7 flex h-10 w-10 items-center justify-center rounded-full ${
+                    index === 0 ? 'bg-[#FFE36D]' : index === 1 ? 'bg-[#E7DEFF]' : 'bg-[#DFF4E8]'
+                  }`}
+                >
+                  <span className="text-[10px] font-black">
+                    {testimonial.author
+                      .split(' ')
+                      .map((part) => part[0])
+                      .join('')}
+                  </span>
+                </div>
 
-              <div className="flex gap-0.5">
-                {Array.from({ length: 5 }).map((_, starIndex) => (
-                  <Star
-                    key={starIndex}
-                    className="h-3.5 w-3.5 fill-black text-black"
-                  />
-                ))}
-              </div>
+                <div className="flex gap-0.5">
+                  {Array.from({ length: 5 }).map((_, starIndex) => (
+                    <Star key={starIndex} className="h-3.5 w-3.5 fill-black text-black" />
+                  ))}
+                </div>
 
-              <blockquote className="mt-5 text-[14px] leading-6 tracking-[-0.01em] text-black/65">
-                “{testimonial.quote}”
-              </blockquote>
+                <blockquote className="mt-5 text-[14px] leading-6 tracking-[-0.01em] text-black/65">
+                  “{testimonial.quote}”
+                </blockquote>
 
-              <div className="mt-8 border-t border-black/[0.06] pt-4">
-                <p className="text-[11px] font-bold text-black">
-                  {testimonial.author}
-                </p>
-                <p className="mt-1 text-[9px] text-black/35">
-                  {testimonial.role}
-                </p>
-              </div>
-            </article>
+                <div className="mt-8 border-t border-black/[0.06] pt-4">
+                  <p className="text-[11px] font-bold text-black">{testimonial.author}</p>
+                  <p className="mt-1 text-[9px] text-black/35">{testimonial.role}</p>
+                </div>
+              </article>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -973,7 +1035,12 @@ function Testimonials() {
 function FinalCta() {
   return (
     <section className="bg-white px-5 py-20 sm:px-8 sm:py-24">
-      <div className="relative mx-auto max-w-[1120px] overflow-hidden rounded-[32px] bg-[#111111] px-6 py-16 text-center sm:px-12 sm:py-20">
+      <Reveal
+        className="relative mx-auto max-w-[1120px] overflow-hidden rounded-[32px] bg-[#111111] px-6 py-16 text-center sm:px-12 sm:py-20"
+        y={28}
+        scale={0.975}
+        amount={0.25}
+      >
         <div className="pointer-events-none absolute -left-20 -top-28 h-72 w-72 rounded-full bg-[#E7DEFF]/20 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -right-10 h-80 w-80 rounded-full bg-[#FFE36D]/15 blur-3xl" />
 
@@ -987,8 +1054,8 @@ function FinalCta() {
           </h2>
 
           <p className="mx-auto mt-5 max-w-[510px] text-[13px] leading-6 text-white/48">
-            Create your workspace in minutes and give your team one beautiful
-            place to manage every customer conversation.
+            Create your workspace in minutes and give your team one beautiful place to manage every
+            customer conversation.
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -1008,7 +1075,7 @@ function FinalCta() {
             </Link>
           </div>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }
@@ -1016,13 +1083,12 @@ function FinalCta() {
 function Footer() {
   return (
     <footer className="border-t border-black/[0.06] bg-[#FCFBF8]">
-      <div className="mx-auto max-w-[1180px] px-5 py-12 sm:px-8">
+      <Reveal className="mx-auto max-w-[1180px] px-5 py-12 sm:px-8" y={18} amount={0.15}>
         <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-[290px]">
             <BrandMark />
             <p className="mt-4 text-[11px] leading-5 text-black/38">
-              Unified customer support, monitoring and IT operations for modern
-              teams.
+              Unified customer support, monitoring and IT operations for modern teams.
             </p>
           </div>
 
@@ -1064,31 +1130,31 @@ function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-black/[0.06] pt-6 text-[9px] text-black/30 sm:flex-row sm:items-center sm:justify-between">
-          <span>
-            © {new Date().getFullYear()} Tekktopia Ltd. All rights reserved.
-          </span>
+          <span>© {new Date().getFullYear()} Tekktopia Ltd. All rights reserved.</span>
 
           <span>Built for support teams that care about the experience.</span>
         </div>
-      </div>
+      </Reveal>
     </footer>
   );
 }
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#FCFBF8] text-[#111111]">
-      <Navigation />
-      <main>
-        <Hero />
-        <CustomerStrip />
-        <Stats />
-        <Features />
-        <Channels />
-        <Testimonials />
-        <FinalCta />
-      </main>
-      <Footer />
-    </div>
+    <MotionConfig reducedMotion="user">
+      <div className="min-h-screen bg-[#FCFBF8] text-[#111111]">
+        <Navigation />
+        <main>
+          <Hero />
+          <CustomerStrip />
+          <Stats />
+          <Features />
+          <Channels />
+          <Testimonials />
+          <FinalCta />
+        </main>
+        <Footer />
+      </div>
+    </MotionConfig>
   );
 }
