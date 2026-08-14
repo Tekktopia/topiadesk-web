@@ -6,7 +6,6 @@ import type { Metadata } from 'next';
 import {
   ArrowLeft,
   ArrowRight,
-  Check,
   Clock3,
   Mail,
   MapPin,
