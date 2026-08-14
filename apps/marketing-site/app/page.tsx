@@ -172,7 +172,7 @@ function BrandMark() {
         className="h-8 w-8 object-contain"
       />
 
-      <span className="text-[15px] font-bold tracking-[-0.03em] text-[#111111]">
+      <span className="text-[16px] font-bold tracking-[-0.03em] text-[#111111]">
         Topiadesk
       </span>
     </Link>
