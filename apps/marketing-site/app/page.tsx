@@ -1506,44 +1506,99 @@ function Testimonials() {
 
 function FinalCta() {
   return (
-    <section className="bg-white px-5 py-20 sm:px-8 sm:py-24">
+    <section className="bg-[#F5F3EF] px-5 py-20 sm:px-8 sm:py-24">
       <Reveal
-        className="relative mx-auto max-w-[1120px] overflow-hidden rounded-[32px] bg-[#111111] px-6 py-16 text-center sm:px-12 sm:py-20"
-        y={28}
-        scale={0.975}
+        className="relative mx-auto max-w-[1120px] overflow-hidden rounded-[28px] border border-black/[0.08] bg-[#111111]"
+        y={24}
+        scale={0.985}
         amount={0.25}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(231,222,255,0.16),transparent_30%),radial-gradient(circle_at_92%_100%,rgba(255,227,109,0.12),transparent_32%)]" />
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-20 -top-24 h-52 w-52 rounded-full bg-[#E7DEFF]/10" />
+          <div className="absolute -bottom-24 -right-16 h-52 w-52 rounded-full bg-[#FFE36D]/10" />
+        </div>
 
-        <div className="relative mx-auto max-w-[660px]">
-          <span className="inline-flex rounded-full bg-white/10 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-white/60">
-            Start today
-          </span>
+        <div className="relative grid lg:grid-cols-[1.35fr_0.65fr]">
+          <div className="px-6 py-12 sm:px-10 sm:py-14 lg:px-14 lg:py-16">
+            <div className="inline-flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-[#8BD5A8]" />
 
-          <h2 className="mt-5 text-balance text-[40px] font-semibold leading-[1.02] tracking-[-0.055em] text-white sm:text-[54px]">
-            Make customer support feel effortless.
-          </h2>
+              <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-white/40">
+                Start today
+              </span>
+            </div>
 
-          <p className="mx-auto mt-5 max-w-[510px] text-[13px] leading-6 text-white/48">
-            Create your workspace in minutes and give your team one beautiful place to manage every
-            customer conversation.
-          </p>
+            <h2 className="mt-6 max-w-[650px] text-balance text-[38px] font-semibold leading-[0.98] tracking-[-0.06em] text-white sm:text-[48px] lg:text-[54px]">
+              Give your support team
+              <br className="hidden sm:block" />
+              a calmer place to work.
+            </h2>
 
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              href={TRIAL_URL}
-              className="inline-flex h-12 items-center gap-2 rounded-full bg-white px-6 text-[11px] font-bold text-black transition hover:-translate-y-0.5"
-            >
-              Start free trial
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
+            <p className="mt-5 max-w-[540px] text-[13px] leading-6 text-white/45 sm:text-[14px]">
+              Bring customer conversations, SLAs, support workflows and
+              operations into one beautifully simple workspace.
+            </p>
 
-            <Link
-              href="/contact"
-              className="inline-flex h-12 items-center rounded-full border border-white/20 px-6 text-[11px] font-bold text-white transition hover:bg-white/10"
-            >
-              Book a demo
-            </Link>
+            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3">
+              {[
+                '14-day free trial',
+                'No credit card',
+                'Setup in minutes',
+              ].map((item, index) => (
+                <div
+                  key={item}
+                  className="flex items-center gap-2 text-[10px] font-medium text-white/45"
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      index === 0
+                        ? 'bg-[#FFE36D]'
+                        : index === 1
+                          ? 'bg-[#E7DEFF]'
+                          : 'bg-[#8BD5A8]'
+                    }`}
+                  />
+
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t border-white/[0.08] px-6 py-10 sm:px-10 lg:flex lg:flex-col lg:justify-center lg:border-l lg:border-t-0 lg:px-10">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/30">
+              Ready when you are
+            </p>
+
+            <p className="mt-3 max-w-[300px] text-[14px] leading-6 text-white/65">
+              Create your workspace and start bringing your support operation
+              together.
+            </p>
+
+            <div className="mt-7 flex flex-col gap-3">
+              <Link
+                href={TRIAL_URL}
+                className="group inline-flex h-[50px] w-full items-center justify-between rounded-full bg-white px-5 text-[11px] font-bold text-black transition-colors hover:bg-[#F3F1ED]"
+              >
+                <span>Start free trial</span>
+
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-black text-white">
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                </span>
+              </Link>
+
+              <Link
+                href="/contact"
+                className="inline-flex h-[50px] w-full items-center justify-center rounded-full border border-white/[0.14] text-[11px] font-semibold text-white/75 transition-colors hover:border-white/25 hover:bg-white/[0.05] hover:text-white"
+              >
+                Book a personalised demo
+              </Link>
+            </div>
+
+            <p className="mt-5 text-[9px] leading-4 text-white/25">
+              No long-term commitment. Talk to our team whenever you need help
+              getting started.
+            </p>
           </div>
         </div>
       </Reveal>
