@@ -107,7 +107,7 @@ export function DemoRequestForm() {
         <Field label="Work email" error={errors.email}>
           <Input
             type="email"
-            placeholder="ada@company.com"
+            placeholder="ada@topiadesk.com"
             value={values.email}
             onChange={(e) => update('email', e.target.value)}
           />
@@ -122,7 +122,7 @@ export function DemoRequestForm() {
         </Field>
         <Field label="Company" error={errors.company}>
           <Input
-            placeholder="Acme Insurance"
+            placeholder="Topiadesk Inc."
             value={values.company}
             onChange={(e) => update('company', e.target.value)}
           />

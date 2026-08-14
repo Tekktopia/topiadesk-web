@@ -1,3 +1,5 @@
+// apps/marketing-site/app/layout.tsx
+
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
@@ -12,10 +14,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return (
     <html lang="en" className="light">
-      <body className="antialiased">{children}</body>
+      <body suppressHydrationWarning className="antialiased">
+        {children}
+      </body>
     </html>
   );
 }
