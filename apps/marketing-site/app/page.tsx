@@ -31,8 +31,9 @@ import {
   Workflow,
 } from 'lucide-react';
 import Image from 'next/image';
-import { MotionConfig, motion } from 'motion/react';
-import type { ReactNode } from 'react';
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
+import { ReactLenis } from 'lenis/react';
+import { useState, type ReactNode } from 'react';
 
 const TRIAL_URL = '/signup';
 
@@ -242,7 +243,7 @@ function BrandMark() {
 function Navigation() {
   return (
     <motion.header
-      className="relative z-50 border-b border-black/[0.045] bg-[#FCFBF8]/90 backdrop-blur-xl"
+      className="relative z-50 border-b border-black/[0.045] bg-[#FCFBF8]/95"
       initial={{ opacity: 0, y: -14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.55, ease: EASE_OUT }}
@@ -301,24 +302,675 @@ function Navigation() {
   );
 }
 
+type DashboardView =
+  | 'overview'
+  | 'inbox'
+  | 'tickets'
+  | 'customers'
+  | 'sla'
+  | 'assets';
+
+const DASHBOARD_NAV_ITEMS: Array<{
+  id: DashboardView;
+  label: string;
+  icon: typeof LayoutDashboard;
+}> = [
+  { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { id: 'inbox', label: 'Inbox', icon: Inbox },
+  { id: 'tickets', label: 'Tickets', icon: TicketCheck },
+  { id: 'customers', label: 'Customers', icon: Users },
+  { id: 'sla', label: 'SLA monitor', icon: Activity },
+  { id: 'assets', label: 'Assets', icon: PackageCheck },
+];
+
+const DASHBOARD_VIEW_META: Record<
+  DashboardView,
+  { eyebrow: string; title: string }
+> = {
+  overview: {
+    eyebrow: 'Friday, 14 August',
+    title: 'Good afternoon, Ada',
+  },
+  inbox: {
+    eyebrow: 'Unified workspace',
+    title: 'Inbox',
+  },
+  tickets: {
+    eyebrow: '248 open requests',
+    title: 'Tickets',
+  },
+  customers: {
+    eyebrow: 'Customer directory',
+    title: 'Customers',
+  },
+  sla: {
+    eyebrow: 'Service performance',
+    title: 'SLA monitor',
+  },
+  assets: {
+    eyebrow: 'IT inventory',
+    title: 'Assets',
+  },
+};
+
+const DASHBOARD_SEARCH_ITEMS: Array<{
+  label: string;
+  meta: string;
+  view: DashboardView;
+}> = [
+  { label: 'Cannot access account', meta: 'Ticket #2481', view: 'tickets' },
+  { label: 'Payment verification', meta: 'Ticket #2478', view: 'tickets' },
+  { label: 'Laptop replacement', meta: 'Ticket #2472', view: 'tickets' },
+  { label: 'Ada Obi', meta: 'Customer', view: 'customers' },
+  { label: 'Musa Okafor', meta: 'Customer', view: 'customers' },
+  { label: 'MacBook Pro — TD-1482', meta: 'Asset', view: 'assets' },
+  { label: 'ThinkPad X1 — TD-1491', meta: 'Asset', view: 'assets' },
+];
+
+const DASHBOARD_TICKETS = [
+  {
+    id: '2481',
+    initials: 'AK',
+    subject: 'Cannot access account',
+    channel: 'Email',
+    time: '2m',
+    status: 'Urgent',
+    bg: 'bg-[#FFE36D]',
+  },
+  {
+    id: '2478',
+    initials: 'MO',
+    subject: 'Payment verification',
+    channel: 'WhatsApp',
+    time: '7m',
+    status: 'Open',
+    bg: 'bg-[#DFF4E8]',
+  },
+  {
+    id: '2472',
+    initials: 'TN',
+    subject: 'Laptop replacement',
+    channel: 'Portal',
+    time: '14m',
+    status: 'Pending',
+    bg: 'bg-[#E7DEFF]',
+  },
+  {
+    id: '2469',
+    initials: 'AA',
+    subject: 'Update billing contact',
+    channel: 'Email',
+    time: '22m',
+    status: 'Open',
+    bg: 'bg-[#FFD9CB]',
+  },
+];
+
+function DashboardStat({
+  label,
+  value,
+  delta,
+}: {
+  label: string;
+  value: string;
+  delta: string;
+}) {
+  return (
+    <div className="rounded-xl border border-black/[0.06] bg-[#FBFAF8] p-3">
+      <p className="truncate text-[7px] font-medium text-black/35">{label}</p>
+      <div className="mt-2 flex flex-wrap items-end justify-between gap-1">
+        <p className="text-[15px] font-bold tracking-[-0.04em] text-black">
+          {value}
+        </p>
+        <span className="rounded-full bg-[#DFF4E8] px-1.5 py-0.5 text-[6px] font-bold text-[#36794F]">
+          {delta}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function OverviewDashboardPanel() {
+  return (
+    <div>
+      <div className="mb-4 grid grid-cols-3 gap-2">
+        <DashboardStat label="Open tickets" value="248" delta="+12%" />
+        <DashboardStat label="Avg. response" value="4.8m" delta="-18%" />
+        <DashboardStat label="SLA met" value="99.9%" delta="+2.1%" />
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-[1.15fr_.85fr]">
+        <div className="rounded-2xl border border-black/[0.06] p-3.5">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <p className="text-[9px] font-bold text-black">Ticket volume</p>
+              <p className="text-[7px] text-black/35">Last 7 days</p>
+            </div>
+            <BarChart3 className="h-3.5 w-3.5 text-black/30" />
+          </div>
+
+          <div className="flex h-[108px] items-end gap-2">
+            {[36, 58, 44, 72, 53, 84, 68].map((height, index) => (
+              <div
+                key={`${height}-${index}`}
+                className="flex flex-1 flex-col justify-end"
+              >
+                <motion.div
+                  className={`rounded-t-md ${
+                    index === 5 ? 'bg-[#111111]' : 'bg-[#E7DEFF]'
+                  }`}
+                  initial={{ scaleY: 0.25, opacity: 0.55 }}
+                  animate={{ scaleY: 1, opacity: 1 }}
+                  transition={{
+                    delay: index * 0.025,
+                    duration: 0.34,
+                    ease: EASE_OUT,
+                  }}
+                  style={{
+                    height: `${height}%`,
+                    transformOrigin: 'bottom',
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-2 grid grid-cols-7 text-center text-[6px] text-black/30">
+            <span>M</span>
+            <span>T</span>
+            <span>W</span>
+            <span>T</span>
+            <span>F</span>
+            <span>S</span>
+            <span>S</span>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-black/[0.06] p-3.5">
+          <div className="mb-3 flex items-center justify-between">
+            <div>
+              <p className="text-[9px] font-bold text-black">Priority inbox</p>
+              <p className="text-[7px] text-black/35">Needs attention</p>
+            </div>
+            <span className="rounded-full bg-[#FFD9CB] px-2 py-1 text-[6px] font-bold text-[#A6452F]">
+              4 urgent
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            {DASHBOARD_TICKETS.slice(0, 3).map((ticket) => (
+              <div
+                key={ticket.id}
+                className="flex items-center gap-2 rounded-xl bg-[#FBFAF8] p-2"
+              >
+                <span
+                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${ticket.bg} text-[7px] font-bold`}
+                >
+                  {ticket.initials}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[7.5px] font-bold text-black/75">
+                    {ticket.subject}
+                  </p>
+                  <p className="text-[6px] text-black/30">{ticket.channel}</p>
+                </div>
+                <span className="text-[6px] text-black/30">{ticket.time}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 hidden rounded-2xl border border-black/[0.06] p-3 sm:block">
+        <div className="mb-2 flex items-center justify-between">
+          <p className="text-[8px] font-bold text-black">Recent activity</p>
+          <span className="text-[7px] font-medium text-black/35">View all</span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          {['Ticket #2481 resolved', 'SLA policy updated', 'New agent invited'].map(
+            (activity, index) => (
+              <div
+                key={activity}
+                className="flex items-center gap-2 rounded-lg bg-[#FBFAF8] px-2 py-2"
+              >
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    index === 0
+                      ? 'bg-[#8BD5A8]'
+                      : index === 1
+                        ? 'bg-[#FFE36D]'
+                        : 'bg-[#C9B8FF]'
+                  }`}
+                />
+                <p className="truncate text-[6.5px] text-black/45">{activity}</p>
+              </div>
+            ),
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InboxDashboardPanel({
+  selectedTicketId,
+  onSelectTicket,
+}: {
+  selectedTicketId: string;
+  onSelectTicket: (ticketId: string) => void;
+}) {
+  const selectedTicket =
+    DASHBOARD_TICKETS.find((ticket) => ticket.id === selectedTicketId) ??
+    DASHBOARD_TICKETS[0];
+
+  if (!selectedTicket) {
+    return (
+      <div className="grid min-h-[270px] place-items-center rounded-2xl border border-black/[0.06] bg-[#FBFAF8]">
+        <div className="text-center">
+          <p className="text-[9px] font-bold text-black/60">
+            No conversations available
+          </p>
+          <p className="mt-1 text-[7px] text-black/30">
+            New conversations will appear here.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid min-h-[270px] gap-3 lg:grid-cols-[0.88fr_1.12fr]">
+      <div className="rounded-2xl border border-black/[0.06] p-2">
+        <div className="mb-2 px-2 pt-1">
+          <p className="text-[8px] font-bold text-black">
+            Recent conversations
+          </p>
+
+          <p className="mt-0.5 text-[6.5px] text-black/35">
+            12 unread
+          </p>
+        </div>
+
+        <div className="space-y-1.5">
+          {DASHBOARD_TICKETS.slice(0, 3).map((ticket) => {
+            const active = selectedTicket.id === ticket.id;
+
+            return (
+              <button
+                key={ticket.id}
+                type="button"
+                onClick={() => onSelectTicket(ticket.id)}
+                className={`flex w-full items-center gap-2 rounded-xl p-2 text-left transition-colors ${
+                  active ? 'bg-[#F0ECE6]' : 'hover:bg-[#FBFAF8]'
+                }`}
+              >
+                <span
+                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${ticket.bg} text-[7px] font-bold`}
+                >
+                  {ticket.initials}
+                </span>
+
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[7.5px] font-bold text-black/75">
+                    {ticket.subject}
+                  </span>
+
+                  <span className="mt-0.5 block text-[6px] text-black/30">
+                    {ticket.channel} · {ticket.time}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-black/[0.06] bg-[#FBFAF8] p-3.5">
+        <div className="flex items-center justify-between border-b border-black/[0.05] pb-3">
+          <div>
+            <p className="text-[9px] font-bold text-black">
+              {selectedTicket.subject}
+            </p>
+
+            <p className="mt-0.5 text-[6.5px] text-black/35">
+              Ticket #{selectedTicket.id} · {selectedTicket.channel}
+            </p>
+          </div>
+
+          <span className="rounded-full bg-[#FFE9E2] px-2 py-1 text-[6px] font-bold text-[#9A4B3A]">
+            {selectedTicket.status}
+          </span>
+        </div>
+
+        <div className="mt-3 space-y-2.5">
+          <div className="max-w-[88%] rounded-xl rounded-tl-sm bg-white p-2.5">
+            <p className="text-[7px] leading-3.5 text-black/55">
+              Hi, I&rsquo;m having trouble with this request and need some help
+              getting it resolved today.
+            </p>
+          </div>
+
+          <div className="ml-auto max-w-[88%] rounded-xl rounded-tr-sm bg-[#E7DEFF] p-2.5">
+            <p className="text-[7px] leading-3.5 text-black/60">
+              I can help with that. I&rsquo;ve checked your account and
+              I&rsquo;m reviewing the issue now.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-3 flex items-center gap-2 rounded-xl border border-black/[0.06] bg-white px-3 py-2">
+          <span className="flex-1 text-[7px] text-black/25">
+            Write a reply...
+          </span>
+
+          <span className="rounded-full bg-black px-2 py-1 text-[6px] font-bold text-white">
+            Send
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TicketsDashboardPanel() {
+  return (
+    <div className="rounded-2xl border border-black/[0.06]">
+      <div className="grid grid-cols-[1fr_auto_auto] gap-3 border-b border-black/[0.05] px-3 py-2.5 text-[6.5px] font-bold uppercase tracking-[0.08em] text-black/30">
+        <span>Request</span>
+        <span>Status</span>
+        <span>Age</span>
+      </div>
+
+      <div className="divide-y divide-black/[0.045]">
+        {DASHBOARD_TICKETS.map((ticket) => (
+          <div
+            key={ticket.id}
+            className="grid grid-cols-[1fr_auto_auto] items-center gap-3 px-3 py-3"
+          >
+            <div className="flex min-w-0 items-center gap-2">
+              <span
+                className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${ticket.bg} text-[7px] font-bold`}
+              >
+                {ticket.initials}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-[8px] font-bold text-black/70">
+                  {ticket.subject}
+                </p>
+                <p className="mt-0.5 text-[6px] text-black/30">
+                  #{ticket.id} · {ticket.channel}
+                </p>
+              </div>
+            </div>
+
+            <span
+              className={`rounded-full px-2 py-1 text-[6px] font-bold ${
+                ticket.status === 'Urgent'
+                  ? 'bg-[#FFE3DB] text-[#9A4B3A]'
+                  : ticket.status === 'Pending'
+                    ? 'bg-[#FFF3C7] text-[#80691A]'
+                    : 'bg-[#DFF4E8] text-[#36794F]'
+              }`}
+            >
+              {ticket.status}
+            </span>
+
+            <span className="w-6 text-right text-[6.5px] text-black/30">
+              {ticket.time}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CustomersDashboardPanel() {
+  const customersList = [
+    ['AO', 'Ada Obi', 'ada@company.com', '24 tickets', 'bg-[#E7DEFF]'],
+    ['MO', 'Musa Okafor', 'musa@acme.com', '17 tickets', 'bg-[#DFF4E8]'],
+    ['TN', 'Teni Nwosu', 'teni@northstar.io', '11 tickets', 'bg-[#FFE36D]'],
+    ['AA', 'Ayo Adeleke', 'ayo@atlas.co', '8 tickets', 'bg-[#FFD9CB]'],
+  ];
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {customersList.map(([initials, name, email, ticketCount, bg]) => (
+        <div
+          key={email}
+          className="rounded-2xl border border-black/[0.06] bg-[#FBFAF8] p-3"
+        >
+          <div className="flex items-center gap-2.5">
+            <span
+              className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${bg} text-[8px] font-bold`}
+            >
+              {initials}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-[8.5px] font-bold text-black/70">{name}</p>
+              <p className="mt-0.5 truncate text-[6.5px] text-black/30">{email}</p>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center justify-between border-t border-black/[0.05] pt-2.5">
+            <span className="text-[6.5px] text-black/35">{ticketCount}</span>
+            <span className="flex items-center gap-1 text-[6.5px] font-bold text-black/55">
+              <Star className="h-2.5 w-2.5 fill-black text-black" />
+              4.9
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SlaDashboardPanel() {
+  const policies = [
+    { label: 'Priority response', value: '99.9%', progress: 99, tone: 'bg-[#111111]' },
+    { label: 'Standard resolution', value: '97.2%', progress: 97, tone: 'bg-[#8BD5A8]' },
+    { label: 'VIP customers', value: '94.8%', progress: 95, tone: 'bg-[#C9B8FF]' },
+  ];
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-[0.72fr_1.28fr]">
+      <div className="rounded-2xl bg-[#111111] p-4 text-white">
+        <Activity className="h-5 w-5 text-white/65" />
+        <p className="mt-6 text-[28px] font-semibold tracking-[-0.06em]">99.9%</p>
+        <p className="mt-1 text-[7px] font-medium text-white/45">SLA compliance</p>
+        <div className="mt-5 rounded-xl bg-white/10 p-2.5">
+          <p className="text-[7px] font-semibold text-white/65">2 at risk</p>
+          <p className="mt-0.5 text-[6px] text-white/35">Across 248 open tickets</p>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-black/[0.06] p-3.5">
+        <p className="text-[9px] font-bold text-black">Policies</p>
+        <p className="mt-0.5 text-[6.5px] text-black/35">Performance this week</p>
+
+        <div className="mt-4 space-y-4">
+          {policies.map((policy) => (
+            <div key={policy.label}>
+              <div className="mb-1.5 flex items-center justify-between">
+                <span className="text-[7.5px] font-semibold text-black/55">
+                  {policy.label}
+                </span>
+                <span className="text-[7px] font-bold text-black/65">{policy.value}</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-[#F0EEEA]">
+                <motion.div
+                  className={`h-full rounded-full ${policy.tone}`}
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.42, ease: EASE_OUT }}
+                  style={{
+                    width: `${policy.progress}%`,
+                    transformOrigin: 'left',
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AssetsDashboardPanel() {
+  const assets = [
+    ['MacBook Pro 14"', 'TD-1482', 'Ada Obi', 'Healthy', 'bg-[#DFF4E8]'],
+    ['ThinkPad X1', 'TD-1491', 'Musa Okafor', 'Healthy', 'bg-[#DFF4E8]'],
+    ['Dell Latitude 7440', 'TD-1407', 'Teni Nwosu', 'Review', 'bg-[#FFF3C7]'],
+    ['iPhone 15', 'TD-1398', 'Ayo Adeleke', 'Healthy', 'bg-[#DFF4E8]'],
+  ];
+
+  return (
+    <div className="rounded-2xl border border-black/[0.06]">
+      <div className="flex items-center justify-between border-b border-black/[0.05] px-3 py-2.5">
+        <div>
+          <p className="text-[8px] font-bold text-black">Assigned devices</p>
+          <p className="mt-0.5 text-[6px] text-black/30">1,284 assets tracked</p>
+        </div>
+        <span className="rounded-full bg-[#F5F3EF] px-2 py-1 text-[6px] font-bold text-black/40">
+          Inventory
+        </span>
+      </div>
+
+      <div className="divide-y divide-black/[0.045]">
+        {assets.map(([name, assetId, owner, health, bg]) => (
+          <div
+            key={assetId}
+            className="grid grid-cols-[1fr_auto] items-center gap-3 px-3 py-3"
+          >
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#F5F3EF]">
+                <MonitorSmartphone className="h-3.5 w-3.5 text-black/45" />
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-[8px] font-bold text-black/70">{name}</p>
+                <p className="mt-0.5 text-[6px] text-black/30">
+                  {assetId} · {owner}
+                </p>
+              </div>
+            </div>
+
+            <span className={`rounded-full px-2 py-1 text-[6px] font-bold ${bg} text-black/55`}>
+              {health}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function DashboardMockup() {
+  const [activeView, setActiveView] = useState<DashboardView>('overview');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTicketId, setSelectedTicketId] = useState('2481');
+
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const searchResults = normalizedQuery
+    ? DASHBOARD_SEARCH_ITEMS.filter((item) =>
+        `${item.label} ${item.meta}`.toLowerCase().includes(normalizedQuery),
+      ).slice(0, 5)
+    : [];
+
+  const activeMeta = DASHBOARD_VIEW_META[activeView];
+
+  function selectSearchResult(view: DashboardView) {
+    setActiveView(view);
+    setSearchQuery('');
+  }
+
+  function renderActivePanel() {
+    switch (activeView) {
+      case 'inbox':
+        return (
+          <InboxDashboardPanel
+            selectedTicketId={selectedTicketId}
+            onSelectTicket={setSelectedTicketId}
+          />
+        );
+      case 'tickets':
+        return <TicketsDashboardPanel />;
+      case 'customers':
+        return <CustomersDashboardPanel />;
+      case 'sla':
+        return <SlaDashboardPanel />;
+      case 'assets':
+        return <AssetsDashboardPanel />;
+      case 'overview':
+      default:
+        return <OverviewDashboardPanel />;
+    }
+  }
+
   return (
     <div className="relative mx-auto w-full max-w-[680px]">
-      <div className="relative overflow-hidden rounded-[30px] border border-black/[0.08] bg-[#F2F0EC] p-2 shadow-[0_35px_100px_rgba(37,29,17,0.13)]">
+      <div className="relative overflow-hidden rounded-[30px] border border-black/[0.08] bg-[#F2F0EC] p-2 shadow-[0_16px_45px_rgba(37,29,17,0.06)]">
         <div className="overflow-hidden rounded-[24px] border border-black/[0.07] bg-white">
-          <div className="flex h-11 items-center justify-between border-b border-black/[0.06] px-4">
+          <div className="relative z-30 flex h-11 items-center justify-between border-b border-black/[0.06] px-4">
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-[#FF7965]" />
               <span className="h-2.5 w-2.5 rounded-full bg-[#FFD968]" />
               <span className="h-2.5 w-2.5 rounded-full bg-[#8BD5A8]" />
             </div>
 
-            <div className="flex h-6 w-44 items-center gap-2 rounded-full bg-[#F5F4F1] px-3">
-              <Search className="h-3 w-3 text-black/30" />
-              <span className="text-[8px] text-black/30">Search tickets...</span>
+            <div className="relative">
+              <label className="flex h-6 w-44 items-center gap-2 rounded-full bg-[#F5F4F1] px-3 transition-colors focus-within:bg-[#EFEEE9]">
+                <Search className="h-3 w-3 shrink-0 text-black/30" />
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && searchResults[0]) {
+                      selectSearchResult(searchResults[0].view);
+                    }
+                  }}
+                  placeholder="Search tickets..."
+                  aria-label="Search dashboard"
+                  className="min-w-0 flex-1 bg-transparent text-[8px] text-black/60 outline-none placeholder:text-black/30"
+                />
+              </label>
+
+              {normalizedQuery ? (
+                <div className="absolute left-1/2 top-8 z-50 w-56 -translate-x-1/2 overflow-hidden rounded-xl border border-black/[0.08] bg-white p-1.5">
+                  {searchResults.length > 0 ? (
+                    searchResults.map((result) => (
+                      <button
+                        key={`${result.view}-${result.label}`}
+                        type="button"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => selectSearchResult(result.view)}
+                        className="flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-[#F5F3EF]"
+                      >
+                        <span className="truncate text-[7.5px] font-semibold text-black/65">
+                          {result.label}
+                        </span>
+                        <span className="shrink-0 text-[6px] text-black/30">
+                          {result.meta}
+                        </span>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="px-2.5 py-3 text-center text-[7px] text-black/35">
+                      No matching tickets, customers or assets.
+                    </p>
+                  )}
+                </div>
+              ) : null}
             </div>
 
-            <MoreHorizontal className="h-4 w-4 text-black/30" />
+            <button
+              type="button"
+              aria-label="More dashboard options"
+              className="grid h-7 w-7 place-items-center rounded-full transition-colors hover:bg-black/[0.04]"
+            >
+              <MoreHorizontal className="h-4 w-4 text-black/30" />
+            </button>
           </div>
 
           <div className="flex h-[390px] sm:h-[430px]">
@@ -329,7 +981,6 @@ function DashboardMockup() {
                   alt="Topiadesk"
                   width={32}
                   height={32}
-                  priority
                   className="h-8 w-8 object-contain"
                 />
 
@@ -339,50 +990,28 @@ function DashboardMockup() {
                 </div>
               </div>
 
-              <div className="space-y-1">
-                {[
-                  {
-                    icon: LayoutDashboard,
-                    label: 'Overview',
-                    active: false,
-                  },
-                  {
-                    icon: Inbox,
-                    label: 'Inbox',
-                    active: true,
-                  },
-                  {
-                    icon: TicketCheck,
-                    label: 'Tickets',
-                    active: false,
-                  },
-                  {
-                    icon: Users,
-                    label: 'Customers',
-                    active: false,
-                  },
-                  {
-                    icon: Activity,
-                    label: 'SLA monitor',
-                    active: false,
-                  },
-                  {
-                    icon: PackageCheck,
-                    label: 'Assets',
-                    active: false,
-                  },
-                ].map(({ icon: Icon, label, active }) => (
-                  <div
-                    key={label}
-                    className={`flex items-center gap-2 rounded-lg px-2 py-2 text-[8px] font-medium ${
-                      active ? 'bg-black text-white' : 'text-black/45 hover:bg-black/[0.04]'
-                    }`}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    {label}
-                  </div>
-                ))}
-              </div>
+              <nav className="space-y-1" aria-label="Dashboard sections">
+                {DASHBOARD_NAV_ITEMS.map(({ id, icon: Icon, label }) => {
+                  const active = activeView === id;
+
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setActiveView(id)}
+                      aria-pressed={active}
+                      className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[8px] font-medium transition-colors ${
+                        active
+                          ? 'bg-black text-white'
+                          : 'text-black/45 hover:bg-black/[0.04] hover:text-black/65'
+                      }`}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      {label}
+                    </button>
+                  );
+                })}
+              </nav>
 
               <div className="mt-7 rounded-xl bg-[#FFE36D] p-3">
                 <Sparkles className="mb-2 h-4 w-4 text-black/65" />
@@ -393,12 +1022,29 @@ function DashboardMockup() {
               </div>
             </aside>
 
-            <main className="min-w-0 flex-1 bg-white p-4 sm:p-5">
-              <div className="mb-5 flex items-start justify-between">
+            <main className="flex min-w-0 flex-1 flex-col bg-white p-4 sm:p-5">
+              <div className="mb-3 flex gap-1 overflow-x-auto sm:hidden">
+                {DASHBOARD_NAV_ITEMS.map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setActiveView(id)}
+                    className={`shrink-0 rounded-full px-2.5 py-1 text-[7px] font-semibold ${
+                      activeView === id
+                        ? 'bg-black text-white'
+                        : 'bg-[#F5F3EF] text-black/45'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="mb-4 flex items-start justify-between">
                 <div>
-                  <p className="text-[9px] font-medium text-black/35">Friday, 14 August</p>
+                  <p className="text-[9px] font-medium text-black/35">{activeMeta.eyebrow}</p>
                   <h3 className="mt-1 text-[16px] font-bold tracking-[-0.04em] text-black">
-                    Good afternoon, Ada
+                    {activeMeta.title}
                   </h3>
                 </div>
 
@@ -406,7 +1052,7 @@ function DashboardMockup() {
                   <button
                     type="button"
                     aria-label="Notifications"
-                    className="grid h-8 w-8 place-items-center rounded-full border border-black/[0.08] bg-white"
+                    className="grid h-8 w-8 place-items-center rounded-full border border-black/[0.08] bg-white transition-colors hover:bg-[#F8F7F4]"
                   >
                     <Bell className="h-3.5 w-3.5 text-black/50" />
                   </button>
@@ -417,191 +1063,18 @@ function DashboardMockup() {
                 </div>
               </div>
 
-              <div className="mb-4 grid grid-cols-3 gap-2">
-                {[
-                  {
-                    label: 'Open tickets',
-                    value: '248',
-                    delta: '+12%',
-                  },
-                  {
-                    label: 'Avg. response',
-                    value: '4.8m',
-                    delta: '-18%',
-                  },
-                  {
-                    label: 'SLA met',
-                    value: '99.9%',
-                    delta: '+2.1%',
-                  },
-                ].map((item, index) => (
+              <div className="min-h-0 flex-1">
+                <AnimatePresence mode="wait" initial={false}>
                   <motion.div
-                    key={item.label}
-                    className="rounded-xl border border-black/[0.06] bg-[#FBFAF8] p-3"
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.75 }}
-                    transition={{
-                      delay: 0.08 + index * 0.055,
-                      duration: 0.48,
-                      ease: EASE_OUT,
-                    }}
+                    key={activeView}
+                    initial={{ opacity: 0, y: 7 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    transition={{ duration: 0.18, ease: EASE_OUT }}
                   >
-                    <p className="truncate text-[7px] font-medium text-black/35">{item.label}</p>
-                    <div className="mt-2 flex flex-wrap items-end justify-between gap-1">
-                      <p className="text-[15px] font-bold tracking-[-0.04em] text-black">
-                        {item.value}
-                      </p>
-
-                      <span className="rounded-full bg-[#DFF4E8] px-1.5 py-0.5 text-[6px] font-bold text-[#36794F]">
-                        {item.delta}
-                      </span>
-                    </div>
+                    {renderActivePanel()}
                   </motion.div>
-                ))}
-              </div>
-
-              <div className="grid gap-3 lg:grid-cols-[1.15fr_.85fr]">
-                <div className="rounded-2xl border border-black/[0.06] p-3.5">
-                  <div className="mb-4 flex items-center justify-between">
-                    <div>
-                      <p className="text-[9px] font-bold text-black">Ticket volume</p>
-                      <p className="text-[7px] text-black/35">Last 7 days</p>
-                    </div>
-
-                    <BarChart3 className="h-3.5 w-3.5 text-black/30" />
-                  </div>
-
-                  <div className="flex h-[108px] items-end gap-2">
-                    {[36, 58, 44, 72, 53, 84, 68].map((height, index) => (
-                      <div key={`${height}-${index}`} className="flex flex-1 flex-col justify-end">
-                        <motion.div
-                          className={`rounded-t-md ${
-                            index === 5 ? 'bg-[#111111]' : 'bg-[#E7DEFF]'
-                          }`}
-                          initial={{ scaleY: 0 }}
-                          whileInView={{ scaleY: 1 }}
-                          viewport={{ once: false, amount: 0.8 }}
-                          transition={{
-                            delay: index * 0.045,
-                            duration: 0.5,
-                            ease: EASE_OUT,
-                          }}
-                          style={{
-                            height: `${height}%`,
-                            transformOrigin: 'bottom',
-                          }}
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-2 grid grid-cols-7 text-center text-[6px] text-black/30">
-                    <span>M</span>
-                    <span>T</span>
-                    <span>W</span>
-                    <span>T</span>
-                    <span>F</span>
-                    <span>S</span>
-                    <span>S</span>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-black/[0.06] p-3.5">
-                  <div className="mb-3 flex items-center justify-between">
-                    <div>
-                      <p className="text-[9px] font-bold text-black">Priority inbox</p>
-                      <p className="text-[7px] text-black/35">Needs attention</p>
-                    </div>
-
-                    <span className="rounded-full bg-[#FFD9CB] px-2 py-1 text-[6px] font-bold text-[#A6452F]">
-                      4 urgent
-                    </span>
-                  </div>
-
-                  <div className="space-y-2">
-                    {[
-                      {
-                        initials: 'AK',
-                        subject: 'Cannot access account',
-                        channel: 'Email',
-                        time: '2m',
-                        bg: 'bg-[#FFE36D]',
-                      },
-                      {
-                        initials: 'MO',
-                        subject: 'Payment verification',
-                        channel: 'WhatsApp',
-                        time: '7m',
-                        bg: 'bg-[#DFF4E8]',
-                      },
-                      {
-                        initials: 'TN',
-                        subject: 'Laptop replacement',
-                        channel: 'Portal',
-                        time: '14m',
-                        bg: 'bg-[#E7DEFF]',
-                      },
-                    ].map((ticket, index) => (
-                      <motion.div
-                        key={ticket.subject}
-                        className="flex items-center gap-2 rounded-xl bg-[#FBFAF8] p-2"
-                        initial={{ opacity: 0, x: 10 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: false, amount: 0.7 }}
-                        transition={{
-                          delay: 0.12 + index * 0.06,
-                          duration: 0.46,
-                          ease: EASE_OUT,
-                        }}
-                      >
-                        <span
-                          className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${ticket.bg} text-[7px] font-bold`}
-                        >
-                          {ticket.initials}
-                        </span>
-
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-[7.5px] font-bold text-black/75">
-                            {ticket.subject}
-                          </p>
-                          <p className="text-[6px] text-black/30">{ticket.channel}</p>
-                        </div>
-
-                        <span className="text-[6px] text-black/30">{ticket.time}</span>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-3 hidden rounded-2xl border border-black/[0.06] p-3 sm:block">
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-[8px] font-bold text-black">Recent activity</p>
-                  <span className="text-[7px] font-medium text-black/35">View all</span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  {['Ticket #2481 resolved', 'SLA policy updated', 'New agent invited'].map(
-                    (activity, index) => (
-                      <div
-                        key={activity}
-                        className="flex items-center gap-2 rounded-lg bg-[#FBFAF8] px-2 py-2"
-                      >
-                        <span
-                          className={`h-2 w-2 rounded-full ${
-                            index === 0
-                              ? 'bg-[#8BD5A8]'
-                              : index === 1
-                                ? 'bg-[#FFE36D]'
-                                : 'bg-[#C9B8FF]'
-                          }`}
-                        />
-                        <p className="truncate text-[6.5px] text-black/45">{activity}</p>
-                      </div>
-                    ),
-                  )}
-                </div>
+                </AnimatePresence>
               </div>
             </main>
           </div>
@@ -610,12 +1083,11 @@ function DashboardMockup() {
     </div>
   );
 }
-
 function Hero() {
   return (
     <section className="relative overflow-hidden bg-[#FCFBF8] pb-20 pt-16 sm:pb-28 sm:pt-20 lg:pt-24">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-[450px] h-[420px] w-[720px] -translate-x-1/2 rounded-[50%] bg-[#E7DEFF]/70 blur-[80px]" />
+        <div className="absolute left-1/2 top-[420px] h-[460px] w-[760px] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(circle_at_center,rgba(231,222,255,0.82)_0%,rgba(231,222,255,0.35)_48%,rgba(231,222,255,0)_74%)]" />
       </div>
 
       <div className="relative mx-auto max-w-[1180px] px-5 sm:px-8">
@@ -727,9 +1199,9 @@ function Hero() {
 
           <Reveal
             className="relative z-10 mx-auto max-w-[690px] px-0 lg:px-5"
-            y={36}
-            scale={0.97}
-            amount={0.16}
+            y={20}
+            scale={1}
+            amount={0.12}
           >
             <DashboardMockup />
           </Reveal>
@@ -1041,8 +1513,7 @@ function FinalCta() {
         scale={0.975}
         amount={0.25}
       >
-        <div className="pointer-events-none absolute -left-20 -top-28 h-72 w-72 rounded-full bg-[#E7DEFF]/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 -right-10 h-80 w-80 rounded-full bg-[#FFE36D]/15 blur-3xl" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(231,222,255,0.16),transparent_30%),radial-gradient(circle_at_92%_100%,rgba(255,227,109,0.12),transparent_32%)]" />
 
         <div className="relative mx-auto max-w-[660px]">
           <span className="inline-flex rounded-full bg-white/10 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-white/60">
@@ -1141,20 +1612,35 @@ function Footer() {
 
 export default function HomePage() {
   return (
-    <MotionConfig reducedMotion="user">
-      <div className="min-h-screen bg-[#FCFBF8] text-[#111111]">
-        <Navigation />
-        <main>
-          <Hero />
-          <CustomerStrip />
-          <Stats />
-          <Features />
-          <Channels />
-          <Testimonials />
-          <FinalCta />
-        </main>
-        <Footer />
-      </div>
-    </MotionConfig>
+    <>
+      <ReactLenis
+        root
+        options={{
+          anchors: true,
+          lerp: 0.14,
+          smoothWheel: true,
+          wheelMultiplier: 0.9,
+          syncTouch: false,
+          stopInertiaOnNavigate: true,
+          respectReducedMotion: true,
+        }}
+      />
+
+      <MotionConfig reducedMotion="user">
+        <div className="min-h-screen bg-[#FCFBF8] text-[#111111]">
+          <Navigation />
+          <main>
+            <Hero />
+            <CustomerStrip />
+            <Stats />
+            <Features />
+            <Channels />
+            <Testimonials />
+            <FinalCta />
+          </main>
+          <Footer />
+        </div>
+      </MotionConfig>
+    </>
   );
 }
