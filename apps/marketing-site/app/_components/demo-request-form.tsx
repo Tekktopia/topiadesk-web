@@ -135,7 +135,6 @@ export function DemoRequestForm() {
           />
         </Field>
       </div>
-
       <div className="mt-5">
         <Field label="What would you like to see?" hint="Optional">
           <Textarea
@@ -152,7 +151,7 @@ export function DemoRequestForm() {
         variant="coral"
         size="lg"
         disabled={state === 'loading'}
-        className="mt-6 w-full font-semibold"
+        className="mt-6 w-full font-semibold cursor-pointer"
       >
         {state === 'loading' ? (
           <>

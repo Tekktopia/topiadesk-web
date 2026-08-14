@@ -128,7 +128,7 @@ function Pitch() {
         </span>
       </div>
 
-      <h1 className="mt-6 max-w-[580px] text-[45px] font-semibold leading-[0.98] tracking-[-0.065em] text-[#111111] sm:text-[58px] lg:text-[64px]">
+      <h1 className="mt-6 max-w-[580px] text-[45px] font-semibold leading-[0.98] tracking-[-0.065em] text-[#111111] sm:text-[44px] lg:text-[48px]">
         See how simple
         <br />
         support can feel.

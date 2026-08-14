@@ -1309,10 +1309,6 @@ function Features() {
 
                 <p className="mt-2 text-[12px] leading-5 text-black/42">{description}</p>
 
-                <div className="mt-6 flex items-center gap-1.5 text-[10px] font-bold text-black/60">
-                  Learn more
-                  <ArrowRight className="h-3 w-3 transition group-hover:translate-x-1" />
-                </div>
               </article>
             </Reveal>
           ))}
@@ -1366,8 +1362,8 @@ function Channels() {
             <div className="rounded-[24px] border border-black/[0.07] bg-white p-5 shadow-[0_20px_60px_rgba(0,0,0,0.06)] sm:p-7">
               <div className="mb-7 flex items-center justify-between">
                 <div>
-                  <p className="text-[11px] font-semibold text-black">Conversations by channel</p>
-                  <p className="mt-1 text-[9px] text-black/35">This week</p>
+                  <p className="text-[14px] font-semibold text-black">Conversations by channel</p>
+                  <p className="mt-1 text-[12px] text-black/35">This week</p>
                 </div>
 
                 <span className="rounded-full border border-black/[0.08] px-3 py-1.5 text-[8px] font-semibold text-black/45">
@@ -1683,7 +1679,7 @@ export default function HomePage() {
       />
 
       <MotionConfig reducedMotion="user">
-        <div className="min-h-screen bg-[#FCFBF8] text-[#111111]">
+        <div className="min-h-screen bg-[#FCFBF8] text-[#111111] overflow-y-hidden">
           <Navigation />
           <main>
             <Hero />
