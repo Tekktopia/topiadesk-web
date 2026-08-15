@@ -31,14 +31,22 @@ import {
   Workflow,
 } from 'lucide-react';
 import Image from 'next/image';
-import { AnimatePresence, MotionConfig, motion, useMotionValue, useSpring } from 'motion/react';
+import {
+  AnimatePresence,
+  MotionConfig,
+  motion,
+  useMotionValue,
+  useMotionValueEvent,
+  useScroll,
+  useSpring,
+} from 'motion/react';
 import { ReactLenis } from 'lenis/react';
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import { HandDrawnUnderline } from './_components/hand-drawn-underline';
 
 const TRIAL_URL = '/signup';
 
-const MotionLink = motion(Link);
+const MotionLink = motion.create(Link);
 
 const customers = [
   'HEIRESS',
@@ -269,7 +277,12 @@ function TiltCard({
         y: [0, -floatDistance, 0],
         rotate: [-1.6, 1.6, -1.6],
       }}
-      transition={{ duration: floatDuration, repeat: Infinity, ease: 'easeInOut', delay: floatDelay }}
+      transition={{
+        duration: floatDuration,
+        repeat: Infinity,
+        ease: 'easeInOut',
+        delay: floatDelay,
+      }}
       whileHover={{ scale: 1.06 }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
@@ -316,12 +329,30 @@ function BrandMark() {
 }
 
 function Navigation() {
+  const { scrollY } = useScroll();
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useMotionValueEvent(scrollY, 'change', (latest) => {
+    const delta = latest - lastScrollY.current;
+
+    if (latest < 90) {
+      setHidden(false);
+    } else if (delta > 4) {
+      setHidden(true);
+    } else if (delta < -4) {
+      setHidden(false);
+    }
+
+    lastScrollY.current = latest;
+  });
+
   return (
     <motion.header
-      className="relative z-50 border-b border-black/[0.045] bg-[#FCFBF8]/95"
-      initial={{ opacity: 0, y: -14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.55, ease: EASE_OUT }}
+      className="sticky top-0 z-50 border-b border-black/[0.045] bg-[#FCFBF8]/95 backdrop-blur-sm"
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: hidden ? -100 : 0, opacity: 1 }}
+      transition={{ duration: 0.4, ease: EASE_OUT }}
     >
       <div className="mx-auto flex h-[72px] max-w-[1280px] items-center justify-between px-5 sm:px-8">
         <BrandMark />
@@ -387,13 +418,7 @@ function Navigation() {
   );
 }
 
-type DashboardView =
-  | 'overview'
-  | 'inbox'
-  | 'tickets'
-  | 'customers'
-  | 'sla'
-  | 'assets';
+type DashboardView = 'overview' | 'inbox' | 'tickets' | 'customers' | 'sla' | 'assets';
 
 const DASHBOARD_NAV_ITEMS: Array<{
   id: DashboardView;
@@ -408,10 +433,7 @@ const DASHBOARD_NAV_ITEMS: Array<{
   { id: 'assets', label: 'Assets', icon: PackageCheck },
 ];
 
-const DASHBOARD_VIEW_META: Record<
-  DashboardView,
-  { eyebrow: string; title: string }
-> = {
+const DASHBOARD_VIEW_META: Record<DashboardView, { eyebrow: string; title: string }> = {
   overview: {
     eyebrow: 'Friday, 14 August',
     title: 'Good afternoon, Ada',
@@ -463,12 +485,16 @@ const DASHBOARD_ACTION_POPUPS: Record<
   DashboardView,
   { text: string; meta: string; tone: 'success' | 'alert' | 'info' }
 > = {
-  overview: { text: 'Auto-routed 3 new tickets', meta: 'Workflow · just now', tone: 'info' },
+  overview: { text: 'Ticket #2481 resolved', meta: 'Removed from urgent queue', tone: 'success' },
   inbox: { text: 'Reply sent to Musa Okafor', meta: 'Ticket #2478', tone: 'success' },
   tickets: { text: 'Ticket #2481 marked Resolved', meta: 'Ahmed O. · Support', tone: 'success' },
   customers: { text: 'Note added to Ada Obi', meta: 'Customer profile updated', tone: 'info' },
-  sla: { text: 'SLA breach alert cleared', meta: 'Ticket #2486', tone: 'alert' },
-  assets: { text: 'MacBook Pro checked back in', meta: 'TD-1482 · Inventory', tone: 'success' },
+  sla: { text: 'Priority response verified', meta: 'SLA policy check', tone: 'success' },
+  assets: {
+    text: 'Dell Latitude marked Healthy',
+    meta: 'TD-1407 · Review cleared',
+    tone: 'success',
+  },
 };
 
 const DASHBOARD_ACTION_TONE_BG: Record<'success' | 'alert' | 'info', string> = {
@@ -516,22 +542,34 @@ const DASHBOARD_TICKETS = [
   },
 ];
 
-function DashboardStat({
-  label,
-  value,
-  delta,
-}: {
-  label: string;
-  value: string;
-  delta: string;
-}) {
+/**
+ * Drives a two-step "press then commit" sequence for demo-driven panel
+ * actions: the moment `trigger` changes from its mounted baseline, the
+ * target briefly reports 'pressed' (for a tactile zoom/press effect on the
+ * clicked element), then settles into 'done' (for the real, visible
+ * consequence of that click — status changes, a row leaving a list, etc).
+ */
+function useDemoAction(trigger: number, pressDuration = 170) {
+  const baseline = useRef(trigger);
+  const [phase, setPhase] = useState<'idle' | 'pressed' | 'done'>('idle');
+
+  useEffect(() => {
+    if (trigger === baseline.current) return;
+
+    setPhase('pressed');
+    const timer = setTimeout(() => setPhase('done'), pressDuration);
+    return () => clearTimeout(timer);
+  }, [trigger, pressDuration]);
+
+  return phase;
+}
+
+function DashboardStat({ label, value, delta }: { label: string; value: string; delta: string }) {
   return (
     <div className="rounded-xl border border-black/[0.06] bg-[#FBFAF8] p-3">
       <p className="truncate text-[7px] font-medium text-black/35">{label}</p>
       <div className="mt-2 flex flex-wrap items-end justify-between gap-1">
-        <p className="text-[15px] font-bold tracking-[-0.04em] text-black">
-          {value}
-        </p>
+        <p className="text-[15px] font-bold tracking-[-0.04em] text-black">{value}</p>
         <span className="rounded-full bg-[#DFF4E8] px-1.5 py-0.5 text-[6px] font-bold text-[#36794F]">
           {delta}
         </span>
@@ -540,7 +578,18 @@ function DashboardStat({
   );
 }
 
-function OverviewDashboardPanel() {
+function OverviewDashboardPanel({ trigger }: { trigger: number }) {
+  const phase = useDemoAction(trigger);
+  const pressed = phase === 'pressed';
+  const resolved = phase === 'done';
+
+  const targetId = DASHBOARD_TICKETS[0]?.id;
+  const inboxTickets = DASHBOARD_TICKETS.slice(0, 3);
+  const visibleTickets = resolved
+    ? inboxTickets.filter((ticket) => ticket.id !== targetId)
+    : inboxTickets;
+  const urgentCount = resolved ? 3 : 4;
+
   return (
     <div>
       <div className="mb-4 grid grid-cols-3 gap-2">
@@ -561,14 +610,9 @@ function OverviewDashboardPanel() {
 
           <div className="flex h-[108px] items-end gap-2">
             {[36, 58, 44, 72, 53, 84, 68].map((height, index) => (
-              <div
-                key={`${height}-${index}`}
-                className="flex flex-1 flex-col justify-end"
-              >
+              <div key={`${height}-${index}`} className="flex flex-1 flex-col justify-end">
                 <motion.div
-                  className={`rounded-t-md ${
-                    index === 5 ? 'bg-[#111111]' : 'bg-[#E7DEFF]'
-                  }`}
+                  className={`rounded-t-md ${index === 5 ? 'bg-[#111111]' : 'bg-[#E7DEFF]'}`}
                   initial={{ scaleY: 0.25, opacity: 0.55 }}
                   animate={{ scaleY: 1, opacity: 1 }}
                   transition={{
@@ -602,32 +646,52 @@ function OverviewDashboardPanel() {
               <p className="text-[9px] font-bold text-black">Priority inbox</p>
               <p className="text-[7px] text-black/35">Needs attention</p>
             </div>
-            <span className="rounded-full bg-[#FFD9CB] px-2 py-1 text-[6px] font-bold text-[#A6452F]">
-              4 urgent
-            </span>
+            <motion.span
+              key={urgentCount}
+              initial={{ scale: 1.35 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 14 }}
+              className="rounded-full bg-[#FFD9CB] px-2 py-1 text-[6px] font-bold text-[#A6452F]"
+            >
+              {urgentCount} urgent
+            </motion.span>
           </div>
 
           <div className="space-y-2">
-            {DASHBOARD_TICKETS.slice(0, 3).map((ticket, index) => (
-              <div
-                key={ticket.id}
-                data-demo-target={index === 0 ? 'true' : undefined}
-                className="flex items-center gap-2 rounded-xl bg-[#FBFAF8] p-2"
-              >
-                <span
-                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${ticket.bg} text-[7px] font-bold`}
-                >
-                  {ticket.initials}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[7.5px] font-bold text-black/75">
-                    {ticket.subject}
-                  </p>
-                  <p className="text-[6px] text-black/30">{ticket.channel}</p>
-                </div>
-                <span className="text-[6px] text-black/30">{ticket.time}</span>
-              </div>
-            ))}
+            <AnimatePresence initial={false}>
+              {visibleTickets.map((ticket) => {
+                const isTarget = ticket.id === targetId;
+
+                return (
+                  <motion.div
+                    key={ticket.id}
+                    data-demo-target={isTarget ? 'true' : undefined}
+                    layout
+                    animate={{ scale: isTarget && pressed ? 0.94 : 1, opacity: 1 }}
+                    exit={{ opacity: 0, height: 0, marginBottom: 0, scale: 0.92 }}
+                    transition={{ duration: 0.22, ease: EASE_OUT }}
+                    className="flex items-center gap-2 overflow-hidden rounded-xl bg-[#FBFAF8] p-2"
+                  >
+                    <span
+                      className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${ticket.bg} text-[7px] font-bold`}
+                    >
+                      {ticket.initials}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[7.5px] font-bold text-black/75">
+                        {ticket.subject}
+                      </p>
+                      <p className="text-[6px] text-black/30">{ticket.channel}</p>
+                    </div>
+                    {isTarget && pressed ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#36794F]" />
+                    ) : (
+                      <span className="text-[6px] text-black/30">{ticket.time}</span>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
           </div>
         </div>
       </div>
@@ -639,25 +703,23 @@ function OverviewDashboardPanel() {
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          {['Ticket #2481 resolved', 'SLA policy updated', 'New agent invited'].map(
-            (activity, index) => (
-              <div
-                key={activity}
-                className="flex items-center gap-2 rounded-lg bg-[#FBFAF8] px-2 py-2"
-              >
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    index === 0
-                      ? 'bg-[#8BD5A8]'
-                      : index === 1
-                        ? 'bg-[#FFE36D]'
-                        : 'bg-[#C9B8FF]'
-                  }`}
-                />
-                <p className="truncate text-[6.5px] text-black/45">{activity}</p>
-              </div>
-            ),
-          )}
+          {[
+            resolved ? 'Ticket #2481 resolved · just now' : 'Ticket #2481 resolved',
+            'SLA policy updated',
+            'New agent invited',
+          ].map((activity, index) => (
+            <div
+              key={activity}
+              className="flex items-center gap-2 rounded-lg bg-[#FBFAF8] px-2 py-2"
+            >
+              <span
+                className={`h-2 w-2 shrink-0 rounded-full ${
+                  index === 0 ? 'bg-[#8BD5A8]' : index === 1 ? 'bg-[#FFE36D]' : 'bg-[#C9B8FF]'
+                }`}
+              />
+              <p className="truncate text-[6.5px] text-black/45">{activity}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -667,24 +729,25 @@ function OverviewDashboardPanel() {
 function InboxDashboardPanel({
   selectedTicketId,
   onSelectTicket,
+  trigger,
 }: {
   selectedTicketId: string;
   onSelectTicket: (ticketId: string) => void;
+  trigger: number;
 }) {
+  const phase = useDemoAction(trigger);
+  const pressed = phase === 'pressed';
+  const replySent = phase === 'done';
+
   const selectedTicket =
-    DASHBOARD_TICKETS.find((ticket) => ticket.id === selectedTicketId) ??
-    DASHBOARD_TICKETS[0];
+    DASHBOARD_TICKETS.find((ticket) => ticket.id === selectedTicketId) ?? DASHBOARD_TICKETS[0];
 
   if (!selectedTicket) {
     return (
       <div className="grid min-h-[270px] place-items-center rounded-2xl border border-black/[0.06] bg-[#FBFAF8]">
         <div className="text-center">
-          <p className="text-[9px] font-bold text-black/60">
-            No conversations available
-          </p>
-          <p className="mt-1 text-[7px] text-black/30">
-            New conversations will appear here.
-          </p>
+          <p className="text-[9px] font-bold text-black/60">No conversations available</p>
+          <p className="mt-1 text-[7px] text-black/30">New conversations will appear here.</p>
         </div>
       </div>
     );
@@ -694,25 +757,24 @@ function InboxDashboardPanel({
     <div className="grid min-h-[270px] gap-3 lg:grid-cols-[0.88fr_1.12fr]">
       <div className="rounded-2xl border border-black/[0.06] p-2">
         <div className="mb-2 px-2 pt-1">
-          <p className="text-[8px] font-bold text-black">
-            Recent conversations
-          </p>
+          <p className="text-[8px] font-bold text-black">Recent conversations</p>
 
-          <p className="mt-0.5 text-[6.5px] text-black/35">
-            12 unread
-          </p>
+          <p className="mt-0.5 text-[6.5px] text-black/35">12 unread</p>
         </div>
 
         <div className="space-y-1.5">
           {DASHBOARD_TICKETS.slice(0, 3).map((ticket, index) => {
             const active = selectedTicket.id === ticket.id;
+            const isTarget = index === 1;
 
             return (
-              <button
+              <motion.button
                 key={ticket.id}
                 type="button"
-                data-demo-target={index === 1 ? 'true' : undefined}
+                data-demo-target={isTarget ? 'true' : undefined}
                 onClick={() => onSelectTicket(ticket.id)}
+                animate={{ scale: isTarget && pressed ? 0.96 : 1 }}
+                transition={{ duration: 0.15, ease: EASE_OUT }}
                 className={`flex w-full items-center gap-2 rounded-xl p-2 text-left transition-colors ${
                   active ? 'bg-[#F0ECE6]' : 'hover:bg-[#FBFAF8]'
                 }`}
@@ -732,7 +794,7 @@ function InboxDashboardPanel({
                     {ticket.channel} · {ticket.time}
                   </span>
                 </span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -741,9 +803,7 @@ function InboxDashboardPanel({
       <div className="rounded-2xl border border-black/[0.06] bg-[#FBFAF8] p-3.5">
         <div className="flex items-center justify-between border-b border-black/[0.05] pb-3">
           <div>
-            <p className="text-[9px] font-bold text-black">
-              {selectedTicket.subject}
-            </p>
+            <p className="text-[9px] font-bold text-black">{selectedTicket.subject}</p>
 
             <p className="mt-0.5 text-[6.5px] text-black/35">
               Ticket #{selectedTicket.id} · {selectedTicket.channel}
@@ -758,34 +818,58 @@ function InboxDashboardPanel({
         <div className="mt-3 space-y-2.5">
           <div className="max-w-[88%] rounded-xl rounded-tl-sm bg-white p-2.5">
             <p className="text-[7px] leading-3.5 text-black/55">
-              Hi, I&rsquo;m having trouble with this request and need some help
-              getting it resolved today.
+              Hi, I&rsquo;m having trouble with this request and need some help getting it resolved
+              today.
             </p>
           </div>
 
           <div className="ml-auto max-w-[88%] rounded-xl rounded-tr-sm bg-[#E7DEFF] p-2.5">
             <p className="text-[7px] leading-3.5 text-black/60">
-              I can help with that. I&rsquo;ve checked your account and
-              I&rsquo;m reviewing the issue now.
+              I can help with that. I&rsquo;ve checked your account and I&rsquo;m reviewing the
+              issue now.
             </p>
           </div>
+
+          <AnimatePresence>
+            {replySent ? (
+              <motion.div
+                key="demo-reply"
+                initial={{ opacity: 0, y: 10, scale: 0.94 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.26, ease: EASE_OUT }}
+                className="ml-auto max-w-[88%] rounded-xl rounded-tr-sm bg-[#E7DEFF] p-2.5"
+              >
+                <p className="text-[7px] leading-3.5 text-black/60">
+                  Thanks for confirming — I&rsquo;ve gone ahead and resolved this on our end.
+                </p>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </div>
 
-        <div className="mt-3 flex items-center gap-2 rounded-xl border border-black/[0.06] bg-white px-3 py-2">
+        <motion.div
+          animate={{ scale: replySent ? [1, 0.9, 1] : 1 }}
+          transition={{ duration: 0.32, ease: EASE_OUT }}
+          className="mt-3 flex items-center gap-2 rounded-xl border border-black/[0.06] bg-white px-3 py-2"
+        >
           <span className="flex-1 text-[7px] text-black/25">
-            Write a reply...
+            {replySent ? 'Reply sent' : 'Write a reply...'}
           </span>
 
           <span className="rounded-full bg-black px-2 py-1 text-[6px] font-bold text-white">
             Send
           </span>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
 }
 
-function TicketsDashboardPanel() {
+function TicketsDashboardPanel({ trigger }: { trigger: number }) {
+  const phase = useDemoAction(trigger);
+  const pressed = phase === 'pressed';
+  const resolved = phase === 'done';
+
   return (
     <div className="rounded-2xl border border-black/[0.06]">
       <div className="grid grid-cols-[1fr_auto_auto] gap-3 border-b border-black/[0.05] px-3 py-2.5 text-[6.5px] font-bold uppercase tracking-[0.08em] text-black/30">
@@ -795,91 +879,141 @@ function TicketsDashboardPanel() {
       </div>
 
       <div className="divide-y divide-black/[0.045]">
-        {DASHBOARD_TICKETS.map((ticket, index) => (
-          <div
-            key={ticket.id}
-            data-demo-target={index === 0 ? 'true' : undefined}
-            className="grid grid-cols-[1fr_auto_auto] items-center gap-3 px-3 py-3"
-          >
-            <div className="flex min-w-0 items-center gap-2">
-              <span
-                className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${ticket.bg} text-[7px] font-bold`}
-              >
-                {ticket.initials}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-[8px] font-bold text-black/70">
-                  {ticket.subject}
-                </p>
-                <p className="mt-0.5 text-[6px] text-black/30">
-                  #{ticket.id} · {ticket.channel}
-                </p>
-              </div>
-            </div>
+        {DASHBOARD_TICKETS.map((ticket, index) => {
+          const isTarget = index === 0;
+          const status = isTarget && resolved ? 'Resolved' : ticket.status;
 
-            <span
-              className={`rounded-full px-2 py-1 text-[6px] font-bold ${
-                ticket.status === 'Urgent'
-                  ? 'bg-[#FFE3DB] text-[#9A4B3A]'
-                  : ticket.status === 'Pending'
-                    ? 'bg-[#FFF3C7] text-[#80691A]'
-                    : 'bg-[#DFF4E8] text-[#36794F]'
-              }`}
+          return (
+            <motion.div
+              key={ticket.id}
+              data-demo-target={isTarget ? 'true' : undefined}
+              animate={{
+                scale: isTarget && pressed ? 0.97 : 1,
+                backgroundColor:
+                  isTarget && resolved ? 'rgba(139,213,168,0.14)' : 'rgba(139,213,168,0)',
+              }}
+              transition={{ duration: 0.2, ease: EASE_OUT }}
+              className="grid grid-cols-[1fr_auto_auto] items-center gap-3 px-3 py-3"
             >
-              {ticket.status}
-            </span>
+              <div className="flex min-w-0 items-center gap-2">
+                <span
+                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${ticket.bg} text-[7px] font-bold`}
+                >
+                  {ticket.initials}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-[8px] font-bold text-black/70">{ticket.subject}</p>
+                  <p className="mt-0.5 text-[6px] text-black/30">
+                    #{ticket.id} · {ticket.channel}
+                  </p>
+                </div>
+              </div>
 
-            <span className="w-6 text-right text-[6.5px] text-black/30">
-              {ticket.time}
-            </span>
-          </div>
-        ))}
+              <motion.span
+                key={status}
+                initial={{ scale: 1.3 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                className={`rounded-full px-2 py-1 text-[6px] font-bold ${
+                  status === 'Resolved'
+                    ? 'bg-[#DFF4E8] text-[#36794F]'
+                    : status === 'Urgent'
+                      ? 'bg-[#FFE3DB] text-[#9A4B3A]'
+                      : status === 'Pending'
+                        ? 'bg-[#FFF3C7] text-[#80691A]'
+                        : 'bg-[#DFF4E8] text-[#36794F]'
+                }`}
+              >
+                {status}
+              </motion.span>
+
+              <span className="w-6 text-right text-[6.5px] text-black/30">{ticket.time}</span>
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-function CustomersDashboardPanel() {
+function CustomersDashboardPanel({ trigger }: { trigger: number }) {
+  const phase = useDemoAction(trigger);
+  const pressed = phase === 'pressed';
+  const noted = phase === 'done';
+
   const customersList = [
-    ['AO', 'Ada Obi', 'ada@company.com', '24 tickets', 'bg-[#E7DEFF]'],
-    ['MO', 'Musa Okafor', 'musa@acme.com', '17 tickets', 'bg-[#DFF4E8]'],
-    ['TN', 'Teni Nwosu', 'teni@northstar.io', '11 tickets', 'bg-[#FFE36D]'],
-    ['AA', 'Ayo Adeleke', 'ayo@atlas.co', '8 tickets', 'bg-[#FFD9CB]'],
-  ];
+    ['AO', 'Ada Obi', 'ada@company.com', 24, 'bg-[#E7DEFF]'],
+    ['MO', 'Musa Okafor', 'musa@acme.com', 17, 'bg-[#DFF4E8]'],
+    ['TN', 'Teni Nwosu', 'teni@northstar.io', 11, 'bg-[#FFE36D]'],
+    ['AA', 'Ayo Adeleke', 'ayo@atlas.co', 8, 'bg-[#FFD9CB]'],
+  ] as const;
 
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      {customersList.map(([initials, name, email, ticketCount, bg], index) => (
-        <div
-          key={email}
-          data-demo-target={index === 0 ? 'true' : undefined}
-          className="rounded-2xl border border-black/[0.06] bg-[#FBFAF8] p-3"
-        >
-          <div className="flex items-center gap-2.5">
-            <span
-              className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${bg} text-[8px] font-bold`}
-            >
-              {initials}
-            </span>
-            <div className="min-w-0">
-              <p className="truncate text-[8.5px] font-bold text-black/70">{name}</p>
-              <p className="mt-0.5 truncate text-[6.5px] text-black/30">{email}</p>
+      {customersList.map(([initials, name, email, ticketCount, bg], index) => {
+        const isTarget = index === 0;
+        const count = isTarget && noted ? ticketCount + 1 : ticketCount;
+
+        return (
+          <motion.div
+            key={email}
+            data-demo-target={isTarget ? 'true' : undefined}
+            animate={{ scale: isTarget && pressed ? 0.96 : 1 }}
+            transition={{ duration: 0.16, ease: EASE_OUT }}
+            className="relative rounded-2xl border border-black/[0.06] bg-[#FBFAF8] p-3"
+          >
+            <AnimatePresence>
+              {isTarget && noted ? (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.6, y: -6 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 420, damping: 16 }}
+                  className="absolute -right-1.5 -top-1.5 rounded-full bg-black px-2 py-1 text-[6px] font-bold text-white"
+                >
+                  Note added
+                </motion.span>
+              ) : null}
+            </AnimatePresence>
+
+            <div className="flex items-center gap-2.5">
+              <span
+                className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${bg} text-[8px] font-bold`}
+              >
+                {initials}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-[8.5px] font-bold text-black/70">{name}</p>
+                <p className="mt-0.5 truncate text-[6.5px] text-black/30">{email}</p>
+              </div>
             </div>
-          </div>
-          <div className="mt-3 flex items-center justify-between border-t border-black/[0.05] pt-2.5">
-            <span className="text-[6.5px] text-black/35">{ticketCount}</span>
-            <span className="flex items-center gap-1 text-[6.5px] font-bold text-black/55">
-              <Star className="h-2.5 w-2.5 fill-black text-black" />
-              4.9
-            </span>
-          </div>
-        </div>
-      ))}
+            <div className="mt-3 flex items-center justify-between border-t border-black/[0.05] pt-2.5">
+              <motion.span
+                key={count}
+                initial={{ scale: 1.3 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                className="text-[6.5px] text-black/35"
+              >
+                {count} tickets
+              </motion.span>
+              <span className="flex items-center gap-1 text-[6.5px] font-bold text-black/55">
+                <Star className="h-2.5 w-2.5 fill-black text-black" />
+                4.9
+              </span>
+            </div>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }
 
-function SlaDashboardPanel() {
+function SlaDashboardPanel({ trigger }: { trigger: number }) {
+  const phase = useDemoAction(trigger);
+  const pressed = phase === 'pressed';
+  const verified = phase === 'done';
+
   const policies = [
     { label: 'Priority response', value: '99.9%', progress: 99, tone: 'bg-[#111111]' },
     { label: 'Standard resolution', value: '97.2%', progress: 97, tone: 'bg-[#8BD5A8]' },
@@ -893,7 +1027,9 @@ function SlaDashboardPanel() {
         <p className="mt-6 text-[28px] font-semibold tracking-[-0.06em]">99.9%</p>
         <p className="mt-1 text-[7px] font-medium text-white/45">SLA compliance</p>
         <div className="mt-5 rounded-xl bg-white/10 p-2.5">
-          <p className="text-[7px] font-semibold text-white/65">2 at risk</p>
+          <p className="text-[7px] font-semibold text-white/65">
+            {verified ? '1 at risk' : '2 at risk'}
+          </p>
           <p className="mt-0.5 text-[6px] text-white/35">Across 248 open tickets</p>
         </div>
       </div>
@@ -903,41 +1039,67 @@ function SlaDashboardPanel() {
         <p className="mt-0.5 text-[6.5px] text-black/35">Performance this week</p>
 
         <div className="mt-4 space-y-4">
-          {policies.map((policy, index) => (
-            <div key={policy.label} data-demo-target={index === 0 ? 'true' : undefined}>
-              <div className="mb-1.5 flex items-center justify-between">
-                <span className="text-[7.5px] font-semibold text-black/55">
-                  {policy.label}
-                </span>
-                <span className="text-[7px] font-bold text-black/65">{policy.value}</span>
-              </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-[#F0EEEA]">
-                <motion.div
-                  className={`h-full rounded-full ${policy.tone}`}
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 0.42, ease: EASE_OUT }}
-                  style={{
-                    width: `${policy.progress}%`,
-                    transformOrigin: 'left',
-                  }}
-                />
-              </div>
-            </div>
-          ))}
+          {policies.map((policy, index) => {
+            const isTarget = index === 0;
+
+            return (
+              <motion.div
+                key={policy.label}
+                data-demo-target={isTarget ? 'true' : undefined}
+                animate={{ scale: isTarget && pressed ? 0.97 : 1 }}
+                transition={{ duration: 0.16, ease: EASE_OUT }}
+              >
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="flex items-center gap-1 text-[7.5px] font-semibold text-black/55">
+                    {policy.label}
+                    <AnimatePresence>
+                      {isTarget && verified ? (
+                        <motion.span
+                          initial={{ opacity: 0, scale: 0.5 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ type: 'spring', stiffness: 420, damping: 16 }}
+                          className="inline-flex items-center gap-0.5 rounded-full bg-[#DFF4E8] px-1.5 py-0.5 text-[5.5px] font-bold text-[#36794F]"
+                        >
+                          <CheckCircle2 className="h-2 w-2" />
+                          Verified
+                        </motion.span>
+                      ) : null}
+                    </AnimatePresence>
+                  </span>
+                  <span className="text-[7px] font-bold text-black/65">{policy.value}</span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-[#F0EEEA]">
+                  <motion.div
+                    className={`h-full rounded-full ${policy.tone}`}
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: 0.42, ease: EASE_OUT }}
+                    style={{
+                      width: `${policy.progress}%`,
+                      transformOrigin: 'left',
+                    }}
+                  />
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </div>
   );
 }
 
-function AssetsDashboardPanel() {
+function AssetsDashboardPanel({ trigger }: { trigger: number }) {
+  const phase = useDemoAction(trigger);
+  const pressed = phase === 'pressed';
+  const fixed = phase === 'done';
+
   const assets = [
     ['MacBook Pro 14"', 'TD-1482', 'Ada Obi', 'Healthy', 'bg-[#DFF4E8]'],
     ['ThinkPad X1', 'TD-1491', 'Musa Okafor', 'Healthy', 'bg-[#DFF4E8]'],
     ['Dell Latitude 7440', 'TD-1407', 'Teni Nwosu', 'Review', 'bg-[#FFF3C7]'],
     ['iPhone 15', 'TD-1398', 'Ayo Adeleke', 'Healthy', 'bg-[#DFF4E8]'],
-  ];
+  ] as const;
 
   return (
     <div className="rounded-2xl border border-black/[0.06]">
@@ -952,29 +1114,43 @@ function AssetsDashboardPanel() {
       </div>
 
       <div className="divide-y divide-black/[0.045]">
-        {assets.map(([name, assetId, owner, health, bg], index) => (
-          <div
-            key={assetId}
-            data-demo-target={index === 0 ? 'true' : undefined}
-            className="grid grid-cols-[1fr_auto] items-center gap-3 px-3 py-3"
-          >
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#F5F3EF]">
-                <MonitorSmartphone className="h-3.5 w-3.5 text-black/45" />
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-[8px] font-bold text-black/70">{name}</p>
-                <p className="mt-0.5 text-[6px] text-black/30">
-                  {assetId} · {owner}
-                </p>
-              </div>
-            </div>
+        {assets.map(([name, assetId, owner, health, bg], index) => {
+          const isTarget = index === 2;
+          const resolvedHealth = isTarget && fixed ? 'Healthy' : health;
+          const resolvedBg = isTarget && fixed ? 'bg-[#DFF4E8]' : bg;
 
-            <span className={`rounded-full px-2 py-1 text-[6px] font-bold ${bg} text-black/55`}>
-              {health}
-            </span>
-          </div>
-        ))}
+          return (
+            <motion.div
+              key={assetId}
+              data-demo-target={isTarget ? 'true' : undefined}
+              animate={{ scale: isTarget && pressed ? 0.96 : 1 }}
+              transition={{ duration: 0.16, ease: EASE_OUT }}
+              className="grid grid-cols-[1fr_auto] items-center gap-3 px-3 py-3"
+            >
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#F5F3EF]">
+                  <MonitorSmartphone className="h-3.5 w-3.5 text-black/45" />
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-[8px] font-bold text-black/70">{name}</p>
+                  <p className="mt-0.5 text-[6px] text-black/30">
+                    {assetId} · {owner}
+                  </p>
+                </div>
+              </div>
+
+              <motion.span
+                key={resolvedHealth}
+                initial={{ scale: 1.3 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                className={`rounded-full px-2 py-1 text-[6px] font-bold ${resolvedBg} text-black/55`}
+              >
+                {resolvedHealth}
+              </motion.span>
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );
@@ -991,6 +1167,7 @@ function DashboardMockup() {
   const [toastIndex, setToastIndex] = useState(0);
   const [showToast, setShowToast] = useState(false);
   const [showActionPopup, setShowActionPopup] = useState(false);
+  const [actionTrigger, setActionTrigger] = useState(0);
 
   const currentIndexRef = useRef(0);
   const navRefs = useRef<Partial<Record<DashboardView, HTMLButtonElement | null>>>({});
@@ -1064,9 +1241,7 @@ function DashboardMockup() {
         await sleep(420);
         if (cancelled) return;
 
-        const targetEl = dashboardBodyRef.current?.querySelector<HTMLElement>(
-          '[data-demo-target]',
-        );
+        const targetEl = dashboardBodyRef.current?.querySelector<HTMLElement>('[data-demo-target]');
 
         if (targetEl) {
           moveCursorTo(targetEl);
@@ -1077,6 +1252,7 @@ function DashboardMockup() {
           setCursorClicking(true);
           targetEl.click();
           setShowActionPopup(true);
+          setActionTrigger((t) => t + 1);
 
           await sleep(260);
           if (cancelled) return;
@@ -1131,19 +1307,20 @@ function DashboardMockup() {
           <InboxDashboardPanel
             selectedTicketId={selectedTicketId}
             onSelectTicket={setSelectedTicketId}
+            trigger={actionTrigger}
           />
         );
       case 'tickets':
-        return <TicketsDashboardPanel />;
+        return <TicketsDashboardPanel trigger={actionTrigger} />;
       case 'customers':
-        return <CustomersDashboardPanel />;
+        return <CustomersDashboardPanel trigger={actionTrigger} />;
       case 'sla':
-        return <SlaDashboardPanel />;
+        return <SlaDashboardPanel trigger={actionTrigger} />;
       case 'assets':
-        return <AssetsDashboardPanel />;
+        return <AssetsDashboardPanel trigger={actionTrigger} />;
       case 'overview':
       default:
-        return <OverviewDashboardPanel />;
+        return <OverviewDashboardPanel trigger={actionTrigger} />;
     }
   }
 
@@ -1157,9 +1334,9 @@ function DashboardMockup() {
         <div className="overflow-hidden rounded-[24px] border border-black/[0.07] bg-white">
           <div className="relative z-30 flex h-11 items-center justify-between border-b border-black/[0.06] px-4">
             <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#FF7965]" />
-              <span className="h-2.5 w-2.5 rounded-full bg-[#FFD968]" />
-              <span className="h-2.5 w-2.5 rounded-full bg-[#8BD5A8]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#FF7965] cursor-pointer" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#FFD968] cursor-pointer" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#8BD5A8] cursor-pointer" />
             </div>
 
             <div className="relative">
@@ -1194,9 +1371,7 @@ function DashboardMockup() {
                         <span className="truncate text-[7.5px] font-semibold text-black/65">
                           {result.label}
                         </span>
-                        <span className="shrink-0 text-[6px] text-black/30">
-                          {result.meta}
-                        </span>
+                        <span className="shrink-0 text-[6px] text-black/30">{result.meta}</span>
                       </button>
                     ))
                   ) : (
@@ -1211,15 +1386,15 @@ function DashboardMockup() {
             <button
               type="button"
               aria-label="More dashboard options"
-              className="grid h-7 w-7 place-items-center rounded-full transition-colors hover:bg-black/[0.04]"
+              className="grid h-7 w-7 place-items-center rounded-full cursor-pointer transition-colors hover:bg-black/[0.04]"
             >
-              <MoreHorizontal className="h-4 w-4 text-black/30" />
+              <MoreHorizontal className="h-4 w-4 text-black/30 cursor-pointer" />
             </button>
           </div>
 
           <div ref={dashboardBodyRef} className="relative flex h-[390px] sm:h-[430px]">
             <aside className="hidden w-[148px] shrink-0 border-r border-black/[0.06] bg-[#FBFAF8] p-3 sm:block">
-              <div className="mb-5 flex items-center gap-2 px-1">
+              <div className="mb-5 flex items-center gap-2 px-1 cursor-pointer">
                 <Image
                   src="/icons/icon.png"
                   alt="Topiadesk"
@@ -1280,8 +1455,8 @@ function DashboardMockup() {
                     transition={{ duration: 0.28, ease: EASE_OUT }}
                     className="absolute right-3 top-3 z-40 flex max-w-[168px] items-center gap-2 rounded-xl border border-black/[0.08] bg-white px-3 py-2 shadow-[0_10px_30px_rgba(0,0,0,0.14)]"
                   >
-                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#E7DEFF]">
-                      <Bell className="h-3 w-3 text-black/70" />
+                    <span className="grid h-6 w-6 shrink-0 place-items-center cursor-pointer rounded-full bg-[#E7DEFF]">
+                      <Bell className="h-3 w-3 text-black/70 cursor-pointer" />
                     </span>
                     <div className="min-w-0">
                       <p className="truncate text-[8px] font-semibold text-black/75">
@@ -1327,9 +1502,7 @@ function DashboardMockup() {
                     type="button"
                     onClick={() => selectView(id)}
                     className={`shrink-0 rounded-full px-2.5 py-1 text-[7px] font-semibold ${
-                      activeView === id
-                        ? 'bg-black text-white'
-                        : 'bg-[#F5F3EF] text-black/45'
+                      activeView === id ? 'bg-black text-white' : 'bg-[#F5F3EF] text-black/45'
                     }`}
                   >
                     {label}
@@ -1349,12 +1522,12 @@ function DashboardMockup() {
                   <button
                     type="button"
                     aria-label="Notifications"
-                    className="grid h-8 w-8 place-items-center rounded-full border border-black/[0.08] bg-white transition-colors hover:bg-[#F8F7F4]"
+                    className="grid h-8 w-8 place-items-center rounded-full border border-black/[0.08] cursor-pointer bg-white transition-colors hover:bg-[#F8F7F4]"
                   >
-                    <Bell className="h-3.5 w-3.5 text-black/50" />
+                    <Bell className="h-3.5 w-3.5 text-black/50 cursor-pointer" />
                   </button>
 
-                  <span className="grid h-8 w-8 place-items-center rounded-full bg-[#E7DEFF] text-[9px] font-bold">
+                  <span className="grid h-8 w-8 place-items-center cursor-pointer rounded-full bg-[#E7DEFF] text-[9px] font-bold">
                     AO
                   </span>
                 </div>
@@ -1497,7 +1670,9 @@ function Hero() {
               >
                 <Clock3 className="h-5 w-5 stroke-[1.7]" />
               </motion.div>
-              <p className="mt-4 text-[25px] font-semibold tracking-[-0.06em] text-black">34.5 Min</p>
+              <p className="mt-4 text-[25px] font-semibold tracking-[-0.06em] text-black">
+                34.5 Min
+              </p>
               <p className="mt-1 text-[8px] font-semibold text-black/55">Average resolution time</p>
             </TiltCard>
           </Reveal>
@@ -1698,7 +1873,6 @@ function Features() {
                 </h3>
 
                 <p className="mt-2 text-[12px] leading-5 text-black/42">{description}</p>
-
               </article>
             </Reveal>
           ))}
@@ -1926,9 +2100,7 @@ function FinalCta() {
             </div>
 
             <h2 className="mt-6 max-w-[650px] text-balance text-[38px] font-semibold leading-[0.98] tracking-[-0.06em] text-white sm:text-[48px] lg:text-[54px]">
-              Give your support team{' '}
-              <br className="hidden sm:block" />
-              a{' '}
+              Give your support team <br className="hidden sm:block" />a{' '}
               <span className="relative inline-block whitespace-nowrap">
                 calmer
                 <HandDrawnUnderline color="#FFE36D" delay={0.15} />
@@ -1937,27 +2109,19 @@ function FinalCta() {
             </h2>
 
             <p className="mt-5 max-w-[540px] text-[13px] leading-6 text-white/45 sm:text-[14px]">
-              Bring customer conversations, SLAs, support workflows and
-              operations into one beautifully simple workspace.
+              Bring customer conversations, SLAs, support workflows and operations into one
+              beautifully simple workspace.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3">
-              {[
-                '14-day free trial',
-                'No credit card',
-                'Setup in minutes',
-              ].map((item, index) => (
+              {['14-day free trial', 'No credit card', 'Setup in minutes'].map((item, index) => (
                 <div
                   key={item}
                   className="flex items-center gap-2 text-[10px] font-medium text-white/45"
                 >
                   <span
                     className={`h-1.5 w-1.5 rounded-full ${
-                      index === 0
-                        ? 'bg-[#FFE36D]'
-                        : index === 1
-                          ? 'bg-[#E7DEFF]'
-                          : 'bg-[#8BD5A8]'
+                      index === 0 ? 'bg-[#FFE36D]' : index === 1 ? 'bg-[#E7DEFF]' : 'bg-[#8BD5A8]'
                     }`}
                   />
 
@@ -1973,8 +2137,7 @@ function FinalCta() {
             </p>
 
             <p className="mt-3 max-w-[300px] text-[14px] leading-6 text-white/65">
-              Create your workspace and start bringing your support operation
-              together.
+              Create your workspace and start bringing your support operation together.
             </p>
 
             <div className="mt-7 flex flex-col gap-3">
@@ -2008,8 +2171,7 @@ function FinalCta() {
             </div>
 
             <p className="mt-5 text-[9px] leading-4 text-white/25">
-              No long-term commitment. Talk to our team whenever you need help
-              getting started.
+              No long-term commitment. Talk to our team whenever you need help getting started.
             </p>
           </div>
         </div>
