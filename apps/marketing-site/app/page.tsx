@@ -360,18 +360,24 @@ function Navigation() {
         <div className="flex items-center gap-3">
           <MotionLink
             href="/contact"
+            initial="rest"
+            whileHover="hover"
             whileTap={{ scale: 0.96 }}
-            className="hidden text-[12px] font-semibold text-black/75 transition-colors hover:text-black sm:block"
+            className="relative hidden text-[12px] font-semibold text-black/75 transition-colors hover:text-black sm:block"
           >
             Book a demo
+            <HandDrawnUnderline
+              trigger="hover"
+              color="#FF7965"
+              strokeWidth={4}
+              className="pointer-events-none absolute -bottom-1.5 left-0 h-[6px] w-full"
+            />
           </MotionLink>
 
           <MotionLink
             href={TRIAL_URL}
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.96, y: 0 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-            className="rounded-full bg-[#111111] px-5 py-2.5 text-[12px] font-semibold text-white shadow-[0_5px_15px_rgba(0,0,0,0.1)] transition-[background-color,box-shadow] duration-200 hover:bg-black hover:shadow-[0_10px_26px_rgba(255,121,101,0.4)]"
+            whileTap={{ scale: 0.96 }}
+            className="rounded-full bg-[#111111] px-5 py-2.5 text-[12px] font-semibold text-white shadow-[0_5px_15px_rgba(0,0,0,0.1)] transition-colors duration-200 hover:bg-[#2A1712]"
           >
             Get started
           </MotionLink>
@@ -1436,20 +1442,30 @@ function Hero() {
           </p>
 
           <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
+            <MotionLink
               href={TRIAL_URL}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#111111] px-6 text-[12px] font-semibold text-white shadow-[0_8px_25px_rgba(0,0,0,0.14)] transition hover:-translate-y-0.5 hover:bg-black"
+              whileTap={{ scale: 0.96 }}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#111111] px-6 text-[12px] font-semibold text-white shadow-[0_8px_25px_rgba(0,0,0,0.14)] transition-colors duration-200 hover:bg-[#2A1712]"
             >
               Get started — for free
               <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
+            </MotionLink>
 
-            <Link
+            <MotionLink
               href="/contact"
-              className="inline-flex h-12 items-center justify-center rounded-full border border-black/20 bg-white px-6 text-[12px] font-semibold text-[#111111] transition hover:bg-black/[0.03]"
+              initial="rest"
+              whileHover="hover"
+              whileTap={{ scale: 0.96 }}
+              className="relative inline-flex h-12 items-center justify-center rounded-full border border-black/20 bg-white px-6 text-[12px] font-semibold text-[#111111] transition-colors duration-200 hover:bg-black/[0.03]"
             >
               Book a demo
-            </Link>
+              <HandDrawnUnderline
+                trigger="hover"
+                color="#FF7965"
+                strokeWidth={4}
+                className="pointer-events-none absolute -bottom-0.5 left-6 right-6 h-[6px]"
+              />
+            </MotionLink>
           </div>
 
           <p className="mt-3 text-[10px] font-medium text-black/30">
@@ -1962,23 +1978,33 @@ function FinalCta() {
             </p>
 
             <div className="mt-7 flex flex-col gap-3">
-              <Link
+              <MotionLink
                 href={TRIAL_URL}
-                className="group inline-flex h-[50px] w-full items-center justify-between rounded-full bg-white px-5 text-[11px] font-bold text-black transition-colors hover:bg-[#F3F1ED]"
+                whileTap={{ scale: 0.97 }}
+                className="group inline-flex h-[50px] w-full items-center justify-between rounded-full bg-white px-5 text-[11px] font-bold text-black transition-colors duration-200 hover:bg-[#F3F1ED]"
               >
                 <span>Start free trial</span>
 
                 <span className="grid h-7 w-7 place-items-center rounded-full bg-black text-white">
                   <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
                 </span>
-              </Link>
+              </MotionLink>
 
-              <Link
+              <MotionLink
                 href="/contact"
-                className="inline-flex h-[50px] w-full items-center justify-center rounded-full border border-white/[0.14] text-[11px] font-semibold text-white/75 transition-colors hover:border-white/25 hover:bg-white/[0.05] hover:text-white"
+                initial="rest"
+                whileHover="hover"
+                whileTap={{ scale: 0.97 }}
+                className="relative inline-flex h-[50px] w-full items-center justify-center rounded-full border border-white/[0.14] text-[11px] font-semibold text-white/75 transition-colors hover:border-white/25 hover:bg-white/[0.05] hover:text-white"
               >
                 Book a personalised demo
-              </Link>
+                <HandDrawnUnderline
+                  trigger="hover"
+                  color="#FFE36D"
+                  strokeWidth={4}
+                  className="pointer-events-none absolute -bottom-0.5 left-10 right-10 h-[6px]"
+                />
+              </MotionLink>
             </div>
 
             <p className="mt-5 text-[9px] leading-4 text-white/25">

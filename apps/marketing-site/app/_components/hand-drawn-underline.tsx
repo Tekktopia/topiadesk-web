@@ -13,14 +13,20 @@ type HandDrawnUnderlineProps = {
   className?: string;
   path?: string;
   delay?: number;
+  /**
+   * 'scroll' draws in/out as the element enters/leaves the viewport.
+   * 'hover' draws in/out based on an ancestor's whileHover variant state —
+   * pair with a parent that sets initial="rest" whileHover="hover".
+   */
+  trigger?: 'scroll' | 'hover';
 };
 
 const DEFAULT_PATH = 'M2 12 C 40 4, 70 17, 100 9 C 130 2, 160 15, 198 7';
 
 /**
- * A signature squiggle accent that draws itself in on scroll-into-view and
- * draws back out on scroll-away, meant to recur under key words across the
- * marketing site as a light, consistent brand motif.
+ * A signature squiggle accent — the same brand motif that recurs under key
+ * words across the marketing site — reused here as a hover indicator so
+ * buttons carry the site's own identity instead of a generic glow/lift.
  */
 export function HandDrawnUnderline({
   color = '#FF7965',
@@ -28,14 +34,39 @@ export function HandDrawnUnderline({
   className,
   path = DEFAULT_PATH,
   delay = 0.1,
+  trigger = 'scroll',
 }: HandDrawnUnderlineProps) {
+  const svgClassName =
+    className ?? 'pointer-events-none absolute -bottom-1 left-0 h-[0.22em] w-full';
+
+  if (trigger === 'hover') {
+    return (
+      <svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true" className={svgClassName}>
+        <motion.path
+          d={path}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          variants={{
+            rest: {
+              pathLength: 0,
+              opacity: 0,
+              transition: { duration: 0.22, ease: EASE_IN },
+            },
+            hover: {
+              pathLength: 1,
+              opacity: 1,
+              transition: { duration: 0.38, ease: EASE_OUT, delay },
+            },
+          }}
+        />
+      </svg>
+    );
+  }
+
   return (
-    <svg
-      viewBox="0 0 200 20"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-      className={className ?? 'pointer-events-none absolute -bottom-1 left-0 h-[0.22em] w-full'}
-    >
+    <svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true" className={svgClassName}>
       <motion.path
         d={path}
         fill="none"
