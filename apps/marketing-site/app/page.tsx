@@ -31,11 +31,14 @@ import {
   Workflow,
 } from 'lucide-react';
 import Image from 'next/image';
-import { AnimatePresence, MotionConfig, motion } from 'motion/react';
+import { AnimatePresence, MotionConfig, motion, useMotionValue, useSpring } from 'motion/react';
 import { ReactLenis } from 'lenis/react';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import { HandDrawnUnderline } from './_components/hand-drawn-underline';
 
 const TRIAL_URL = '/signup';
+
+const MotionLink = motion(Link);
 
 const customers = [
   'HEIRESS',
@@ -223,6 +226,78 @@ function Reveal({
   );
 }
 
+type TiltCardProps = {
+  children: ReactNode;
+  className?: string;
+  floatDistance?: number;
+  floatDuration?: number;
+  floatDelay?: number;
+  shineDelay?: number;
+};
+
+function TiltCard({
+  children,
+  className,
+  floatDistance = 9,
+  floatDuration = 4.5,
+  floatDelay = 0,
+  shineDelay = 0,
+}: TiltCardProps) {
+  const rotateX = useMotionValue(0);
+  const rotateY = useMotionValue(0);
+  const springRotateX = useSpring(rotateX, { stiffness: 220, damping: 16, mass: 0.5 });
+  const springRotateY = useSpring(rotateY, { stiffness: 220, damping: 16, mass: 0.5 });
+
+  function handleMouseMove(event: MouseEvent<HTMLDivElement>) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const px = (event.clientX - rect.left) / rect.width - 0.5;
+    const py = (event.clientY - rect.top) / rect.height - 0.5;
+    rotateY.set(px * 22);
+    rotateX.set(py * -22);
+  }
+
+  function handleMouseLeave() {
+    rotateX.set(0);
+    rotateY.set(0);
+  }
+
+  return (
+    <motion.div
+      className={`relative overflow-hidden ${className ?? ''}`}
+      style={{ perspective: 700 }}
+      animate={{
+        y: [0, -floatDistance, 0],
+        rotate: [-1.6, 1.6, -1.6],
+      }}
+      transition={{ duration: floatDuration, repeat: Infinity, ease: 'easeInOut', delay: floatDelay }}
+      whileHover={{ scale: 1.06 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <motion.div
+        className="relative"
+        style={{ rotateX: springRotateX, rotateY: springRotateY, transformStyle: 'preserve-3d' }}
+      >
+        {children}
+      </motion.div>
+
+      <motion.div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 left-0 z-10 w-1/3 -skew-x-12 bg-gradient-to-r from-white/0 via-white/60 to-white/0 mix-blend-overlay"
+        initial={{ x: '-160%' }}
+        animate={{ x: ['-160%', '260%'] }}
+        transition={{
+          duration: 2.6,
+          repeat: Infinity,
+          repeatDelay: 3.6,
+          ease: 'easeInOut',
+          delay: shineDelay,
+        }}
+      />
+    </motion.div>
+  );
+}
+
 function BrandMark() {
   return (
     <Link href="/" className="flex items-center gap-2.5">
@@ -283,19 +358,23 @@ function Navigation() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
+          <MotionLink
             href="/contact"
-            className="hidden text-[12px] font-semibold text-black/75 transition hover:text-black sm:block"
+            whileTap={{ scale: 0.96 }}
+            className="hidden text-[12px] font-semibold text-black/75 transition-colors hover:text-black sm:block"
           >
             Book a demo
-          </Link>
+          </MotionLink>
 
-          <Link
+          <MotionLink
             href={TRIAL_URL}
-            className="rounded-full bg-[#111111] px-5 py-2.5 text-[12px] font-semibold text-white shadow-[0_5px_15px_rgba(0,0,0,0.1)] transition hover:-translate-y-0.5 hover:bg-black"
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.96, y: 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+            className="rounded-full bg-[#111111] px-5 py-2.5 text-[12px] font-semibold text-white shadow-[0_5px_15px_rgba(0,0,0,0.1)] transition-[background-color,box-shadow] duration-200 hover:bg-black hover:shadow-[0_10px_26px_rgba(255,121,101,0.4)]"
           >
             Get started
-          </Link>
+          </MotionLink>
         </div>
       </div>
     </motion.header>
@@ -366,6 +445,31 @@ const DASHBOARD_SEARCH_ITEMS: Array<{
   { label: 'MacBook Pro — TD-1482', meta: 'Asset', view: 'assets' },
   { label: 'ThinkPad X1 — TD-1491', meta: 'Asset', view: 'assets' },
 ];
+
+const DASHBOARD_TOAST_MESSAGES: Array<{ text: string; meta: string }> = [
+  { text: 'New ticket via WhatsApp', meta: 'Adaeze O. · just now' },
+  { text: 'SLA at risk', meta: 'Ticket #2486 · 4 min left' },
+  { text: 'Automation resolved 3 tickets', meta: 'Auto-routing workflow' },
+  { text: 'New agent invited', meta: 'Musa Okafor · Support' },
+];
+
+const DASHBOARD_ACTION_POPUPS: Record<
+  DashboardView,
+  { text: string; meta: string; tone: 'success' | 'alert' | 'info' }
+> = {
+  overview: { text: 'Auto-routed 3 new tickets', meta: 'Workflow · just now', tone: 'info' },
+  inbox: { text: 'Reply sent to Musa Okafor', meta: 'Ticket #2478', tone: 'success' },
+  tickets: { text: 'Ticket #2481 marked Resolved', meta: 'Ahmed O. · Support', tone: 'success' },
+  customers: { text: 'Note added to Ada Obi', meta: 'Customer profile updated', tone: 'info' },
+  sla: { text: 'SLA breach alert cleared', meta: 'Ticket #2486', tone: 'alert' },
+  assets: { text: 'MacBook Pro checked back in', meta: 'TD-1482 · Inventory', tone: 'success' },
+};
+
+const DASHBOARD_ACTION_TONE_BG: Record<'success' | 'alert' | 'info', string> = {
+  success: 'bg-[#DFF3E6]',
+  alert: 'bg-[#FFF1CF]',
+  info: 'bg-[#E7DEFF]',
+};
 
 const DASHBOARD_TICKETS = [
   {
@@ -498,9 +602,10 @@ function OverviewDashboardPanel() {
           </div>
 
           <div className="space-y-2">
-            {DASHBOARD_TICKETS.slice(0, 3).map((ticket) => (
+            {DASHBOARD_TICKETS.slice(0, 3).map((ticket, index) => (
               <div
                 key={ticket.id}
+                data-demo-target={index === 0 ? 'true' : undefined}
                 className="flex items-center gap-2 rounded-xl bg-[#FBFAF8] p-2"
               >
                 <span
@@ -593,13 +698,14 @@ function InboxDashboardPanel({
         </div>
 
         <div className="space-y-1.5">
-          {DASHBOARD_TICKETS.slice(0, 3).map((ticket) => {
+          {DASHBOARD_TICKETS.slice(0, 3).map((ticket, index) => {
             const active = selectedTicket.id === ticket.id;
 
             return (
               <button
                 key={ticket.id}
                 type="button"
+                data-demo-target={index === 1 ? 'true' : undefined}
                 onClick={() => onSelectTicket(ticket.id)}
                 className={`flex w-full items-center gap-2 rounded-xl p-2 text-left transition-colors ${
                   active ? 'bg-[#F0ECE6]' : 'hover:bg-[#FBFAF8]'
@@ -683,9 +789,10 @@ function TicketsDashboardPanel() {
       </div>
 
       <div className="divide-y divide-black/[0.045]">
-        {DASHBOARD_TICKETS.map((ticket) => (
+        {DASHBOARD_TICKETS.map((ticket, index) => (
           <div
             key={ticket.id}
+            data-demo-target={index === 0 ? 'true' : undefined}
             className="grid grid-cols-[1fr_auto_auto] items-center gap-3 px-3 py-3"
           >
             <div className="flex min-w-0 items-center gap-2">
@@ -736,9 +843,10 @@ function CustomersDashboardPanel() {
 
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      {customersList.map(([initials, name, email, ticketCount, bg]) => (
+      {customersList.map(([initials, name, email, ticketCount, bg], index) => (
         <div
           key={email}
+          data-demo-target={index === 0 ? 'true' : undefined}
           className="rounded-2xl border border-black/[0.06] bg-[#FBFAF8] p-3"
         >
           <div className="flex items-center gap-2.5">
@@ -789,8 +897,8 @@ function SlaDashboardPanel() {
         <p className="mt-0.5 text-[6.5px] text-black/35">Performance this week</p>
 
         <div className="mt-4 space-y-4">
-          {policies.map((policy) => (
-            <div key={policy.label}>
+          {policies.map((policy, index) => (
+            <div key={policy.label} data-demo-target={index === 0 ? 'true' : undefined}>
               <div className="mb-1.5 flex items-center justify-between">
                 <span className="text-[7.5px] font-semibold text-black/55">
                   {policy.label}
@@ -838,9 +946,10 @@ function AssetsDashboardPanel() {
       </div>
 
       <div className="divide-y divide-black/[0.045]">
-        {assets.map(([name, assetId, owner, health, bg]) => (
+        {assets.map(([name, assetId, owner, health, bg], index) => (
           <div
             key={assetId}
+            data-demo-target={index === 0 ? 'true' : undefined}
             className="grid grid-cols-[1fr_auto] items-center gap-3 px-3 py-3"
           >
             <div className="flex min-w-0 items-center gap-2">
@@ -870,6 +979,17 @@ function DashboardMockup() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTicketId, setSelectedTicketId] = useState('2481');
 
+  const [isPaused, setIsPaused] = useState(false);
+  const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
+  const [cursorClicking, setCursorClicking] = useState(false);
+  const [toastIndex, setToastIndex] = useState(0);
+  const [showToast, setShowToast] = useState(false);
+  const [showActionPopup, setShowActionPopup] = useState(false);
+
+  const currentIndexRef = useRef(0);
+  const navRefs = useRef<Partial<Record<DashboardView, HTMLButtonElement | null>>>({});
+  const dashboardBodyRef = useRef<HTMLDivElement | null>(null);
+
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const searchResults = normalizedQuery
     ? DASHBOARD_SEARCH_ITEMS.filter((item) =>
@@ -879,10 +999,124 @@ function DashboardMockup() {
 
   const activeMeta = DASHBOARD_VIEW_META[activeView];
 
-  function selectSearchResult(view: DashboardView) {
+  function selectView(view: DashboardView) {
     setActiveView(view);
+    currentIndexRef.current = DASHBOARD_NAV_ITEMS.findIndex((item) => item.id === view);
+  }
+
+  function selectSearchResult(view: DashboardView) {
+    selectView(view);
     setSearchQuery('');
   }
+
+  useEffect(() => {
+    if (isPaused) return;
+
+    let cancelled = false;
+
+    function sleep(ms: number) {
+      return new Promise<void>((resolve) => setTimeout(resolve, ms));
+    }
+
+    function moveCursorTo(el: HTMLElement) {
+      const container = dashboardBodyRef.current;
+      if (!container) return;
+
+      const elRect = el.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      setCursorPos({
+        x: elRect.left - containerRect.left + elRect.width / 2,
+        y: elRect.top - containerRect.top + elRect.height / 2,
+      });
+    }
+
+    async function runLoop() {
+      while (!cancelled) {
+        await sleep(1300);
+        if (cancelled) return;
+
+        // Stage 1 — travel to the next nav item and click it
+        const nextIndex = (currentIndexRef.current + 1) % DASHBOARD_NAV_ITEMS.length;
+        const nextItem = DASHBOARD_NAV_ITEMS[nextIndex];
+        if (!nextItem) return;
+
+        const navBtn = navRefs.current[nextItem.id];
+        if (navBtn) moveCursorTo(navBtn);
+
+        await sleep(550);
+        if (cancelled) return;
+
+        setCursorClicking(true);
+        setActiveView(nextItem.id);
+        currentIndexRef.current = nextIndex;
+
+        await sleep(260);
+        if (cancelled) return;
+        setCursorClicking(false);
+
+        // Stage 2 — let the panel finish animating in, then find something real to click
+        await sleep(420);
+        if (cancelled) return;
+
+        const targetEl = dashboardBodyRef.current?.querySelector<HTMLElement>(
+          '[data-demo-target]',
+        );
+
+        if (targetEl) {
+          moveCursorTo(targetEl);
+
+          await sleep(550);
+          if (cancelled) return;
+
+          setCursorClicking(true);
+          targetEl.click();
+          setShowActionPopup(true);
+
+          await sleep(260);
+          if (cancelled) return;
+          setCursorClicking(false);
+
+          // Stage 3 — let the resulting popup breathe before moving on
+          await sleep(1500);
+          if (cancelled) return;
+          setShowActionPopup(false);
+        }
+      }
+    }
+
+    runLoop();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isPaused]);
+
+  useEffect(() => {
+    if (isPaused) {
+      setShowToast(false);
+      return;
+    }
+
+    let timerId: ReturnType<typeof setTimeout>;
+
+    function loop() {
+      timerId = setTimeout(() => {
+        setToastIndex((index) => (index + 1) % DASHBOARD_TOAST_MESSAGES.length);
+        setShowToast(true);
+
+        timerId = setTimeout(() => {
+          setShowToast(false);
+          loop();
+        }, 2600);
+      }, 5200);
+    }
+
+    loop();
+
+    return () => clearTimeout(timerId);
+  }, [isPaused]);
+
+  const activeActionPopup = DASHBOARD_ACTION_POPUPS[activeView];
 
   function renderActivePanel() {
     switch (activeView) {
@@ -908,7 +1142,11 @@ function DashboardMockup() {
   }
 
   return (
-    <div className="relative mx-auto w-full max-w-[680px]">
+    <div
+      className="relative mx-auto w-full max-w-[680px]"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       <div className="relative overflow-hidden rounded-[30px] border border-black/[0.08] bg-[#F2F0EC] p-2 shadow-[0_16px_45px_rgba(37,29,17,0.06)]">
         <div className="overflow-hidden rounded-[24px] border border-black/[0.07] bg-white">
           <div className="relative z-30 flex h-11 items-center justify-between border-b border-black/[0.06] px-4">
@@ -973,7 +1211,7 @@ function DashboardMockup() {
             </button>
           </div>
 
-          <div className="flex h-[390px] sm:h-[430px]">
+          <div ref={dashboardBodyRef} className="relative flex h-[390px] sm:h-[430px]">
             <aside className="hidden w-[148px] shrink-0 border-r border-black/[0.06] bg-[#FBFAF8] p-3 sm:block">
               <div className="mb-5 flex items-center gap-2 px-1">
                 <Image
@@ -997,8 +1235,11 @@ function DashboardMockup() {
                   return (
                     <button
                       key={id}
+                      ref={(el) => {
+                        navRefs.current[id] = el;
+                      }}
                       type="button"
-                      onClick={() => setActiveView(id)}
+                      onClick={() => selectView(id)}
                       aria-pressed={active}
                       className={`flex w-full items-center gap-2 cursor-pointer rounded-lg px-2 py-2 text-left text-[8px] font-medium transition-colors ${
                         active
@@ -1022,13 +1263,63 @@ function DashboardMockup() {
               </div>
             </aside>
 
-            <main className="flex min-w-0 flex-1 flex-col bg-white p-4 sm:p-5">
+            <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-white p-4 sm:p-5">
+              <AnimatePresence>
+                {showToast && DASHBOARD_TOAST_MESSAGES[toastIndex] ? (
+                  <motion.div
+                    key={toastIndex}
+                    initial={{ opacity: 0, y: -14, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.96 }}
+                    transition={{ duration: 0.28, ease: EASE_OUT }}
+                    className="absolute right-3 top-3 z-40 flex max-w-[168px] items-center gap-2 rounded-xl border border-black/[0.08] bg-white px-3 py-2 shadow-[0_10px_30px_rgba(0,0,0,0.14)]"
+                  >
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#E7DEFF]">
+                      <Bell className="h-3 w-3 text-black/70" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-[8px] font-semibold text-black/75">
+                        {DASHBOARD_TOAST_MESSAGES[toastIndex].text}
+                      </p>
+                      <p className="truncate text-[7px] text-black/40">
+                        {DASHBOARD_TOAST_MESSAGES[toastIndex].meta}
+                      </p>
+                    </div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+
+              <AnimatePresence>
+                {showActionPopup && activeActionPopup ? (
+                  <motion.div
+                    key={activeView}
+                    initial={{ opacity: 0, y: 14, scale: 0.94 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.94 }}
+                    transition={{ duration: 0.26, ease: EASE_OUT }}
+                    className="absolute bottom-3 left-3 z-40 flex max-w-[190px] items-center gap-2 rounded-xl border border-black/[0.08] bg-white px-3 py-2 shadow-[0_10px_30px_rgba(0,0,0,0.14)]"
+                  >
+                    <span
+                      className={`grid h-6 w-6 shrink-0 place-items-center rounded-full ${DASHBOARD_ACTION_TONE_BG[activeActionPopup.tone]}`}
+                    >
+                      <CheckCircle2 className="h-3 w-3 text-black/70" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-[8px] font-semibold text-black/75">
+                        {activeActionPopup.text}
+                      </p>
+                      <p className="truncate text-[7px] text-black/40">{activeActionPopup.meta}</p>
+                    </div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+
               <div className="mb-3 flex gap-1 overflow-x-auto sm:hidden">
                 {DASHBOARD_NAV_ITEMS.map(({ id, label }) => (
                   <button
                     key={id}
                     type="button"
-                    onClick={() => setActiveView(id)}
+                    onClick={() => selectView(id)}
                     className={`shrink-0 rounded-full px-2.5 py-1 text-[7px] font-semibold ${
                       activeView === id
                         ? 'bg-black text-white'
@@ -1077,6 +1368,29 @@ function DashboardMockup() {
                 </AnimatePresence>
               </div>
             </main>
+
+            {cursorPos ? (
+              <motion.div
+                className="pointer-events-none absolute left-0 top-0 z-50 hidden sm:block"
+                animate={{
+                  x: cursorPos.x - 6,
+                  y: cursorPos.y - 6,
+                  scale: cursorClicking ? 0.7 : 1,
+                }}
+                transition={{ type: 'spring', stiffness: 260, damping: 22, mass: 0.5 }}
+              >
+                <span className="relative block h-3 w-3 rounded-full bg-black shadow-[0_0_0_3px_rgba(0,0,0,0.12)]">
+                  {cursorClicking ? (
+                    <motion.span
+                      className="absolute inset-0 rounded-full bg-black/30"
+                      initial={{ scale: 1, opacity: 0.5 }}
+                      animate={{ scale: 2.6, opacity: 0 }}
+                      transition={{ duration: 0.42, ease: 'easeOut' }}
+                    />
+                  ) : null}
+                </span>
+              </motion.div>
+            ) : null}
           </div>
         </div>
       </div>
@@ -1103,7 +1417,15 @@ function Hero() {
           </div>
 
           <h1 className="text-balance text-[44px] font-semibold leading-[0.98] tracking-[-0.065em] text-[#111111] sm:text-[62px] lg:text-[72px]">
-            Meet the super-fast
+            Meet the{' '}
+            <span className="relative inline-block whitespace-nowrap">
+              super-fast
+              <HandDrawnUnderline
+                color="#FF7965"
+                delay={0.55}
+                className="pointer-events-none absolute -bottom-1 left-0 h-[0.22em] w-full sm:h-[0.2em]"
+              />
+            </span>
             <br />
             customer support platform
           </h1>
@@ -1139,63 +1461,115 @@ function Hero() {
           <div className="pointer-events-none absolute left-1/2 top-[55%] h-[380px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-t-full bg-[#E7DEFF]/85" />
 
           <Reveal
-            className="absolute left-0 top-5 z-20 hidden w-[184px] rounded-[16px] border border-black/[0.07] bg-[#FFE36D] p-4 shadow-[0_15px_40px_rgba(0,0,0,0.09)] lg:block"
+            className="absolute left-0 top-5 z-20 hidden w-[184px] lg:block"
             x={-28}
             y={0}
             delay={0.12}
             amount={0.3}
           >
-            <Clock3 className="h-5 w-5 stroke-[1.7]" />
-            <p className="mt-4 text-[25px] font-semibold tracking-[-0.06em] text-black">34.5 Min</p>
-            <p className="mt-1 text-[8px] font-semibold text-black/55">Average resolution time</p>
+            <TiltCard
+              className="rounded-[16px] border border-black/[0.07] bg-[#FFE36D] p-4 shadow-[0_15px_40px_rgba(0,0,0,0.09)]"
+              floatDistance={9}
+              floatDuration={4.4}
+              floatDelay={0.2}
+              shineDelay={0}
+            >
+              <motion.div
+                className="inline-block"
+                animate={{ rotate: [0, -12, 10, 0] }}
+                transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <Clock3 className="h-5 w-5 stroke-[1.7]" />
+              </motion.div>
+              <p className="mt-4 text-[25px] font-semibold tracking-[-0.06em] text-black">34.5 Min</p>
+              <p className="mt-1 text-[8px] font-semibold text-black/55">Average resolution time</p>
+            </TiltCard>
           </Reveal>
 
           <Reveal
-            className="absolute right-0 top-0 z-20 hidden w-[168px] rounded-[16px] border border-black/[0.07] bg-white p-3 shadow-[0_15px_40px_rgba(0,0,0,0.08)] lg:block"
+            className="absolute right-0 top-0 z-20 hidden w-[168px] lg:block"
             x={28}
             y={0}
             delay={0.18}
             amount={0.3}
           >
-            <div className="grid h-[92px] place-items-center rounded-[12px] bg-[#E7DEFF]">
-              <Headphones className="h-11 w-11 stroke-[1.2] text-black/75" />
-            </div>
+            <TiltCard
+              className="rounded-[16px] border border-black/[0.07] bg-white p-3 shadow-[0_15px_40px_rgba(0,0,0,0.08)]"
+              floatDistance={10}
+              floatDuration={5}
+              floatDelay={0.5}
+              shineDelay={1.4}
+            >
+              <div className="relative grid h-[92px] place-items-center rounded-[12px] bg-[#E7DEFF]">
+                <span className="absolute right-2.5 top-2.5 flex h-2.5 w-2.5">
+                  <span className="motion-safe:animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF7965] opacity-75" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#FF7965]" />
+                </span>
+                <Headphones className="h-11 w-11 stroke-[1.2] text-black/75" />
+              </div>
 
-            <p className="mt-3 text-[9px] font-semibold text-black">Priority ticket</p>
-            <p className="mt-0.5 text-[8px] text-black/40">Enterprise customer</p>
+              <p className="mt-3 text-[9px] font-semibold text-black">Priority ticket</p>
+              <p className="mt-0.5 text-[8px] text-black/40">Enterprise customer</p>
+            </TiltCard>
           </Reveal>
 
           <Reveal
-            className="absolute bottom-16 left-2 z-20 hidden w-[190px] items-center gap-3 rounded-[16px] border border-black/[0.07] bg-white p-3 shadow-[0_15px_40px_rgba(0,0,0,0.09)] lg:flex"
+            className="absolute bottom-16 left-2 z-20 hidden w-[190px] lg:block"
             x={-24}
             y={0}
             delay={0.24}
             amount={0.3}
           >
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] bg-[#F3F1ED]">
-              <CircleUserRound className="h-6 w-6 text-black/65" />
-            </span>
-
-            <div className="min-w-0">
-              <p className="text-[8px] font-semibold leading-3 text-black/60">
-                Customer replied on WhatsApp
-              </p>
-              <span className="mt-1.5 inline-flex rounded-full bg-black px-2 py-1 text-[6px] font-bold text-white">
-                View ticket
+            <TiltCard
+              className="flex items-center gap-3 rounded-[16px] border border-black/[0.07] bg-white p-3 shadow-[0_15px_40px_rgba(0,0,0,0.09)]"
+              floatDistance={8}
+              floatDuration={4.8}
+              floatDelay={0.1}
+              shineDelay={2.6}
+            >
+              <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-[12px] bg-[#F3F1ED]">
+                <CircleUserRound className="h-6 w-6 text-black/65" />
+                <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
+                  <span className="motion-safe:animate-ping absolute inline-flex h-full w-full rounded-full bg-[#25D366] opacity-75" />
+                  <span className="relative inline-flex h-3 w-3 rounded-full border-2 border-white bg-[#25D366]" />
+                </span>
               </span>
-            </div>
+
+              <div className="min-w-0">
+                <p className="text-[8px] font-semibold leading-3 text-black/60">
+                  Customer replied on WhatsApp
+                </p>
+                <span className="mt-1.5 inline-flex rounded-full bg-black px-2 py-1 text-[6px] font-bold text-white">
+                  View ticket
+                </span>
+              </div>
+            </TiltCard>
           </Reveal>
 
           <Reveal
-            className="absolute bottom-5 right-5 z-20 hidden w-[154px] rounded-[16px] border border-black/[0.06] bg-[#FF7C58] p-4 shadow-[0_15px_40px_rgba(0,0,0,0.09)] lg:block"
+            className="absolute bottom-5 right-5 z-20 hidden w-[154px] lg:block"
             x={24}
             y={0}
             delay={0.3}
             amount={0.3}
           >
-            <CheckCircle2 className="h-5 w-5 text-black/80" />
-            <p className="mt-4 text-[22px] font-semibold tracking-[-0.05em] text-black">99.9%</p>
-            <p className="mt-0.5 text-[8px] font-semibold text-black/60">SLA compliance</p>
+            <TiltCard
+              className="rounded-[16px] border border-black/[0.06] bg-[#FF7C58] p-4 shadow-[0_15px_40px_rgba(0,0,0,0.09)]"
+              floatDistance={10}
+              floatDuration={5.2}
+              floatDelay={0.35}
+              shineDelay={0.8}
+            >
+              <motion.div
+                className="inline-block"
+                animate={{ scale: [1, 1.18, 1] }}
+                transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <CheckCircle2 className="h-5 w-5 text-black/80" />
+              </motion.div>
+              <p className="mt-4 text-[22px] font-semibold tracking-[-0.05em] text-black">99.9%</p>
+              <p className="mt-0.5 text-[8px] font-semibold text-black/60">SLA compliance</p>
+            </TiltCard>
           </Reveal>
 
           <Reveal
@@ -1330,7 +1704,12 @@ function Channels() {
           <h2 className="mt-5 text-[40px] font-semibold leading-[1.02] tracking-[-0.055em] text-[#111111] sm:text-[50px]">
             Every conversation.
             <br />
-            One calm inbox.
+            One{' '}
+            <span className="relative inline-block whitespace-nowrap">
+              calm
+              <HandDrawnUnderline color="#8BD5A8" delay={0.15} />
+            </span>{' '}
+            inbox.
           </h2>
 
           <p className="mt-5 max-w-[440px] text-[14px] leading-6 text-black/45">
@@ -1450,7 +1829,12 @@ function Testimonials() {
           </p>
 
           <h2 className="mt-4 text-[38px] font-semibold tracking-[-0.055em] text-black sm:text-[48px]">
-            Support teams move faster with Topiadesk
+            Support teams move{' '}
+            <span className="relative inline-block whitespace-nowrap">
+              faster
+              <HandDrawnUnderline color="#FFD968" delay={0.15} />
+            </span>{' '}
+            with Topiadesk
           </h2>
         </Reveal>
 
@@ -1526,9 +1910,14 @@ function FinalCta() {
             </div>
 
             <h2 className="mt-6 max-w-[650px] text-balance text-[38px] font-semibold leading-[0.98] tracking-[-0.06em] text-white sm:text-[48px] lg:text-[54px]">
-              Give your support team
+              Give your support team{' '}
               <br className="hidden sm:block" />
-              a calmer place to work.
+              a{' '}
+              <span className="relative inline-block whitespace-nowrap">
+                calmer
+                <HandDrawnUnderline color="#FFE36D" delay={0.15} />
+              </span>{' '}
+              place to work.
             </h2>
 
             <p className="mt-5 max-w-[540px] text-[13px] leading-6 text-white/45 sm:text-[14px]">

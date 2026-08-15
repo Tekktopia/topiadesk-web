@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { DemoRequestForm } from '../_components/demo-request-form';
+import { HandDrawnUnderline } from '../_components/hand-drawn-underline';
 
 export const metadata: Metadata = {
   title: 'Request a demo — Topiadesk',
@@ -129,7 +130,11 @@ function Pitch() {
       </div>
 
       <h1 className="mt-6 max-w-[580px] text-[45px] font-semibold leading-[0.98] tracking-[-0.065em] text-[#111111] sm:text-[44px] lg:text-[48px]">
-        See how simple
+        See how{' '}
+        <span className="relative inline-block whitespace-nowrap">
+          simple
+          <HandDrawnUnderline color="#FF7965" delay={0.4} />
+        </span>
         <br />
         support can feel.
       </h1>
