@@ -696,7 +696,7 @@ function OverviewDashboardPanel({ trigger }: { trigger: number }) {
                     className="flex items-center gap-2 overflow-hidden rounded-xl bg-[#FBFAF8] p-2"
                   >
                     <span
-                      className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${ticket.bg} text-[7px] font-bold`}
+                      className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${ticket.bg} dark:text-black text-[7px] font-bold`}
                     >
                       {ticket.initials}
                     </span>
@@ -803,7 +803,7 @@ function InboxDashboardPanel({
                 }`}
               >
                 <span
-                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${ticket.bg} text-[7px] font-bold`}
+                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${ticket.bg} dark:text-black text-[7px] font-bold`}
                 >
                   {ticket.initials}
                 </span>
@@ -920,7 +920,7 @@ function TicketsDashboardPanel({ trigger }: { trigger: number }) {
             >
               <div className="flex min-w-0 items-center gap-2">
                 <span
-                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${ticket.bg} text-[7px] font-bold`}
+                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${ticket.bg} dark:text-black text-[7px] font-bold`}
                 >
                   {ticket.initials}
                 </span>
@@ -965,10 +965,10 @@ function CustomersDashboardPanel({ trigger }: { trigger: number }) {
   const noted = phase === 'done';
 
   const customersList = [
-    ['AO', 'Ada Obi', 'ada@company.com', 24, 'bg-[#E7DEFF]'],
-    ['MO', 'Musa Okafor', 'musa@acme.com', 17, 'bg-[#DFF4E8]'],
-    ['TN', 'Teni Nwosu', 'teni@northstar.io', 11, 'bg-[#FFE36D]'],
-    ['AA', 'Ayo Adeleke', 'ayo@atlas.co', 8, 'bg-[#FFD9CB]'],
+    ['AO', 'Ada Obi', 'ada@topiadesk.com', 24, 'bg-[#E7DEFF]'],
+    ['MO', 'Musa Okafor', 'musa@topiadesk.com', 17, 'bg-[#DFF4E8]'],
+    ['TN', 'Teni Nwosu', 'teni@topiadesk.io', 11, 'bg-[#FFE36D]'],
+    ['AA', 'Ayo Adeleke', 'ayo@topiadesk.co', 8, 'bg-[#FFD9CB]'],
   ] as const;
 
   return (
@@ -1001,7 +1001,7 @@ function CustomersDashboardPanel({ trigger }: { trigger: number }) {
 
             <div className="flex items-center gap-2.5">
               <span
-                className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${bg} text-[8px] font-bold`}
+                className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${bg} dark:text-black text-[8px] font-bold`}
               >
                 {initials}
               </span>
@@ -1550,7 +1550,7 @@ function DashboardMockup() {
                     <Bell className="h-3.5 w-3.5 text-black/50 cursor-pointer" />
                   </button>
 
-                  <span className="grid h-8 w-8 place-items-center cursor-pointer rounded-full bg-[#E7DEFF] text-[9px] font-bold">
+                  <span className="grid h-8 w-8 place-items-center cursor-pointer rounded-full bg-[#E7DEFF] text-[9px] dark:text-black font-bold">
                     AO
                   </span>
                 </div>
@@ -1691,7 +1691,7 @@ function Hero() {
                 animate={{ rotate: [0, -12, 10, 0] }}
                 transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}
               >
-                <Clock3 className="h-5 w-5 stroke-[1.7]" />
+                <Clock3 className="h-5 w-5 stroke-[1.7] dark:text-black" />
               </motion.div>
               <p className="mt-4 text-[25px] font-semibold tracking-[-0.06em] text-black">
                 34.5 Min
