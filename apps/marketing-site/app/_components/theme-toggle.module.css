@@ -1,0 +1,263 @@
+/* apps/marketing-site/app/_components/theme-toggle.module.css */
+
+.switch {
+  position: relative;
+  display: inline-flex;
+  width: 52px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #2196f3;
+  transition: 0.4s;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: 34px;
+}
+
+.sunMoon {
+  position: absolute;
+  content: '';
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  bottom: 4px;
+  background-color: #ffe36d;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+  background-color: #111111;
+}
+
+.switch input:focus-visible + .slider {
+  box-shadow: 0 0 0 2px #ff7965;
+}
+
+.switch input:checked + .slider .sunMoon {
+  transform: translateX(22px);
+  background-color: white;
+  animation: rotateCenter 0.6s ease-in-out both;
+}
+
+.moonDot {
+  opacity: 0;
+  transition: 0.4s;
+  fill: #9a9a9a;
+}
+
+.switch input:checked + .slider .sunMoon .moonDot {
+  opacity: 1;
+}
+
+.moonDot1 {
+  left: 8px;
+  top: 2px;
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  z-index: 4;
+}
+
+.moonDot2 {
+  left: 2px;
+  top: 8px;
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  z-index: 4;
+}
+
+.moonDot3 {
+  left: 13px;
+  top: 15px;
+  position: absolute;
+  width: 2.5px;
+  height: 2.5px;
+  z-index: 4;
+}
+
+.lightRay1 {
+  left: -7px;
+  top: -7px;
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  z-index: -1;
+  fill: white;
+  opacity: 0.1;
+}
+
+.lightRay2 {
+  left: -50%;
+  top: -50%;
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  z-index: -1;
+  fill: white;
+  opacity: 0.1;
+}
+
+.lightRay3 {
+  left: -15px;
+  top: -15px;
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  z-index: -1;
+  fill: white;
+  opacity: 0.1;
+}
+
+.cloudLight {
+  position: absolute;
+  fill: #eee;
+  animation-name: cloudMove;
+  animation-duration: 6s;
+  animation-iteration-count: infinite;
+}
+
+.cloudDark {
+  position: absolute;
+  fill: #ccc;
+  animation-name: cloudMove;
+  animation-duration: 6s;
+  animation-iteration-count: infinite;
+  animation-delay: 1s;
+}
+
+.cloud1 {
+  left: 25px;
+  top: 13px;
+  width: 34px;
+}
+
+.cloud2 {
+  left: 37px;
+  top: 9px;
+  width: 17px;
+}
+
+.cloud3 {
+  left: 15px;
+  top: 20px;
+  width: 25px;
+}
+
+.cloud4 {
+  left: 30px;
+  top: 15px;
+  width: 34px;
+}
+
+.cloud5 {
+  left: 40px;
+  top: 12px;
+  width: 17px;
+}
+
+.cloud6 {
+  left: 18px;
+  top: 22px;
+  width: 25px;
+}
+
+@keyframes cloudMove {
+  0% {
+    transform: translateX(0);
+  }
+  40% {
+    transform: translateX(3px);
+  }
+  80% {
+    transform: translateX(-3px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.stars {
+  position: absolute;
+  inset: 0;
+  transform: translateY(-27px);
+  opacity: 0;
+  transition: 0.4s;
+}
+
+.star {
+  fill: white;
+  position: absolute;
+  transition: 0.4s;
+  animation-name: starTwinkle;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+
+.switch input:checked + .slider .stars {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.star1 {
+  width: 17px;
+  top: 2px;
+  left: 2px;
+  animation-delay: 0.3s;
+}
+
+.star2 {
+  width: 5px;
+  top: 13px;
+  left: 2px;
+}
+
+.star3 {
+  width: 10px;
+  top: 17px;
+  left: 8px;
+  animation-delay: 0.6s;
+}
+
+.star4 {
+  width: 15px;
+  top: 0;
+  left: 15px;
+  animation-delay: 1.3s;
+}
+
+@keyframes starTwinkle {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.2);
+  }
+  80% {
+    transform: scale(0.8);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes rotateCenter {
+  0% {
+    transform: translateX(22px) rotate(0);
+  }
+  100% {
+    transform: translateX(22px) rotate(360deg);
+  }
+}

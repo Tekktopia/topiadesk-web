@@ -43,6 +43,7 @@ import {
 import { ReactLenis } from 'lenis/react';
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import { HandDrawnUnderline } from './_components/hand-drawn-underline';
+import { ThemeToggle } from './_components/theme-toggle';
 
 const TRIAL_URL = '/signup';
 
@@ -311,6 +312,24 @@ function TiltCard({
   );
 }
 
+function WhatsAppIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M4 20l1.3-3.9A7.9 7.9 0 1 1 8.6 19L4 20Z" />
+      <path d="M9 10.5c0 2.5 2 4.5 4.5 4.5.5 0 1-.6.8-1.1l-.3-.7c-.15-.35-.55-.5-.9-.35-.25.1-.5.15-.6.05-.6-.6-1.4-1.4-2-2-.1-.1-.05-.35.05-.6.15-.35 0-.75-.35-.9l-.7-.3c-.5-.2-1.1.3-1.1.8Z" />
+    </svg>
+  );
+}
+
 function BrandMark() {
   return (
     <Link href="/" className="flex items-center gap-2.5">
@@ -323,7 +342,9 @@ function BrandMark() {
         className="h-8 w-8 object-contain"
       />
 
-      <span className="text-[16px] font-bold tracking-[-0.03em] text-[#111111]">Topiadesk</span>
+      <span className="text-[16px] font-bold tracking-[-0.03em] text-[#111111] dark:text-white">
+        Topiadesk
+      </span>
     </Link>
   );
 }
@@ -349,7 +370,7 @@ function Navigation() {
 
   return (
     <motion.header
-      className="sticky top-0 z-50 border-b border-black/[0.045] bg-[#FCFBF8]/95 backdrop-blur-sm"
+      className="sticky top-0 z-50 border-b border-black/[0.045] bg-[#FCFBF8]/95 backdrop-blur-sm transition-colors duration-300 dark:border-white/[0.08] dark:bg-[#0F0F1A]/95"
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: hidden ? -100 : 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: EASE_OUT }}
@@ -360,7 +381,7 @@ function Navigation() {
         <nav className="hidden items-center gap-7 lg:flex">
           <Link
             href="#product"
-            className="flex items-center gap-1 text-[13px] font-medium text-black/65 transition hover:text-black"
+            className="flex items-center gap-1 text-[13px] font-medium text-black/65 transition hover:text-black dark:text-white/60 dark:hover:text-white"
           >
             Product
             <ChevronDown className="h-3.5 w-3.5" />
@@ -368,33 +389,35 @@ function Navigation() {
 
           <Link
             href="#channels"
-            className="text-[13px] font-medium text-black/65 transition hover:text-black"
+            className="text-[13px] font-medium text-black/65 transition hover:text-black dark:text-white/60 dark:hover:text-white"
           >
             Channels
           </Link>
 
           <Link
             href="#customers"
-            className="text-[13px] font-medium text-black/65 transition hover:text-black"
+            className="text-[13px] font-medium text-black/65 transition hover:text-black dark:text-white/60 dark:hover:text-white"
           >
             Customers
           </Link>
 
           <Link
             href="#resources"
-            className="text-[13px] font-medium text-black/65 transition hover:text-black"
+            className="text-[13px] font-medium text-black/65 transition hover:text-black dark:text-white/60 dark:hover:text-white"
           >
             Resources
           </Link>
         </nav>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle />
+
           <MotionLink
             href="/contact"
             initial="rest"
             whileHover="hover"
             whileTap={{ scale: 0.96 }}
-            className="relative hidden text-[12px] font-semibold text-black/75 transition-colors hover:text-black sm:block"
+            className="relative hidden text-[12px] font-semibold text-black/75 transition-colors hover:text-black sm:block dark:text-white/70 dark:hover:text-white"
           >
             Book a demo
             <HandDrawnUnderline
@@ -408,7 +431,7 @@ function Navigation() {
           <MotionLink
             href={TRIAL_URL}
             whileTap={{ scale: 0.96 }}
-            className="rounded-full bg-[#111111] px-5 py-2.5 text-[12px] font-semibold text-white shadow-[0_5px_15px_rgba(0,0,0,0.1)] transition-colors duration-200 hover:bg-[#2A1712]"
+            className="rounded-full bg-[#111111] px-5 py-2.5 text-[12px] font-semibold text-white shadow-[0_5px_15px_rgba(0,0,0,0.1)] transition-colors duration-200 hover:bg-[#2A1712] dark:bg-white dark:text-black dark:shadow-[0_5px_15px_rgba(0,0,0,0.35)] dark:hover:bg-white/85"
           >
             Get started
           </MotionLink>
@@ -998,7 +1021,7 @@ function CustomersDashboardPanel({ trigger }: { trigger: number }) {
                 {count} tickets
               </motion.span>
               <span className="flex items-center gap-1 text-[6.5px] font-bold text-black/55">
-                <Star className="h-2.5 w-2.5 fill-black text-black" />
+                <Star className="h-2.5 w-2.5 fill-[#FFB800] text-[#FFB800]" />
                 4.9
               </span>
             </div>
@@ -1579,23 +1602,23 @@ function DashboardMockup() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-[#FCFBF8] pb-20 pt-16 sm:pb-28 sm:pt-20 lg:pt-24">
+    <section className="relative overflow-hidden bg-[#FCFBF8] pb-20 pt-16 transition-colors duration-300 sm:pb-28 sm:pt-20 dark:bg-[#0F0F1A] lg:pt-24">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-[420px] h-[460px] w-[760px] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(circle_at_center,rgba(231,222,255,0.82)_0%,rgba(231,222,255,0.35)_48%,rgba(231,222,255,0)_74%)]" />
+        <div className="absolute left-1/2 top-[420px] h-[460px] w-[760px] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(circle_at_center,rgba(231,222,255,0.82)_0%,rgba(231,222,255,0.35)_48%,rgba(231,222,255,0)_74%)] dark:bg-[radial-gradient(circle_at_center,rgba(255,107,74,0.22)_0%,rgba(255,107,74,0.08)_48%,rgba(255,107,74,0)_74%)]" />
       </div>
 
       <div className="relative mx-auto max-w-[1180px] px-5 sm:px-8">
         <Reveal className="mx-auto max-w-[790px] text-center" y={22} amount={0.15}>
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-black/[0.07] bg-white px-3 py-1.5 shadow-sm">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-black/[0.07] bg-white px-3 py-1.5 dark:border-white/[0.08] dark:bg-white/[0.06]">
             <span className="grid h-5 w-5 place-items-center rounded-full bg-[#FFE36D]">
               <Sparkles className="h-3 w-3" />
             </span>
-            <span className="text-[11px] font-semibold text-black/65">
+            <span className="text-[11px] font-semibold text-black/65 dark:text-white/70">
               Support operations, simplified
             </span>
           </div>
 
-          <h1 className="text-balance text-[44px] font-semibold leading-[0.98] tracking-[-0.065em] text-[#111111] sm:text-[62px] lg:text-[72px]">
+          <h1 className="text-balance text-[44px] font-semibold leading-[0.98] tracking-[-0.065em] text-[#111111] sm:text-[62px] lg:text-[72px] dark:text-white">
             Meet the{' '}
             <span className="relative inline-block whitespace-nowrap">
               super-fast
@@ -1609,7 +1632,7 @@ function Hero() {
             customer support platform
           </h1>
 
-          <p className="mx-auto mt-6 max-w-[620px] text-balance text-[14px] leading-6 text-black/48 sm:text-[15px]">
+          <p className="mx-auto mt-6 max-w-[620px] text-balance text-[14px] leading-6 text-black/48 sm:text-[15px] dark:text-white/50">
             Helpdesk, WhatsApp, SLA monitoring and IT assets in one beautifully simple workspace
             built for modern African teams.
           </p>
@@ -1618,7 +1641,7 @@ function Hero() {
             <MotionLink
               href={TRIAL_URL}
               whileTap={{ scale: 0.96 }}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#111111] px-6 text-[12px] font-semibold text-white shadow-[0_8px_25px_rgba(0,0,0,0.14)] transition-colors duration-200 hover:bg-[#2A1712]"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#111111] px-6 text-[12px] font-semibold text-white shadow-[0_8px_25px_rgba(0,0,0,0.14)] transition-colors duration-200 hover:bg-[#2A1712] dark:bg-white dark:text-black dark:shadow-[0_8px_25px_rgba(0,0,0,0.4)] dark:hover:bg-white/85"
             >
               Get started — for free
               <ArrowRight className="h-3.5 w-3.5" />
@@ -1629,7 +1652,7 @@ function Hero() {
               initial="rest"
               whileHover="hover"
               whileTap={{ scale: 0.96 }}
-              className="relative inline-flex h-12 items-center justify-center rounded-full border border-black/20 bg-white px-6 text-[12px] font-semibold text-[#111111] transition-colors duration-200 hover:bg-black/[0.03]"
+              className="relative inline-flex h-12 items-center justify-center rounded-full border border-black/20 bg-white px-6 text-[12px] font-semibold text-[#111111] transition-colors duration-200 hover:bg-black/[0.03] dark:border-white/20 dark:bg-transparent dark:text-white dark:hover:bg-white/[0.06]"
             >
               Book a demo
               <HandDrawnUnderline
@@ -1641,7 +1664,7 @@ function Hero() {
             </MotionLink>
           </div>
 
-          <p className="mt-3 text-[10px] font-medium text-black/30">
+          <p className="mt-3 text-[10px] font-medium text-black/30 dark:text-white/30">
             14-day free trial · No credit card required
           </p>
         </Reveal>
@@ -1779,10 +1802,13 @@ function Hero() {
 
 function CustomerStrip() {
   return (
-    <section id="customers" className="border-y border-black/[0.06] bg-[#FCFBF8]">
+    <section
+      id="customers"
+      className="border-y border-black/[0.06] bg-[#FCFBF8] transition-colors duration-300 dark:border-white/[0.08] dark:bg-[#0F0F1A]"
+    >
       <div className="mx-auto max-w-[1180px] px-5 py-8 sm:px-8">
         <Reveal y={14} amount={0.4}>
-          <p className="mb-6 text-center text-[9px] font-bold uppercase tracking-[0.18em] text-black/30">
+          <p className="mb-6 text-center text-[9px] font-bold uppercase tracking-[0.18em] text-black/30 dark:text-white/30">
             Trusted by ambitious teams
           </p>
         </Reveal>
@@ -1791,7 +1817,7 @@ function CustomerStrip() {
           {customers.map((customer, index) => (
             <Reveal key={customer} delay={index * 0.045} y={12} scale={0.97} amount={0.5}>
               <span
-                className={`font-semibold tracking-[-0.04em] text-black/55 ${
+                className={`font-semibold tracking-[-0.04em] text-black/55 dark:text-white/55 ${
                   index % 3 === 0
                     ? 'font-serif text-[16px] italic'
                     : index % 2 === 0
@@ -1811,21 +1837,23 @@ function CustomerStrip() {
 
 function Stats() {
   return (
-    <section className="bg-white py-20 sm:py-24">
+    <section className="bg-white py-20 transition-colors duration-300 sm:py-24 dark:bg-[#14141F]">
       <div className="mx-auto max-w-[1100px] px-5 sm:px-8">
         <div className="grid grid-cols-2 gap-y-10 sm:grid-cols-4">
           {stats.map((stat, index) => (
             <Reveal
               key={stat.label}
-              className={`text-center ${index !== 0 ? 'sm:border-l sm:border-black/[0.07]' : ''}`}
+              className={`text-center ${index !== 0 ? 'sm:border-l sm:border-black/[0.07] dark:sm:border-white/[0.08]' : ''}`}
               delay={index * 0.07}
               y={20}
               amount={0.45}
             >
-              <p className="text-[36px] font-semibold tracking-[-0.065em] text-[#111111] sm:text-[42px]">
+              <p className="text-[36px] font-semibold tracking-[-0.065em] text-[#111111] sm:text-[42px] dark:text-white">
                 {stat.value}
               </p>
-              <p className="mt-1 text-[11px] font-medium text-black/38">{stat.label}</p>
+              <p className="mt-1 text-[11px] font-medium text-black/38 dark:text-white/40">
+                {stat.label}
+              </p>
             </Reveal>
           ))}
         </div>
@@ -1836,18 +1864,21 @@ function Stats() {
 
 function Features() {
   return (
-    <section id="product" className="bg-[#F5F3EF] py-24 sm:py-28">
+    <section
+      id="product"
+      className="bg-[#F5F3EF] py-24 transition-colors duration-300 sm:py-28 dark:bg-[#14141F]"
+    >
       <div className="mx-auto max-w-[1120px] px-5 sm:px-8">
         <Reveal className="mx-auto max-w-[650px] text-center" y={24} amount={0.3}>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/35">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/35 dark:text-white/35">
             One platform
           </p>
 
-          <h2 className="mt-4 text-balance text-[38px] font-semibold leading-[1.02] tracking-[-0.055em] text-[#111111] sm:text-[50px]">
+          <h2 className="mt-4 text-balance text-[38px] font-semibold leading-[1.02] tracking-[-0.055em] text-[#111111] sm:text-[50px] dark:text-white">
             The support stack your team actually wants to use
           </h2>
 
-          <p className="mx-auto mt-5 max-w-[520px] text-[14px] leading-6 text-black/45">
+          <p className="mx-auto mt-5 max-w-[520px] text-[14px] leading-6 text-black/45 dark:text-white/45">
             Everything your agents need, with none of the clutter that makes enterprise helpdesk
             software painful.
           </p>
@@ -1863,16 +1894,18 @@ function Features() {
               scale={0.975}
               amount={0.28}
             >
-              <article className="group h-full rounded-[24px] border border-black/[0.065] bg-white p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.07)]">
+              <article className="group h-full rounded-[24px] border border-black/[0.065] bg-white p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.07)] dark:border-white/[0.08] dark:bg-[#1B1B29] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
                 <div className={`grid h-11 w-11 place-items-center rounded-[14px] ${accent}`}>
                   <Icon className="h-5 w-5 stroke-[1.7] text-black/75" />
                 </div>
 
-                <h3 className="mt-8 text-[17px] font-semibold tracking-[-0.035em] text-black">
+                <h3 className="mt-8 text-[17px] font-semibold tracking-[-0.035em] text-black dark:text-white">
                   {title}
                 </h3>
 
-                <p className="mt-2 text-[12px] leading-5 text-black/42">{description}</p>
+                <p className="mt-2 text-[12px] leading-5 text-black/42 dark:text-white/45">
+                  {description}
+                </p>
               </article>
             </Reveal>
           ))}
@@ -1884,14 +1917,17 @@ function Features() {
 
 function Channels() {
   return (
-    <section id="channels" className="bg-white py-24 sm:py-28">
+    <section
+      id="channels"
+      className="bg-white py-24 transition-colors duration-300 sm:py-28 dark:bg-[#0F0F1A]"
+    >
       <div className="mx-auto grid max-w-[1120px] items-center gap-14 px-5 sm:px-8 lg:grid-cols-2">
         <Reveal className="max-w-[480px]" x={-34} y={0} amount={0.28}>
-          <span className="inline-flex rounded-full bg-[#E7DEFF] px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.13em] text-black/55">
+          <span className="inline-flex rounded-full bg-[#E7DEFF] px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.13em] text-black/55 dark:bg-[#2D2645] dark:text-white/70">
             Omnichannel
           </span>
 
-          <h2 className="mt-5 text-[40px] font-semibold leading-[1.02] tracking-[-0.055em] text-[#111111] sm:text-[50px]">
+          <h2 className="mt-5 text-[40px] font-semibold leading-[1.02] tracking-[-0.055em] text-[#111111] sm:text-[50px] dark:text-white">
             Every conversation.
             <br />
             One{' '}
@@ -1902,7 +1938,7 @@ function Channels() {
             inbox.
           </h2>
 
-          <p className="mt-5 max-w-[440px] text-[14px] leading-6 text-black/45">
+          <p className="mt-5 max-w-[440px] text-[14px] leading-6 text-black/45 dark:text-white/45">
             Customers can contact you however they prefer. Your team still gets one queue, one
             customer history and one source of truth.
           </p>
@@ -1915,10 +1951,10 @@ function Channels() {
             ].map((item) => (
               <div
                 key={item}
-                className="flex items-center gap-3 text-[12px] font-medium text-black/65"
+                className="flex items-center gap-3 text-[12px] font-medium text-black/65 dark:text-white/65"
               >
-                <span className="grid h-6 w-6 place-items-center rounded-full bg-[#DFF4E8]">
-                  <Check className="h-3.5 w-3.5 text-[#39734D]" />
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-[#DFF4E8] dark:bg-[#1E3A2A]">
+                  <Check className="h-3.5 w-3.5 text-[#39734D] dark:text-[#7FD8A2]" />
                 </span>
                 {item}
               </div>
@@ -1927,15 +1963,17 @@ function Channels() {
         </Reveal>
 
         <Reveal className="relative" x={34} y={0} amount={0.22}>
-          <div className="rounded-[30px] bg-[#F5F3EF] p-3">
-            <div className="rounded-[24px] border border-black/[0.07] bg-white p-5 shadow-[0_20px_60px_rgba(0,0,0,0.06)] sm:p-7">
+          <div className="rounded-[30px] bg-[#F5F3EF] p-3 dark:bg-[#1B1B29]">
+            <div className="rounded-[24px] border border-black/[0.07] bg-white p-5 shadow-[0_20px_60px_rgba(0,0,0,0.06)] sm:p-7 dark:border-white/[0.08] dark:bg-[#14141F] dark:shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
               <div className="mb-7 flex items-center justify-between">
                 <div>
-                  <p className="text-[14px] font-semibold text-black">Conversations by channel</p>
-                  <p className="mt-1 text-[12px] text-black/35">This week</p>
+                  <p className="text-[14px] font-semibold text-black dark:text-white">
+                    Conversations by channel
+                  </p>
+                  <p className="mt-1 text-[12px] text-black/35 dark:text-white/35">This week</p>
                 </div>
 
-                <span className="rounded-full border border-black/[0.08] px-3 py-1.5 text-[8px] font-semibold text-black/45">
+                <span className="rounded-full border border-black/[0.08] px-3 py-1.5 text-[8px] font-semibold text-black/45 dark:border-white/[0.12] dark:text-white/45">
                   290 total
                 </span>
               </div>
@@ -1950,18 +1988,18 @@ function Channels() {
                         <Icon className="h-3.5 w-3.5 text-black/70" />
                       </span>
 
-                      <span className="flex-1 text-[11px] font-semibold text-black/65">
+                      <span className="flex-1 text-[11px] font-semibold text-black/65 dark:text-white/65">
                         {channel}
                       </span>
 
-                      <span className="text-[9px] font-medium text-black/35">
+                      <span className="text-[9px] font-medium text-black/35 dark:text-white/35">
                         {tickets} tickets
                       </span>
                     </div>
 
-                    <div className="ml-11 h-1.5 overflow-hidden rounded-full bg-[#F0EEEA]">
+                    <div className="ml-11 h-1.5 overflow-hidden rounded-full bg-[#F0EEEA] dark:bg-white/10">
                       <motion.div
-                        className="h-full rounded-full bg-[#111111]"
+                        className="h-full rounded-full bg-[#111111] dark:bg-white"
                         initial={{ scaleX: 0 }}
                         whileInView={{ scaleX: 1 }}
                         viewport={{ once: false, amount: 0.8 }}
@@ -1985,9 +2023,16 @@ function Channels() {
                   ['34.5m', 'Resolution'],
                   ['96%', 'CSAT'],
                 ].map(([value, label]) => (
-                  <div key={label} className="rounded-[14px] bg-[#F8F7F4] px-3 py-4 text-center">
-                    <p className="text-[17px] font-semibold tracking-[-0.04em]">{value}</p>
-                    <p className="mt-1 text-[7px] font-medium text-black/35">{label}</p>
+                  <div
+                    key={label}
+                    className="rounded-[14px] bg-[#F8F7F4] px-3 py-4 text-center dark:bg-white/[0.06]"
+                  >
+                    <p className="text-[17px] font-semibold tracking-[-0.04em] dark:text-white">
+                      {value}
+                    </p>
+                    <p className="mt-1 text-[7px] font-medium text-black/35 dark:text-white/40">
+                      {label}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -1995,11 +2040,11 @@ function Channels() {
           </div>
 
           <div className="absolute -bottom-5 -left-5 hidden items-center gap-3 rounded-[15px] border border-black/[0.07] bg-[#FFE36D] p-3 shadow-[0_15px_40px_rgba(0,0,0,0.08)] sm:flex">
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-white/70">
-              <MessageCircle className="h-4 w-4" />
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/70">
+              <WhatsAppIcon className="h-4 w-4 text-[#25D366]" />
             </span>
             <div>
-              <p className="text-[8px] font-bold">WhatsApp connected</p>
+              <p className="text-[8px] font-bold text-black">WhatsApp connected</p>
               <p className="mt-0.5 text-[7px] text-black/45">Messages syncing live</p>
             </div>
           </div>
@@ -2011,14 +2056,17 @@ function Channels() {
 
 function Testimonials() {
   return (
-    <section id="resources" className="bg-[#F5F3EF] py-24 sm:py-28">
+    <section
+      id="resources"
+      className="bg-[#F5F3EF] py-24 transition-colors duration-300 sm:py-28 dark:bg-[#14141F]"
+    >
       <div className="mx-auto max-w-[1120px] px-5 sm:px-8">
         <Reveal className="text-center" y={24} amount={0.3}>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/35">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/35 dark:text-white/35">
             Customer stories
           </p>
 
-          <h2 className="mt-4 text-[38px] font-semibold tracking-[-0.055em] text-black sm:text-[48px]">
+          <h2 className="mt-4 text-[38px] font-semibold tracking-[-0.055em] text-black sm:text-[48px] dark:text-white">
             Support teams move{' '}
             <span className="relative inline-block whitespace-nowrap">
               faster
@@ -2038,13 +2086,13 @@ function Testimonials() {
               scale={0.98}
               amount={0.3}
             >
-              <article className="h-full rounded-[24px] border border-black/[0.065] bg-white p-6">
+              <article className="h-full rounded-[24px] border border-black/[0.065] bg-white p-6 dark:border-white/[0.08] dark:bg-[#1B1B29]">
                 <div
                   className={`mb-7 flex h-10 w-10 items-center justify-center rounded-full ${
                     index === 0 ? 'bg-[#FFE36D]' : index === 1 ? 'bg-[#E7DEFF]' : 'bg-[#DFF4E8]'
                   }`}
                 >
-                  <span className="text-[10px] font-black">
+                  <span className="text-[10px] font-black text-black">
                     {testimonial.author
                       .split(' ')
                       .map((part) => part[0])
@@ -2054,17 +2102,24 @@ function Testimonials() {
 
                 <div className="flex gap-0.5">
                   {Array.from({ length: 5 }).map((_, starIndex) => (
-                    <Star key={starIndex} className="h-3.5 w-3.5 fill-black text-black" />
+                    <Star
+                      key={starIndex}
+                      className="h-3.5 w-3.5 fill-[#FFB800] text-[#FFB800]"
+                    />
                   ))}
                 </div>
 
-                <blockquote className="mt-5 text-[14px] leading-6 tracking-[-0.01em] text-black/65">
+                <blockquote className="mt-5 text-[14px] leading-6 tracking-[-0.01em] text-black/65 dark:text-white/65">
                   “{testimonial.quote}”
                 </blockquote>
 
-                <div className="mt-8 border-t border-black/[0.06] pt-4">
-                  <p className="text-[11px] font-bold text-black">{testimonial.author}</p>
-                  <p className="mt-1 text-[9px] text-black/35">{testimonial.role}</p>
+                <div className="mt-8 border-t border-black/[0.06] pt-4 dark:border-white/[0.08]">
+                  <p className="text-[11px] font-bold text-black dark:text-white">
+                    {testimonial.author}
+                  </p>
+                  <p className="mt-1 text-[9px] text-black/35 dark:text-white/35">
+                    {testimonial.role}
+                  </p>
                 </div>
               </article>
             </Reveal>
@@ -2077,9 +2132,9 @@ function Testimonials() {
 
 function FinalCta() {
   return (
-    <section className="bg-[#F5F3EF] px-5 py-20 sm:px-8 sm:py-24">
+    <section className="bg-[#F5F3EF] px-5 py-20 transition-colors duration-300 sm:px-8 sm:py-24 dark:bg-[#14141F]">
       <Reveal
-        className="relative mx-auto max-w-[1120px] overflow-hidden rounded-[28px] border border-black/[0.08] bg-[#111111]"
+        className="relative mx-auto max-w-[1120px] overflow-hidden rounded-[28px] border border-black/[0.08] bg-[#111111] dark:border-white/[0.1]"
         y={24}
         scale={0.985}
         amount={0.25}
@@ -2182,12 +2237,12 @@ function FinalCta() {
 
 function Footer() {
   return (
-    <footer className="border-t border-black/[0.06] bg-[#FCFBF8]">
+    <footer className="border-t border-black/[0.06] bg-[#FCFBF8] transition-colors duration-300 dark:border-white/[0.08] dark:bg-[#0F0F1A]">
       <Reveal className="mx-auto max-w-[1180px] px-5 py-12 sm:px-8" y={18} amount={0.15}>
         <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-[290px]">
             <BrandMark />
-            <p className="mt-4 text-[11px] leading-5 text-black/38">
+            <p className="mt-4 text-[11px] leading-5 text-black/38 dark:text-white/40">
               Unified customer support, monitoring and IT operations for modern teams.
             </p>
           </div>
@@ -2208,7 +2263,7 @@ function Footer() {
               },
             ].map((column) => (
               <div key={column.heading}>
-                <p className="mb-4 text-[9px] font-bold uppercase tracking-[0.13em] text-black/45">
+                <p className="mb-4 text-[9px] font-bold uppercase tracking-[0.13em] text-black/45 dark:text-white/45">
                   {column.heading}
                 </p>
 
@@ -2217,7 +2272,7 @@ function Footer() {
                     <li key={link}>
                       <Link
                         href="#"
-                        className="text-[10px] font-medium text-black/35 transition hover:text-black"
+                        className="text-[10px] font-medium text-black/35 transition hover:text-black dark:text-white/40 dark:hover:text-white"
                       >
                         {link}
                       </Link>
@@ -2229,7 +2284,7 @@ function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-4 border-t border-black/[0.06] pt-6 text-[9px] text-black/30 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-col gap-4 border-t border-black/[0.06] pt-6 text-[9px] text-black/30 sm:flex-row sm:items-center sm:justify-between dark:border-white/[0.08] dark:text-white/30">
           <span>© {new Date().getFullYear()} Tekktopia Ltd. All rights reserved.</span>
 
           <span>Built for support teams that care about the experience.</span>
@@ -2256,7 +2311,7 @@ export default function HomePage() {
       />
 
       <MotionConfig reducedMotion="user">
-        <div className="min-h-screen bg-[#FCFBF8] text-[#111111] overflow-y-hidden">
+        <div className="min-h-screen bg-[#FCFBF8] text-[#111111] overflow-y-hidden transition-colors duration-300 dark:bg-[#0F0F1A] dark:text-white">
           <Navigation />
           <main>
             <Hero />
