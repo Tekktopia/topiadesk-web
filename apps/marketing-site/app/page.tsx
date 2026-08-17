@@ -137,7 +137,7 @@ const capabilities = [
     icon: Building2,
     title: 'One platform, isolated tenants',
     description:
-      'Onboard unlimited brokers on a single, secure platform — every tenant fully isolated, no new infrastructure to stand up.',
+      'Onboard unlimited brokers on a single, secure platform — every tenant fully isolated, no new infrastructure to stand up. Add a new broker in minutes, not weeks, and manage every tenant from one central console without juggling separate deployments or duplicating support overhead.',
     points: ['Per-tenant isolation', 'Central administration', 'Scales with your book'],
   },
   {
@@ -145,7 +145,7 @@ const capabilities = [
     icon: Plug,
     title: 'Plug into the tools you already run',
     description:
-      'Connect your existing systems and workflows in minutes, not sprints — data flows where it needs to, automatically.',
+      'Connect your existing systems and workflows in minutes, not sprints — data flows where it needs to, automatically. Prebuilt connectors handle the heavy lifting for the tools you already run, and open APIs and webhooks mean anything custom is never off the table.',
     points: ['Prebuilt connectors', 'Open API & webhooks', 'Minutes to connect'],
   },
   {
@@ -153,7 +153,7 @@ const capabilities = [
     icon: ArrowLeftRight,
     title: 'A guided path for your whole book',
     description:
-      'Bring everything across with a structured, step-by-step migration — nothing left behind, no surprises on go-live day.',
+      'Bring everything across with a structured, step-by-step migration — nothing left behind, no surprises on go-live day. Every stage is validated before the next one begins, so your team always knows exactly where the migration stands and what happens next.',
     points: ['Step-by-step flow', 'Validated at every stage', 'Zero data loss'],
   },
   {
@@ -161,7 +161,7 @@ const capabilities = [
     icon: ShieldCheck,
     title: '80+ native insurance objects',
     description:
-      'Policies, claims, producers and commissions are first-class data — not bolted onto a generic CRM.',
+      'Policies, claims, producers and commissions are first-class data — not bolted onto a generic CRM. That means reporting, automation and search all understand your business the way an insurer actually thinks about it, not the way a generic sales tool does.',
     points: ['Policies & claims', 'Producers & commissions', 'First-class data model'],
   },
   {
@@ -169,7 +169,7 @@ const capabilities = [
     icon: Lock,
     title: 'Row-level security at the database',
     description:
-      'Access is enforced at the data layer, so every broker sees only their own book — never anyone else’s.',
+      'Access is enforced at the data layer, so every broker sees only their own book — never anyone else’s. Role-based permissions layer on top of that isolation, so admins, agents and producers each see exactly what their job requires and nothing more.',
     points: ['Database-enforced', 'Per-broker visibility', 'Role-based access'],
   },
   {
@@ -177,7 +177,7 @@ const capabilities = [
     icon: History,
     title: 'A tamper-evident audit trail',
     description:
-      'A hash-chained log captures every compliance-relevant change — provably intact and ready for any review.',
+      'A hash-chained log captures every compliance-relevant change — provably intact and ready for any review. If a regulator or auditor ever asks what happened and when, the answer is already there, timestamped and impossible to quietly edit after the fact.',
     points: ['Hash-chained log', 'Tamper-evident', 'Audit-ready'],
   },
   {
@@ -185,7 +185,7 @@ const capabilities = [
     icon: ClipboardCheck,
     title: 'Full FNOL-to-payment flow',
     description:
-      'A dedicated claims engine that carries each claim from first notice of loss all the way through to payment.',
+      'A dedicated claims engine that carries each claim from first notice of loss all the way through to payment. Every step along the way is tracked as its own record, so nothing quietly stalls between intake, assessment and settlement.',
     points: ['Distinct claim entity', 'FNOL to payment', 'Nothing falls through'],
   },
   {
@@ -193,7 +193,7 @@ const capabilities = [
     icon: Gauge,
     title: 'A hard cap on AI spend',
     description:
-      'Every AI call is checked against a hard spend cap before it runs — powerful automation with no runaway bills.',
+      'Every AI call is checked against a hard spend cap before it runs — powerful automation with no runaway bills. You set the ceiling once, and the platform enforces it automatically, call by call, with no manual monitoring or month-end surprises.',
     points: ['Hard spend cap', 'Checked per call', 'No bill surprises'],
   },
   {
@@ -201,7 +201,7 @@ const capabilities = [
     icon: Banknote,
     title: 'Naira-native pricing',
     description:
-      'Fixed pricing in Naira with zero exposure to exchange-rate movements — budget with confidence.',
+      'Fixed pricing in Naira with zero exposure to exchange-rate movements — budget with confidence. What you’re quoted is what you pay, month after month, regardless of what happens to the exchange rate in between.',
     points: ['Fixed Naira pricing', 'No FX exposure', 'Predictable costs'],
   },
   {
@@ -209,7 +209,7 @@ const capabilities = [
     icon: MapPin,
     title: 'In-country data residency',
     description:
-      'Hosted in Nigeria and aligned with the Nigeria Data Protection Act (NDPA) — your data stays home.',
+      'Hosted in Nigeria and aligned with the Nigeria Data Protection Act (NDPA) — your data stays home. No cross-border transfer to worry about, and no ambiguity about which jurisdiction’s rules apply to your customers’ data.',
     points: ['In-country hosting', 'NDPA-aligned', 'Data sovereignty'],
   },
 ];
@@ -2407,16 +2407,24 @@ function Capabilities() {
   return (
     <section
       id="capabilities"
-      className="bg-white py-24 transition-colors duration-300 sm:py-28 dark:bg-[#0F0F1A]"
+      className="relative overflow-hidden bg-white py-24 transition-colors duration-300 sm:py-28 dark:bg-[#0F0F1A]"
     >
-      <div className="mx-auto max-w-[1120px] px-5 sm:px-8">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute right-[-120px] top-10 h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle_at_center,rgba(245,144,31,0.10)_0%,rgba(245,144,31,0)_70%)]" />
+      </div>
+
+      <div className="relative mx-auto max-w-[1120px] px-5 sm:px-8">
         <Reveal className="mx-auto max-w-[650px] text-center" y={24} amount={0.3}>
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/35 dark:text-white/35">
             Capabilities
           </p>
 
           <h2 className="mt-4 text-balance text-[38px] font-semibold leading-[1.02] tracking-[-0.055em] text-[#111111] sm:text-[50px] dark:text-white">
-            Built for the way insurance actually works
+            Built for the way insurance{' '}
+            <span className="relative inline-block whitespace-nowrap">
+              actually works
+              <HandDrawnUnderline color="#F5901F" delay={0.15} />
+            </span>
           </h2>
 
           <p className="mx-auto mt-5 max-w-[520px] text-[14px] leading-6 text-black/45 dark:text-white/45">
@@ -2429,8 +2437,11 @@ function Capabilities() {
           <div
             role="tablist"
             aria-label="Platform capabilities"
-            className="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-1.5 lg:overflow-visible lg:pb-0"
+            className="relative flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0"
           >
+            {/* Connecting rail line — desktop only */}
+            <div className="pointer-events-none absolute bottom-3 left-[27px] top-3 hidden w-px bg-black/[0.06] lg:block dark:bg-white/[0.08]" />
+
             {capabilities.map((cap, i) => {
               const selected = i === active;
               const TabIcon = cap.icon;
@@ -2441,24 +2452,37 @@ function Capabilities() {
                   role="tab"
                   aria-selected={selected}
                   onClick={() => setActive(i)}
-                  className={`group flex shrink-0 items-center gap-3 rounded-[14px] border px-4 py-3 text-left text-[13px] font-medium transition-all lg:shrink ${
+                  className={`group relative flex shrink-0 cursor-pointer items-center gap-3 rounded-[14px] border px-3.5 py-2.5 text-left text-[13px] font-medium transition-all lg:shrink ${
                     selected
                       ? 'border-[var(--brand-orange)] bg-[var(--brand-orange-soft)] text-[#111111] dark:text-white'
-                      : 'border-black/[0.07] bg-white text-black/55 hover:border-black/15 hover:text-black dark:border-white/[0.08] dark:bg-[#1B1B29] dark:text-white/55 dark:hover:text-white'
+                      : 'border-transparent text-black/55 hover:bg-black/[0.03] hover:text-black dark:text-white/55 dark:hover:bg-white/[0.05] dark:hover:text-white'
                   }`}
                 >
-                  <TabIcon
-                    className={`h-4 w-4 shrink-0 ${selected ? 'text-[var(--brand-orange-active)]' : 'text-black/35 group-hover:text-black/60 dark:text-white/40'}`}
-                  />
+                  <span
+                    className={`relative z-10 grid h-7 w-7 shrink-0 place-items-center rounded-full border transition-colors ${
+                      selected
+                        ? 'border-[var(--brand-orange)] bg-[var(--brand-orange)] text-white'
+                        : 'border-black/[0.09] bg-white text-black/35 group-hover:text-black/60 dark:border-white/[0.12] dark:bg-[#1B1B29] dark:text-white/40'
+                    }`}
+                  >
+                    <TabIcon className="h-3.5 w-3.5" />
+                  </span>
                   <span className="whitespace-nowrap lg:whitespace-normal">{cap.tab}</span>
                 </button>
               );
             })}
           </div>
 
-          {/* Preview panel */}
-          <div className="relative overflow-hidden rounded-[24px] border border-black/[0.07] bg-[#F8F7F4] p-7 sm:p-10 dark:border-white/[0.08] dark:bg-[#1B1B29]">
-            <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[var(--brand-orange)]/12 blur-[80px]" />
+          {/* Preview panel — same dark card treatment as the closing CTA */}
+          <div className="relative flex min-h-[440px] flex-col overflow-hidden rounded-[24px] border border-black/[0.08] bg-[#111111] p-7 sm:p-10 dark:border-white/[0.1]">
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -left-16 -top-20 h-52 w-52 rounded-full bg-[#E7DEFF]/10" />
+              <div className="absolute -bottom-20 -right-14 h-52 w-52 rounded-full bg-[var(--brand-orange)]/12 blur-[80px]" />
+            </div>
+
+            <span className="absolute right-6 top-6 text-[11px] font-semibold tabular-nums text-white/70">
+              {String(active + 1).padStart(2, '0')} / {String(capabilities.length).padStart(2, '0')}
+            </span>
 
             <AnimatePresence mode="wait">
               <motion.div
@@ -2467,17 +2491,30 @@ function Capabilities() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.28, ease: EASE_OUT }}
-                className="relative flex flex-col gap-6"
+                className="relative flex h-full flex-col gap-6"
               >
-                <div className="grid h-14 w-14 place-items-center rounded-[16px] bg-[#FDE7CE] text-[#B96A0A]">
-                  <Icon className="h-7 w-7 stroke-[1.7]" />
-                </div>
+                <TiltCard
+                  className="inline-block w-fit rounded-[16px]"
+                  floatDistance={4}
+                  floatDuration={4.6}
+                >
+                  <div className="grid h-14 w-14 place-items-center rounded-[16px] bg-[#FDE7CE] text-[#B96A0A]">
+                    <Icon className="h-7 w-7 stroke-[1.7]" />
+                  </div>
+                </TiltCard>
 
                 <div>
-                  <h3 className="text-[24px] font-semibold tracking-[-0.04em] text-[#111111] sm:text-[28px] dark:text-white">
+                  <h3 className="relative inline-block text-[24px] font-semibold tracking-[-0.04em] text-white sm:text-[28px]">
                     {current.title}
+                    <HandDrawnUnderline
+                      trigger="scroll"
+                      color="#F5901F"
+                      strokeWidth={4}
+                      delay={0.25}
+                      className="pointer-events-none absolute -bottom-1 left-0 h-[6px] w-full"
+                    />
                   </h3>
-                  <p className="mt-3 max-w-[560px] text-[14px] leading-6 text-black/50 dark:text-white/50">
+                  <p className="mt-4 max-w-[640px] text-[14px] leading-6 text-white/50">
                     {current.description}
                   </p>
                 </div>
@@ -2486,29 +2523,31 @@ function Capabilities() {
                   {current.points.map((point) => (
                     <li
                       key={point}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.07] bg-white px-3 py-1.5 text-[11px] font-medium text-black/65 dark:border-white/[0.1] dark:bg-[#14141F] dark:text-white/65"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.1] bg-white/[0.06] px-3 py-1.5 text-[11px] font-medium text-white/70"
                     >
-                      <Check className="h-3.5 w-3.5 text-[var(--brand-orange-active)]" />
+                      <Check className="h-3.5 w-3.5 text-[var(--brand-orange)]" />
                       {point}
                     </li>
                   ))}
                 </ul>
 
-                <div className="flex flex-col gap-3 pt-1 sm:flex-row">
-                  <Link
+                <div className="mt-auto flex flex-col gap-3 pt-1 sm:flex-row">
+                  <MotionLink
                     href={TRIAL_URL}
+                    whileTap={{ scale: 0.96 }}
                     className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[var(--brand-orange)] px-5 text-[12px] font-semibold text-[#111111] transition-colors hover:bg-[var(--brand-orange-hover)]"
                   >
                     Start free trial
                     <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
+                  </MotionLink>
 
-                  <Link
+                  <MotionLink
                     href="/contact"
-                    className="inline-flex h-11 items-center justify-center rounded-full border border-black/15 bg-white px-5 text-[12px] font-semibold text-[#111111] transition-colors hover:bg-black/[0.03] dark:border-white/20 dark:bg-transparent dark:text-white dark:hover:bg-white/[0.06]"
+                    whileTap={{ scale: 0.96 }}
+                    className="inline-flex h-11 items-center justify-center rounded-full border border-white/[0.14] px-5 text-[12px] font-semibold text-white/75 transition-colors hover:border-white/25 hover:bg-white/[0.05] hover:text-white"
                   >
                     Request a demo
-                  </Link>
+                  </MotionLink>
                 </div>
               </motion.div>
             </AnimatePresence>

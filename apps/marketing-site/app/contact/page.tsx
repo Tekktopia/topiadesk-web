@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { DemoRequestForm } from '../_components/demo-request-form';
 import { HandDrawnUnderline } from '../_components/hand-drawn-underline';
+import { ThemeToggle } from '../_components/theme-toggle';
 
 export const metadata: Metadata = {
   title: 'Request a demo — Topiadesk',
@@ -64,7 +65,7 @@ function BrandMark() {
         className="h-8 w-8 object-contain"
       />
 
-      <span className="text-[15px] font-bold tracking-[-0.03em] text-[#111111]">
+      <span className="text-[15px] font-bold tracking-[-0.03em] text-[#111111] dark:text-white">
         Topiadesk
       </span>
     </Link>
@@ -73,17 +74,21 @@ function BrandMark() {
 
 function Header() {
   return (
-    <header className="relative z-50 border-b border-black/[0.06] bg-[#FCFBF8]">
+    <header className="relative z-50 border-b border-black/[0.06] bg-[#FCFBF8] transition-colors duration-300 dark:border-white/[0.08] dark:bg-[#0F0F1A]">
       <div className="mx-auto flex h-[72px] max-w-[1240px] items-center justify-between px-5 sm:px-8">
         <BrandMark />
 
-        <Link
-          href="/"
-          className="group inline-flex h-10 items-center gap-2 rounded-full border border-black/[0.1] bg-white px-4 text-[11px] font-semibold text-black/60 transition-colors hover:border-black/20 hover:text-black"
-        >
-          <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
-          Back to home
-        </Link>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+
+          <Link
+            href="/"
+            className="group inline-flex h-10 items-center gap-2 rounded-full border border-black/[0.1] bg-white px-4 text-[11px] font-semibold text-black/60 transition-colors hover:border-black/20 hover:text-black dark:border-white/[0.12] dark:bg-white/[0.06] dark:text-white/60 dark:hover:border-white/25 dark:hover:text-white"
+          >
+            <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
+            Back to home
+          </Link>
+        </div>
       </div>
     </header>
   );
@@ -96,7 +101,7 @@ function HighlightCard({
   className,
 }: (typeof HIGHLIGHTS)[number]) {
   return (
-    <li className="flex gap-4 rounded-[18px] border border-black/[0.055] bg-[#F7F5F1] p-4 transition-colors hover:bg-[#F3F1ED]">
+    <li className="flex gap-4 rounded-[18px] border border-black/[0.055] bg-[#F7F5F1] p-4 transition-colors hover:bg-[#F3F1ED] dark:border-white/[0.07] dark:bg-white/[0.04] dark:hover:bg-white/[0.07]">
       <div
         className={`grid h-10 w-10 shrink-0 place-items-center rounded-[12px] ${className}`}
       >
@@ -104,11 +109,11 @@ function HighlightCard({
       </div>
 
       <div className="pt-0.5">
-        <p className="text-[13px] font-semibold tracking-[-0.02em] text-[#111111]">
+        <p className="text-[13px] font-semibold tracking-[-0.02em] text-[#111111] dark:text-white">
           {title}
         </p>
 
-        <p className="mt-1.5 max-w-[390px] text-[11px] leading-[1.7] text-black/42">
+        <p className="mt-1.5 max-w-[390px] text-[11px] leading-[1.7] text-black/42 dark:text-white/45">
           {body}
         </p>
       </div>
@@ -119,17 +124,17 @@ function HighlightCard({
 function Pitch() {
   return (
     <div className="lg:pt-5">
-      <div className="inline-flex items-center gap-2 rounded-full border border-black/[0.07] bg-white px-3 py-1.5">
+      <div className="inline-flex items-center gap-2 rounded-full border border-black/[0.07] bg-white px-3 py-1.5 dark:border-white/[0.08] dark:bg-white/[0.06]">
         <span className="grid h-5 w-5 place-items-center rounded-full bg-[#E7DEFF]">
           <Sparkles className="h-3 w-3 text-black/65" />
         </span>
 
-        <span className="text-[9px] font-bold cursor-pointer uppercase tracking-[0.13em] text-black/45">
+        <span className="text-[9px] font-bold cursor-pointer uppercase tracking-[0.13em] text-black/45 dark:text-white/60">
           Request a demo
         </span>
       </div>
 
-      <h1 className="mt-6 max-w-[580px] text-[45px] font-semibold leading-[0.98] tracking-[-0.065em] text-[#111111] sm:text-[44px] lg:text-[48px]">
+      <h1 className="mt-6 max-w-[580px] text-[45px] font-semibold leading-[0.98] tracking-[-0.065em] text-[#111111] sm:text-[44px] lg:text-[48px] dark:text-white">
         See how{' '}
         <span className="relative inline-block whitespace-nowrap">
           simple
@@ -139,7 +144,7 @@ function Pitch() {
         support can feel.
       </h1>
 
-      <p className="mt-6 max-w-[510px] text-[14px] leading-6 text-black/48 sm:text-[15px]">
+      <p className="mt-6 max-w-[510px] text-[14px] leading-6 text-black/48 sm:text-[15px] dark:text-white/50">
         Tell us a little about your team and we&rsquo;ll prepare a personalised
         walkthrough of Topiadesk around the problems you actually need to solve.
       </p>
@@ -152,7 +157,7 @@ function Pitch() {
 
       <a
         href="mailto:sales@tekktopia.com"
-        className="group mt-4 flex max-w-[530px] items-center gap-3 rounded-[18px] border border-black/[0.06] bg-[#FFF3B6] p-4 transition-colors hover:bg-[#FFEF9C]"
+        className="group mt-4 flex max-w-[530px] items-center gap-3 rounded-[18px] border border-black/[0.06] bg-[#FFF3B6] p-4 transition-colors hover:bg-[#FFEF9C] dark:border-white/[0.06] dark:bg-[#FFE36D]/90 dark:hover:bg-[#FFE36D]"
       >
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-white/60">
           <Mail className="h-[18px] w-[18px] text-black/65" />
@@ -177,32 +182,32 @@ function Pitch() {
 function DemoFormPanel() {
   return (
     <div id="demo" className="lg:pl-4">
-      <div className="overflow-hidden rounded-[26px] border border-black/[0.08] bg-white">
+      <div className="overflow-hidden rounded-[26px] border border-black/[0.08] bg-white dark:border-white/[0.09] dark:bg-[#14141F]">
         <div className="px-6 pb-5 pt-6 sm:px-8 sm:pt-8">
           <div className="flex items-start justify-between gap-6">
             <div>
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-[#8BD5A8]" />
 
-                <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-black/35">
+                <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-black/35 dark:text-white/40">
                   Demo request
                 </span>
               </div>
 
-              <h2 className="mt-4 text-[26px] font-semibold tracking-[-0.05em] text-[#111111] sm:text-[29px]">
+              <h2 className="mt-4 text-[26px] font-semibold tracking-[-0.05em] text-[#111111] sm:text-[29px] dark:text-white">
                 Tell us about your team
               </h2>
 
-              <p className="mt-2 max-w-[430px] text-[12px] leading-5 text-black/40">
+              <p className="mt-2 max-w-[430px] text-[12px] leading-5 text-black/40 dark:text-white/45">
                 A few details help us prepare a walkthrough around how your
                 team actually works.
               </p>
             </div>
 
-            <div className="hidden shrink-0 items-center gap-2 rounded-full bg-[#F5F3EF] px-3 py-2 sm:flex">
-              <Clock3 className="h-3.5 w-3.5 text-black/30" />
+            <div className="hidden shrink-0 items-center gap-2 rounded-full bg-[#F5F3EF] px-3 py-2 sm:flex dark:bg-white/[0.06]">
+              <Clock3 className="h-3.5 w-3.5 text-black/30 dark:text-white/40" />
 
-              <span className="text-[9px] font-semibold text-black/40">
+              <span className="text-[9px] font-semibold text-black/40 dark:text-white/45">
                 ~2 min
               </span>
             </div>
@@ -234,6 +239,7 @@ function DemoFormPanel() {
               [&_label]:font-semibold
               [&_label]:tracking-[-0.01em]
               [&_label]:text-black/65
+              dark:[&_label]:text-white/70
 
               [&_input:not([type='checkbox']):not([type='radio'])]:h-[50px]
               [&_input:not([type='checkbox']):not([type='radio'])]:w-full
@@ -249,16 +255,23 @@ function DemoFormPanel() {
               [&_input:not([type='checkbox']):not([type='radio'])]:ring-0
               [&_input:not([type='checkbox']):not([type='radio'])]:transition-colors
               [&_input:not([type='checkbox']):not([type='radio'])]:duration-200
+              dark:[&_input:not([type='checkbox']):not([type='radio'])]:border-white/[0.1]
+              dark:[&_input:not([type='checkbox']):not([type='radio'])]:bg-white/[0.05]
+              dark:[&_input:not([type='checkbox']):not([type='radio'])]:text-white
 
               [&_input:not([type='checkbox']):not([type='radio'])::placeholder]:font-normal
               [&_input:not([type='checkbox']):not([type='radio'])::placeholder]:text-black/28
+              dark:[&_input:not([type='checkbox']):not([type='radio'])::placeholder]:text-white/30
 
               [&_input:not([type='checkbox']):not([type='radio']):hover]:border-black/[0.16]
+              dark:[&_input:not([type='checkbox']):not([type='radio']):hover]:border-white/20
 
               [&_input:not([type='checkbox']):not([type='radio']):focus]:border-black/40
               [&_input:not([type='checkbox']):not([type='radio']):focus]:bg-white
               [&_input:not([type='checkbox']):not([type='radio']):focus]:outline-none
               [&_input:not([type='checkbox']):not([type='radio']):focus]:ring-0
+              dark:[&_input:not([type='checkbox']):not([type='radio']):focus]:border-white/40
+              dark:[&_input:not([type='checkbox']):not([type='radio']):focus]:bg-white/[0.08]
 
               [&_input:not([type='checkbox']):not([type='radio']):focus-visible]:outline-none
               [&_input:not([type='checkbox']):not([type='radio']):focus-visible]:ring-0
@@ -278,13 +291,19 @@ function DemoFormPanel() {
               [&_select]:ring-0
               [&_select]:transition-colors
               [&_select]:duration-200
+              dark:[&_select]:border-white/[0.1]
+              dark:[&_select]:bg-white/[0.05]
+              dark:[&_select]:text-white
 
               [&_select:hover]:border-black/[0.16]
+              dark:[&_select:hover]:border-white/20
 
               [&_select:focus]:border-black/40
               [&_select:focus]:bg-white
               [&_select:focus]:outline-none
               [&_select:focus]:ring-0
+              dark:[&_select:focus]:border-white/40
+              dark:[&_select:focus]:bg-white/[0.08]
 
               [&_select:focus-visible]:outline-none
               [&_select:focus-visible]:ring-0
@@ -306,16 +325,23 @@ function DemoFormPanel() {
               [&_textarea]:ring-0
               [&_textarea]:transition-colors
               [&_textarea]:duration-200
+              dark:[&_textarea]:border-white/[0.1]
+              dark:[&_textarea]:bg-white/[0.05]
+              dark:[&_textarea]:text-white
 
               [&_textarea::placeholder]:font-normal
               [&_textarea::placeholder]:text-black/28
+              dark:[&_textarea::placeholder]:text-white/30
 
               [&_textarea:hover]:border-black/[0.16]
+              dark:[&_textarea:hover]:border-white/20
 
               [&_textarea:focus]:border-black/40
               [&_textarea:focus]:bg-white
               [&_textarea:focus]:outline-none
               [&_textarea:focus]:ring-0
+              dark:[&_textarea:focus]:border-white/40
+              dark:[&_textarea:focus]:bg-white/[0.08]
 
               [&_textarea:focus-visible]:outline-none
               [&_textarea:focus-visible]:ring-0
@@ -326,11 +352,14 @@ function DemoFormPanel() {
               [&_input[type='checkbox']]:border-black/15
               [&_input[type='checkbox']]:accent-black
               [&_input[type='checkbox']]:ring-0
+              dark:[&_input[type='checkbox']]:border-white/20
+              dark:[&_input[type='checkbox']]:accent-white
 
               [&_input[type='radio']]:h-4
               [&_input[type='radio']]:w-4
               [&_input[type='radio']]:accent-black
               [&_input[type='radio']]:ring-0
+              dark:[&_input[type='radio']]:accent-white
 
               [&_button[type='submit']]:mt-1
               [&_button[type='submit']]:flex
@@ -348,8 +377,11 @@ function DemoFormPanel() {
               [&_button[type='submit']]:ring-0
               [&_button[type='submit']]:transition-colors
               [&_button[type='submit']]:duration-200
+              dark:[&_button[type='submit']]:bg-white
+              dark:[&_button[type='submit']]:text-black
 
               [&_button[type='submit']:hover]:bg-black/85
+              dark:[&_button[type='submit']:hover]:bg-white/85
               [&_button[type='submit']:focus]:outline-none
               [&_button[type='submit']:focus]:ring-0
               [&_button[type='submit']:focus-visible]:outline-none
@@ -367,17 +399,17 @@ function DemoFormPanel() {
             <DemoRequestForm />
           </div>
 
-          <div className="mt-6 flex items-start gap-2.5 border-t border-black/[0.055] pt-5">
+          <div className="mt-6 flex items-start gap-2.5 border-t border-black/[0.055] pt-5 dark:border-white/[0.08]">
             <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#DFF4E8]">
               <ShieldCheck className="h-3.5 w-3.5 text-[#39734D]" />
             </span>
 
             <div>
-              <p className="text-[10px] font-semibold text-black/50">
+              <p className="text-[10px] font-semibold text-black/50 dark:text-white/55">
                 Your information stays private
               </p>
 
-              <p className="mt-0.5 text-[9px] leading-4 text-black/30">
+              <p className="mt-0.5 text-[9px] leading-4 text-black/30 dark:text-white/35">
                 We only use these details to arrange and personalise your
                 Topiadesk demo.
               </p>
@@ -391,15 +423,15 @@ function DemoFormPanel() {
 
 function Expectations() {
   return (
-    <section className="border-t border-black/[0.055] bg-white">
+    <section className="border-t border-black/[0.055] bg-white transition-colors duration-300 dark:border-white/[0.08] dark:bg-[#0F0F1A]">
       <div className="mx-auto max-w-[1160px] px-5 py-10 sm:px-8 sm:py-12">
         <div className="grid gap-8 md:grid-cols-[0.8fr_1.2fr] md:items-center">
           <div>
-            <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-black/30">
+            <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-black/30 dark:text-white/35">
               What happens next
             </p>
 
-            <h2 className="mt-2 text-[21px] font-semibold tracking-[-0.04em] text-black">
+            <h2 className="mt-2 text-[21px] font-semibold tracking-[-0.04em] text-black dark:text-white">
               A useful conversation,
               <br />
               not a sales presentation.
@@ -410,10 +442,10 @@ function Expectations() {
             {EXPECTATIONS.map((expectation, index) => (
               <div
                 key={expectation}
-                className="flex items-start gap-3 rounded-[16px] border border-black/[0.045] bg-[#F7F5F1] p-4"
+                className="flex items-start gap-3 rounded-[16px] border border-black/[0.045] bg-[#F7F5F1] p-4 dark:border-white/[0.07] dark:bg-white/[0.04]"
               >
                 <span
-                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[9px] font-bold ${
+                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[9px] font-bold text-black ${
                     index === 0
                       ? 'bg-[#FFE36D]'
                       : index === 1
@@ -424,7 +456,7 @@ function Expectations() {
                   {index + 1}
                 </span>
 
-                <p className="pt-1 text-[10px] font-semibold leading-4 text-black/55">
+                <p className="pt-1 text-[10px] font-semibold leading-4 text-black/55 dark:text-white/65">
                   {expectation}
                 </p>
               </div>
@@ -438,18 +470,18 @@ function Expectations() {
 
 function Footer() {
   return (
-    <footer className="border-t border-black/[0.055] bg-[#FCFBF8]">
+    <footer className="border-t border-black/[0.055] bg-[#FCFBF8] transition-colors duration-300 dark:border-white/[0.08] dark:bg-[#0F0F1A]">
       <div className="mx-auto flex max-w-[1240px] flex-col gap-6 px-5 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <BrandMark />
 
-        <div className="flex flex-col gap-3 text-[9px] text-black/30 sm:items-end">
+        <div className="flex flex-col gap-3 text-[9px] text-black/30 sm:items-end dark:text-white/35">
           <p>
             &copy; {new Date().getFullYear()} Tekktopia Ltd. All rights reserved.
           </p>
 
           <Link
             href="/"
-            className="font-semibold text-black/45 transition-colors hover:text-black"
+            className="font-semibold text-black/45 transition-colors hover:text-black dark:text-white/50 dark:hover:text-white"
           >
             Back to topiadesk.com
           </Link>
@@ -461,7 +493,7 @@ function Footer() {
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-[#FCFBF8] text-[#111111]">
+    <div className="min-h-screen bg-[#FCFBF8] text-[#111111] transition-colors duration-300 dark:bg-[#0F0F1A] dark:text-white">
       <Header />
 
       <main>
