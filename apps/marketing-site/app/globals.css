@@ -28,3 +28,13 @@
 body {
   font-family: 'Effra', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
+
+/* The shared theme sets `overflow-x: hidden` on html/body, which forces
+ * `overflow-y: auto` and turns them into scroll containers — that breaks
+ * `position: sticky` for the floating navbar. `overflow-x: clip` prevents
+ * horizontal scroll without establishing a scroll container, so the pill
+ * navbar stays pinned/floating on scroll. */
+html,
+body {
+  overflow-x: clip;
+}

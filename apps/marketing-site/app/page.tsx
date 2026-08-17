@@ -478,10 +478,13 @@ function Navigation() {
     const delta = latest - lastScrollY.current;
 
     if (latest < 90) {
+      // Near the top: always show the bar.
       setHidden(false);
     } else if (delta > 4) {
+      // Scrolling down: dissolve the bar away.
       setHidden(true);
     } else if (delta < -4) {
+      // Scrolling up: reveal the bar.
       setHidden(false);
     }
 
@@ -495,7 +498,7 @@ function Navigation() {
       animate={{ y: hidden ? -120 : 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: EASE_OUT }}
     >
-      <div className="mx-auto flex h-[60px] max-w-[1180px] items-center justify-between rounded-full border border-black/[0.06] bg-[#FCFBF8]/90 pl-5 pr-3 shadow-[0_8px_30px_rgba(0,0,0,0.08)] backdrop-blur-md transition-colors duration-300 dark:border-white/[0.08] dark:bg-[#0F0F1A]/90 sm:pr-3">
+      <div className="mx-auto flex h-[58px] max-w-[980px] items-center justify-between rounded-full border border-black/[0.08] bg-white/95 pl-5 pr-3 shadow-[0_10px_35px_rgba(0,0,0,0.14)] backdrop-blur-md transition-colors duration-300 dark:border-white/[0.12] dark:bg-[#1B1B29]/95">
         <BrandMark />
 
         <nav className="hidden items-center gap-6 lg:flex">
@@ -2560,7 +2563,7 @@ function Footer() {
                   alt="Tekktopia"
                   width={90}
                   height={35}
-                  className="h-5 w-auto"
+                  className="h-10 w-auto"
                 />
               </span>
             </a>
@@ -2630,7 +2633,7 @@ export default function HomePage() {
       />
 
       <MotionConfig reducedMotion="user">
-        <div className="min-h-screen bg-[#FCFBF8] text-[#111111] overflow-y-hidden transition-colors duration-300 dark:bg-[#0F0F1A] dark:text-white">
+        <div className="min-h-screen bg-[#FCFBF8] text-[#111111] transition-colors duration-300 dark:bg-[#0F0F1A] dark:text-white">
           <Navigation />
           <main>
             <Hero />
