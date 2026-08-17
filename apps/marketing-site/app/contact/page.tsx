@@ -133,7 +133,7 @@ function Pitch() {
         See how{' '}
         <span className="relative inline-block whitespace-nowrap">
           simple
-          <HandDrawnUnderline color="#FF7965" delay={0.4} />
+          <HandDrawnUnderline color="#F5901F" delay={0.4} />
         </span>
         <br />
         support can feel.

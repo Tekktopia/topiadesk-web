@@ -148,10 +148,9 @@ export function DemoRequestForm() {
 
       <Button
         type="submit"
-        variant="coral"
         size="lg"
         disabled={state === 'loading'}
-        className="mt-6 w-full font-semibold cursor-pointer"
+        className="mt-6 w-full cursor-pointer bg-[var(--brand-orange)] font-semibold text-[#111111] hover:bg-[var(--brand-orange-hover)]"
       >
         {state === 'loading' ? (
           <>

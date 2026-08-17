@@ -29,6 +29,15 @@ import {
   TicketCheck,
   Users,
   Workflow,
+  ArrowLeftRight,
+  Banknote,
+  Building2,
+  ClipboardCheck,
+  Gauge,
+  History,
+  Lock,
+  MapPin,
+  Plug,
 } from 'lucide-react';
 import Image from 'next/image';
 import {
@@ -79,48 +88,129 @@ const stats = [
   },
 ];
 
+// Operational, everyday-use features. Product-differentiating capabilities
+// (multitenant, insurance model, access control, etc.) live in the
+// Capabilities section — kept distinct so nothing is duplicated across the two.
 const features = [
   {
     icon: Inbox,
     title: 'One intelligent inbox',
     description:
       'Email, WhatsApp, portal requests and voice conversations arrive in one organized workspace.',
-    accent: 'bg-[#FFE36D]',
+    accent: 'bg-[#FDE7CE]',
   },
   {
     icon: Workflow,
     title: 'Automate the repetitive',
     description:
       'Route requests, trigger workflows and keep every support process moving without manual follow-up.',
-    accent: 'bg-[#E7DEFF]',
+    accent: 'bg-[#D7E9F7]',
   },
   {
     icon: Activity,
     title: 'SLA monitoring',
     description:
       'Watch response and resolution targets in real time before important customer requests fall behind.',
-    accent: 'bg-[#DFF4E8]',
+    accent: 'bg-[#FDE7CE]',
   },
   {
     icon: PackageCheck,
     title: 'IT asset management',
     description:
       'Connect incidents to devices, ownership and asset history from the same support platform.',
-    accent: 'bg-[#FFD9CB]',
+    accent: 'bg-[#D7E9F7]',
   },
   {
     icon: BarChart3,
     title: 'Clear operational reports',
     description:
       'Understand workload, response quality, team performance and service trends without spreadsheet work.',
-    accent: 'bg-[#DDEAFF]',
+    accent: 'bg-[#FDE7CE]',
+  },
+];
+
+// Product-differentiating capabilities — surfaced in the interactive
+// Capabilities section. Kept distinct from `features` (no duplicates).
+const capabilities = [
+  {
+    tab: 'Multitenant software',
+    icon: Building2,
+    title: 'One platform, isolated tenants',
+    description:
+      'Onboard unlimited brokers on a single, secure platform — every tenant fully isolated, no new infrastructure to stand up.',
+    points: ['Per-tenant isolation', 'Central administration', 'Scales with your book'],
   },
   {
-    icon: ShieldCheck,
-    title: 'Built for business',
+    tab: 'Seamless integration',
+    icon: Plug,
+    title: 'Plug into the tools you already run',
     description:
-      'Role-based access, structured workspaces and controls designed for growing support organizations.',
-    accent: 'bg-[#F5E4F1]',
+      'Connect your existing systems and workflows in minutes, not sprints — data flows where it needs to, automatically.',
+    points: ['Prebuilt connectors', 'Open API & webhooks', 'Minutes to connect'],
+  },
+  {
+    tab: 'Procedural migration',
+    icon: ArrowLeftRight,
+    title: 'A guided path for your whole book',
+    description:
+      'Bring everything across with a structured, step-by-step migration — nothing left behind, no surprises on go-live day.',
+    points: ['Step-by-step flow', 'Validated at every stage', 'Zero data loss'],
+  },
+  {
+    tab: 'Insurance model',
+    icon: ShieldCheck,
+    title: '80+ native insurance objects',
+    description:
+      'Policies, claims, producers and commissions are first-class data — not bolted onto a generic CRM.',
+    points: ['Policies & claims', 'Producers & commissions', 'First-class data model'],
+  },
+  {
+    tab: 'Access control',
+    icon: Lock,
+    title: 'Row-level security at the database',
+    description:
+      'Access is enforced at the data layer, so every broker sees only their own book — never anyone else’s.',
+    points: ['Database-enforced', 'Per-broker visibility', 'Role-based access'],
+  },
+  {
+    tab: 'Audit trail',
+    icon: History,
+    title: 'A tamper-evident audit trail',
+    description:
+      'A hash-chained log captures every compliance-relevant change — provably intact and ready for any review.',
+    points: ['Hash-chained log', 'Tamper-evident', 'Audit-ready'],
+  },
+  {
+    tab: 'Claims',
+    icon: ClipboardCheck,
+    title: 'Full FNOL-to-payment flow',
+    description:
+      'A dedicated claims engine that carries each claim from first notice of loss all the way through to payment.',
+    points: ['Distinct claim entity', 'FNOL to payment', 'Nothing falls through'],
+  },
+  {
+    tab: 'AI cost control',
+    icon: Gauge,
+    title: 'A hard cap on AI spend',
+    description:
+      'Every AI call is checked against a hard spend cap before it runs — powerful automation with no runaway bills.',
+    points: ['Hard spend cap', 'Checked per call', 'No bill surprises'],
+  },
+  {
+    tab: 'Billing',
+    icon: Banknote,
+    title: 'Naira-native pricing',
+    description:
+      'Fixed pricing in Naira with zero exposure to exchange-rate movements — budget with confidence.',
+    points: ['Fixed Naira pricing', 'No FX exposure', 'Predictable costs'],
+  },
+  {
+    tab: 'Data residency',
+    icon: MapPin,
+    title: 'In-country data residency',
+    description:
+      'Hosted in Nigeria and aligned with the Nigeria Data Protection Act (NDPA) — your data stays home.',
+    points: ['In-country hosting', 'NDPA-aligned', 'Data sovereignty'],
   },
 ];
 
@@ -330,6 +420,36 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
+function LinkedInIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className={className}>
+      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+    </svg>
+  );
+}
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className={className}>
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
+function InstagramIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className={className}>
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+    </svg>
+  );
+}
+
+const SOCIALS = [
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/company/tekktopia/', icon: LinkedInIcon },
+  { label: 'X', href: 'https://x.com/tekktopialtd/', icon: XIcon },
+  { label: 'Instagram', href: 'https://www.instagram.com/tekktopia/', icon: InstagramIcon },
+];
+
 function BrandMark() {
   return (
     <Link href="/" className="flex items-center gap-2.5">
@@ -370,22 +490,63 @@ function Navigation() {
 
   return (
     <motion.header
-      className="sticky top-0 z-50 border-b border-black/[0.045] bg-[#FCFBF8]/95 backdrop-blur-sm transition-colors duration-300 dark:border-white/[0.08] dark:bg-[#0F0F1A]/95"
+      className="sticky top-0 z-50 px-3 pt-3 sm:px-4"
       initial={{ y: -100, opacity: 0 }}
-      animate={{ y: hidden ? -100 : 0, opacity: 1 }}
+      animate={{ y: hidden ? -120 : 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: EASE_OUT }}
     >
-      <div className="mx-auto flex h-[72px] max-w-[1280px] items-center justify-between px-5 sm:px-8">
+      <div className="mx-auto flex h-[60px] max-w-[1180px] items-center justify-between rounded-full border border-black/[0.06] bg-[#FCFBF8]/90 pl-5 pr-3 shadow-[0_8px_30px_rgba(0,0,0,0.08)] backdrop-blur-md transition-colors duration-300 dark:border-white/[0.08] dark:bg-[#0F0F1A]/90 sm:pr-3">
         <BrandMark />
 
-        <nav className="hidden items-center gap-7 lg:flex">
-          <Link
-            href="#product"
-            className="flex items-center gap-1 text-[13px] font-medium text-black/65 transition hover:text-black dark:text-white/60 dark:hover:text-white"
-          >
-            Product
-            <ChevronDown className="h-3.5 w-3.5" />
-          </Link>
+        <nav className="hidden items-center gap-6 lg:flex">
+          {/* Product dropdown (hover) → Features / Capabilities */}
+          <div className="group relative">
+            <button
+              type="button"
+              className="flex items-center gap-1 text-[13px] font-medium text-black/65 transition hover:text-black dark:text-white/60 dark:hover:text-white"
+            >
+              Product
+              <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-180" />
+            </button>
+
+            <div className="invisible absolute left-1/2 top-full z-50 w-64 -translate-x-1/2 pt-3 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
+              <div className="rounded-2xl border border-black/[0.07] bg-white p-2 shadow-[0_16px_44px_rgba(0,0,0,0.14)] dark:border-white/[0.1] dark:bg-[#1B1B29]">
+                <Link
+                  href="#features"
+                  className="flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-[var(--brand-orange-soft)] dark:hover:bg-white/[0.06]"
+                >
+                  <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#FDE7CE] text-[#B96A0A]">
+                    <Sparkles className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className="block text-[13px] font-semibold text-black dark:text-white">
+                      Features
+                    </span>
+                    <span className="block text-[11px] text-black/45 dark:text-white/45">
+                      Everyday tools your team uses
+                    </span>
+                  </span>
+                </Link>
+
+                <Link
+                  href="#capabilities"
+                  className="flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-[var(--brand-blue-soft)] dark:hover:bg-white/[0.06]"
+                >
+                  <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#D7E9F7] text-[#0F63A0]">
+                    <ShieldCheck className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className="block text-[13px] font-semibold text-black dark:text-white">
+                      Capabilities
+                    </span>
+                    <span className="block text-[11px] text-black/45 dark:text-white/45">
+                      What makes the platform different
+                    </span>
+                  </span>
+                </Link>
+              </div>
+            </div>
+          </div>
 
           <Link
             href="#channels"
@@ -422,7 +583,7 @@ function Navigation() {
             Book a demo
             <HandDrawnUnderline
               trigger="hover"
-              color="#FF7965"
+              color="#F5901F"
               strokeWidth={4}
               className="pointer-events-none absolute -bottom-1.5 left-0 h-[6px] w-full"
             />
@@ -431,7 +592,7 @@ function Navigation() {
           <MotionLink
             href={TRIAL_URL}
             whileTap={{ scale: 0.96 }}
-            className="rounded-full bg-[#111111] px-5 py-2.5 text-[12px] font-semibold text-white shadow-[0_5px_15px_rgba(0,0,0,0.1)] transition-colors duration-200 hover:bg-[#2A1712] dark:bg-white dark:text-black dark:shadow-[0_5px_15px_rgba(0,0,0,0.35)] dark:hover:bg-white/85"
+            className="rounded-full bg-[var(--brand-orange)] px-5 py-2.5 text-[12px] font-semibold text-[#111111] shadow-[0_5px_15px_rgba(245,144,31,0.35)] transition-colors duration-200 hover:bg-[var(--brand-orange-hover)]"
           >
             Get started
           </MotionLink>
@@ -833,7 +994,7 @@ function InboxDashboardPanel({
             </p>
           </div>
 
-          <span className="rounded-full bg-[#FFE9E2] px-2 py-1 text-[6px] font-bold text-[#9A4B3A]">
+          <span className="rounded-full bg-[#FDE7CE] px-2 py-1 text-[6px] font-bold text-[#9A5A0A]">
             {selectedTicket.status}
           </span>
         </div>
@@ -941,7 +1102,7 @@ function TicketsDashboardPanel({ trigger }: { trigger: number }) {
                   status === 'Resolved'
                     ? 'bg-[#DFF4E8] text-[#36794F]'
                     : status === 'Urgent'
-                      ? 'bg-[#FFE3DB] text-[#9A4B3A]'
+                      ? 'bg-[#FDE7CE] text-[#9A5A0A]'
                       : status === 'Pending'
                         ? 'bg-[#FFF3C7] text-[#80691A]'
                         : 'bg-[#DFF4E8] text-[#36794F]'
@@ -1357,7 +1518,7 @@ function DashboardMockup() {
         <div className="overflow-hidden rounded-[24px] border border-black/[0.07] bg-white">
           <div className="relative z-30 flex h-11 items-center justify-between border-b border-black/[0.06] px-4">
             <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#FF7965] cursor-pointer" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#F5901F] cursor-pointer" />
               <span className="h-2.5 w-2.5 rounded-full bg-[#FFD968] cursor-pointer" />
               <span className="h-2.5 w-2.5 rounded-full bg-[#8BD5A8] cursor-pointer" />
             </div>
@@ -1623,7 +1784,7 @@ function Hero() {
             <span className="relative inline-block whitespace-nowrap">
               super-fast
               <HandDrawnUnderline
-                color="#FF7965"
+                color="#F5901F"
                 delay={0.55}
                 className="pointer-events-none absolute -bottom-1 left-0 h-[0.22em] w-full sm:h-[0.2em]"
               />
@@ -1641,7 +1802,7 @@ function Hero() {
             <MotionLink
               href={TRIAL_URL}
               whileTap={{ scale: 0.96 }}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#111111] px-6 text-[12px] font-semibold text-white shadow-[0_8px_25px_rgba(0,0,0,0.14)] transition-colors duration-200 hover:bg-[#2A1712] dark:bg-white dark:text-black dark:shadow-[0_8px_25px_rgba(0,0,0,0.4)] dark:hover:bg-white/85"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--brand-orange)] px-6 text-[12px] font-semibold text-[#111111] shadow-[0_8px_25px_rgba(245,144,31,0.35)] transition-colors duration-200 hover:bg-[var(--brand-orange-hover)]"
             >
               Get started — for free
               <ArrowRight className="h-3.5 w-3.5" />
@@ -1657,7 +1818,7 @@ function Hero() {
               Book a demo
               <HandDrawnUnderline
                 trigger="hover"
-                color="#FF7965"
+                color="#F5901F"
                 strokeWidth={4}
                 className="pointer-events-none absolute -bottom-0.5 left-6 right-6 h-[6px]"
               />
@@ -1716,8 +1877,8 @@ function Hero() {
             >
               <div className="relative grid h-[92px] place-items-center rounded-[12px] bg-[#E7DEFF]">
                 <span className="absolute right-2.5 top-2.5 flex h-2.5 w-2.5">
-                  <span className="motion-safe:animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF7965] opacity-75" />
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#FF7965]" />
+                  <span className="motion-safe:animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F5901F] opacity-75" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#F5901F]" />
                 </span>
                 <Headphones className="h-11 w-11 stroke-[1.2] text-black/75" />
               </div>
@@ -1768,7 +1929,7 @@ function Hero() {
             amount={0.3}
           >
             <TiltCard
-              className="rounded-[16px] border border-black/[0.06] bg-[#FF7C58] p-4 shadow-[0_15px_40px_rgba(0,0,0,0.09)]"
+              className="rounded-[16px] border border-black/[0.06] bg-[#F5901F] p-4 shadow-[0_15px_40px_rgba(0,0,0,0.09)]"
               floatDistance={10}
               floatDuration={5.2}
               floatDelay={0.35}
@@ -1865,7 +2026,7 @@ function Stats() {
 function Features() {
   return (
     <section
-      id="product"
+      id="features"
       className="bg-[#F5F3EF] py-24 transition-colors duration-300 sm:py-28 dark:bg-[#14141F]"
     >
       <div className="mx-auto max-w-[1120px] px-5 sm:px-8">
@@ -1933,7 +2094,7 @@ function Channels() {
             One{' '}
             <span className="relative inline-block whitespace-nowrap">
               calm
-              <HandDrawnUnderline color="#8BD5A8" delay={0.15} />
+              <HandDrawnUnderline color="#137CC6" delay={0.15} />
             </span>{' '}
             inbox.
           </h2>
@@ -2070,7 +2231,7 @@ function Testimonials() {
             Support teams move{' '}
             <span className="relative inline-block whitespace-nowrap">
               faster
-              <HandDrawnUnderline color="#FFD968" delay={0.15} />
+              <HandDrawnUnderline color="#137CC6" delay={0.15} />
             </span>{' '}
             with Topiadesk
           </h2>
@@ -2158,7 +2319,7 @@ function FinalCta() {
               Give your support team <br className="hidden sm:block" />a{' '}
               <span className="relative inline-block whitespace-nowrap">
                 calmer
-                <HandDrawnUnderline color="#FFE36D" delay={0.15} />
+                <HandDrawnUnderline color="#F5901F" delay={0.15} />
               </span>{' '}
               place to work.
             </h2>
@@ -2199,11 +2360,11 @@ function FinalCta() {
               <MotionLink
                 href={TRIAL_URL}
                 whileTap={{ scale: 0.97 }}
-                className="group inline-flex h-[50px] w-full items-center justify-between rounded-full bg-white px-5 text-[11px] font-bold text-black transition-colors duration-200 hover:bg-[#F3F1ED]"
+                className="group inline-flex h-[50px] w-full items-center justify-between rounded-full bg-[var(--brand-orange)] px-5 text-[11px] font-bold text-[#111111] transition-colors duration-200 hover:bg-[var(--brand-orange-hover)]"
               >
                 <span>Start free trial</span>
 
-                <span className="grid h-7 w-7 place-items-center rounded-full bg-black text-white">
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-[#111111] text-white">
                   <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
                 </span>
               </MotionLink>
@@ -2218,7 +2379,7 @@ function FinalCta() {
                 Book a personalised demo
                 <HandDrawnUnderline
                   trigger="hover"
-                  color="#FFE36D"
+                  color="#137CC6"
                   strokeWidth={4}
                   className="pointer-events-none absolute -bottom-0.5 left-10 right-10 h-[6px]"
                 />
@@ -2235,6 +2396,126 @@ function FinalCta() {
   );
 }
 
+function Capabilities() {
+  const [active, setActive] = useState(0);
+  const current = capabilities[active] ?? capabilities[0]!;
+  const Icon = current.icon;
+
+  return (
+    <section
+      id="capabilities"
+      className="bg-white py-24 transition-colors duration-300 sm:py-28 dark:bg-[#0F0F1A]"
+    >
+      <div className="mx-auto max-w-[1120px] px-5 sm:px-8">
+        <Reveal className="mx-auto max-w-[650px] text-center" y={24} amount={0.3}>
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/35 dark:text-white/35">
+            Capabilities
+          </p>
+
+          <h2 className="mt-4 text-balance text-[38px] font-semibold leading-[1.02] tracking-[-0.055em] text-[#111111] sm:text-[50px] dark:text-white">
+            Built for the way insurance actually works
+          </h2>
+
+          <p className="mx-auto mt-5 max-w-[520px] text-[14px] leading-6 text-black/45 dark:text-white/45">
+            The platform advantages that make Topiadesk different — explore what&rsquo;s built in.
+          </p>
+        </Reveal>
+
+        <Reveal className="mt-14 grid gap-4 lg:grid-cols-[300px_1fr]" y={28} amount={0.2}>
+          {/* Tab rail */}
+          <div
+            role="tablist"
+            aria-label="Platform capabilities"
+            className="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-1.5 lg:overflow-visible lg:pb-0"
+          >
+            {capabilities.map((cap, i) => {
+              const selected = i === active;
+              const TabIcon = cap.icon;
+              return (
+                <button
+                  key={cap.tab}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  onClick={() => setActive(i)}
+                  className={`group flex shrink-0 items-center gap-3 rounded-[14px] border px-4 py-3 text-left text-[13px] font-medium transition-all lg:shrink ${
+                    selected
+                      ? 'border-[var(--brand-orange)] bg-[var(--brand-orange-soft)] text-[#111111] dark:text-white'
+                      : 'border-black/[0.07] bg-white text-black/55 hover:border-black/15 hover:text-black dark:border-white/[0.08] dark:bg-[#1B1B29] dark:text-white/55 dark:hover:text-white'
+                  }`}
+                >
+                  <TabIcon
+                    className={`h-4 w-4 shrink-0 ${selected ? 'text-[var(--brand-orange-active)]' : 'text-black/35 group-hover:text-black/60 dark:text-white/40'}`}
+                  />
+                  <span className="whitespace-nowrap lg:whitespace-normal">{cap.tab}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Preview panel */}
+          <div className="relative overflow-hidden rounded-[24px] border border-black/[0.07] bg-[#F8F7F4] p-7 sm:p-10 dark:border-white/[0.08] dark:bg-[#1B1B29]">
+            <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[var(--brand-orange)]/12 blur-[80px]" />
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={current.tab}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.28, ease: EASE_OUT }}
+                className="relative flex flex-col gap-6"
+              >
+                <div className="grid h-14 w-14 place-items-center rounded-[16px] bg-[#FDE7CE] text-[#B96A0A]">
+                  <Icon className="h-7 w-7 stroke-[1.7]" />
+                </div>
+
+                <div>
+                  <h3 className="text-[24px] font-semibold tracking-[-0.04em] text-[#111111] sm:text-[28px] dark:text-white">
+                    {current.title}
+                  </h3>
+                  <p className="mt-3 max-w-[560px] text-[14px] leading-6 text-black/50 dark:text-white/50">
+                    {current.description}
+                  </p>
+                </div>
+
+                <ul className="flex flex-wrap gap-2.5">
+                  {current.points.map((point) => (
+                    <li
+                      key={point}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.07] bg-white px-3 py-1.5 text-[11px] font-medium text-black/65 dark:border-white/[0.1] dark:bg-[#14141F] dark:text-white/65"
+                    >
+                      <Check className="h-3.5 w-3.5 text-[var(--brand-orange-active)]" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="flex flex-col gap-3 pt-1 sm:flex-row">
+                  <Link
+                    href={TRIAL_URL}
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[var(--brand-orange)] px-5 text-[12px] font-semibold text-[#111111] transition-colors hover:bg-[var(--brand-orange-hover)]"
+                  >
+                    Start free trial
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+
+                  <Link
+                    href="/contact"
+                    className="inline-flex h-11 items-center justify-center rounded-full border border-black/15 bg-white px-5 text-[12px] font-semibold text-[#111111] transition-colors hover:bg-black/[0.03] dark:border-white/20 dark:bg-transparent dark:text-white dark:hover:bg-white/[0.06]"
+                  >
+                    Request a demo
+                  </Link>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 function Footer() {
   return (
     <footer className="border-t border-black/[0.06] bg-[#FCFBF8] transition-colors duration-300 dark:border-white/[0.08] dark:bg-[#0F0F1A]">
@@ -2245,6 +2526,44 @@ function Footer() {
             <p className="mt-4 text-[11px] leading-5 text-black/38 dark:text-white/40">
               Unified customer support, monitoring and IT operations for modern teams.
             </p>
+
+            {/* Social links */}
+            <div className="mt-6 flex items-center gap-2.5">
+              {SOCIALS.map(({ label, href, icon: SocialIcon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="grid h-9 w-9 place-items-center rounded-full border border-black/[0.08] bg-white text-black/45 transition-colors hover:border-[var(--brand-orange)] hover:text-[var(--brand-orange-active)] dark:border-white/[0.12] dark:bg-[#1B1B29] dark:text-white/50 dark:hover:text-[var(--brand-orange)]"
+                >
+                  <SocialIcon className="h-4 w-4" />
+                </a>
+              ))}
+            </div>
+
+            {/* Powered by Tekktopia */}
+            <a
+              href="https://www.tekktopia.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Powered by Tekktopia"
+              className="mt-6 inline-flex items-center gap-2 opacity-90 transition-opacity hover:opacity-100"
+            >
+              <span className="text-[10px] font-medium text-black/35 dark:text-white/40">
+                Powered by
+              </span>
+              <span className="inline-flex rounded-md dark:bg-white/95 dark:px-1.5 dark:py-1">
+                <Image
+                  src="/tekktopia-logo.png"
+                  alt="Tekktopia"
+                  width={90}
+                  height={35}
+                  className="h-5 w-auto"
+                />
+              </span>
+            </a>
           </div>
 
           <div className="grid grid-cols-2 gap-x-14 gap-y-8 sm:grid-cols-3">
@@ -2318,6 +2637,7 @@ export default function HomePage() {
             <CustomerStrip />
             <Stats />
             <Features />
+            <Capabilities />
             <Channels />
             <Testimonials />
             <FinalCta />

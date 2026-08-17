@@ -143,8 +143,8 @@ export default function SignupPage() {
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[5fr_6fr]">
       <aside className="relative hidden flex-col justify-between overflow-hidden bg-navy text-white lg:flex">
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-coral/25 blur-[120px]" />
-          <div className="absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-lavender/15 blur-[110px]" />
+          <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-[var(--brand-orange)]/25 blur-[120px]" />
+          <div className="absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-[var(--brand-blue)]/15 blur-[110px]" />
           <div
             className="absolute inset-0 opacity-[0.15]"
             style={{
@@ -175,7 +175,7 @@ export default function SignupPage() {
               'No credit card required for the 14-day trial',
             ].map((line) => (
               <li key={line} className="flex items-start gap-3">
-                <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-coral text-white">
+                <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[var(--brand-orange)] text-[#111111]">
                   <Check className="h-3 w-3" />
                 </span>
                 {line}
@@ -273,9 +273,9 @@ function StepDot({
         className={cn(
           'grid h-6 w-6 place-items-center rounded-full text-[10px] font-bold',
           current
-            ? 'bg-primary text-white'
+            ? 'bg-[var(--brand-orange)] text-[#111111]'
             : active
-              ? 'bg-orange text-white'
+              ? 'bg-[var(--brand-orange)] text-white'
               : 'bg-muted text-muted-foreground',
         )}
       >
@@ -359,7 +359,7 @@ function Step1({
                 className={cn(
                   'flex cursor-pointer items-start justify-between gap-3 rounded-md border p-3 text-sm transition-colors',
                   planId === p.id
-                    ? 'border-primary bg-primary/5'
+                    ? 'border-[var(--brand-orange)] bg-[var(--brand-orange-soft)]'
                     : 'border-border bg-card hover:bg-muted',
                 )}
               >
@@ -369,7 +369,7 @@ function Step1({
                       {p.name}
                     </span>
                     {p.recommended && (
-                      <span className="rounded-full bg-orange/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-orange">
+                      <span className="rounded-full bg-[var(--brand-orange-soft)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-active)]">
                         Recommended
                       </span>
                     )}
@@ -385,7 +385,7 @@ function Step1({
                     name="plan"
                     checked={planId === p.id}
                     onChange={() => setPlanId(p.id)}
-                    className="h-4 w-4 accent-primary"
+                    className="h-4 w-4 accent-[var(--brand-orange)]"
                     aria-label={p.name}
                   />
                 </div>
@@ -584,15 +584,15 @@ function Step2({
             type="checkbox"
             checked={terms}
             onChange={(e) => setTerms(e.target.checked)}
-            className="mt-0.5 h-4 w-4 accent-primary"
+            className="mt-0.5 h-4 w-4 accent-[var(--brand-orange)]"
           />
           <span className="text-muted-foreground">
             I agree to the{' '}
-            <a href="#" className="text-primary hover:underline">
+            <a href="#" className="text-[var(--brand-blue-active)] hover:underline">
               Terms of Service
             </a>{' '}
             and{' '}
-            <a href="#" className="text-primary hover:underline">
+            <a href="#" className="text-[var(--brand-blue-active)] hover:underline">
               Privacy Policy
             </a>
             .
@@ -698,7 +698,7 @@ function Step3({ subdomain }: { subdomain: string }) {
           'Assigning an account officer',
         ].map((item) => (
           <li key={item} className="flex items-center gap-2 text-muted-foreground">
-            <Loader2 className="h-3 w-3 animate-spin text-primary" />
+            <Loader2 className="h-3 w-3 animate-spin text-[var(--brand-blue-active)]" />
             {item}
           </li>
         ))}

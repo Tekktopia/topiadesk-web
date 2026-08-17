@@ -4,6 +4,25 @@
 
 :root {
   color-scheme: light;
+
+  /* ── Tekktopia brand palette (extracted from the logo) ─────────────────── */
+  --brand-orange: #f5901f;
+  --brand-orange-hover: #ff9f33;
+  --brand-orange-active: #d97a0c;
+  --brand-blue: #137cc6;
+  --brand-blue-hover: #2e92d8;
+  --brand-blue-active: #0f63a0;
+  /* Soft accent tints for chips/surfaces */
+  --brand-orange-soft: #fde7ce;
+  --brand-blue-soft: #d7e9f7;
+}
+
+.dark {
+  color-scheme: dark;
+
+  /* Deepen the soft tints so accent chips stay legible on dark surfaces */
+  --brand-orange-soft: #3a2a14;
+  --brand-blue-soft: #14293a;
 }
 
 body {
