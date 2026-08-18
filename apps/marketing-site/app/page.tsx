@@ -79,10 +79,6 @@ const stats = [
     label: 'SLA compliance',
   },
   {
-    value: '2.8B+',
-    label: 'Customer interactions',
-  },
-  {
     value: '4.9/5',
     label: 'Customer satisfaction',
   },
@@ -1964,6 +1960,8 @@ function Hero() {
   );
 }
 
+// Commented out of the page (see HomePage). Kept for easy restore.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function CustomerStrip() {
   return (
     <section
@@ -2002,8 +2000,8 @@ function CustomerStrip() {
 function Stats() {
   return (
     <section className="bg-white py-20 transition-colors duration-300 sm:py-24 dark:bg-[#14141F]">
-      <div className="mx-auto max-w-[1100px] px-5 sm:px-8">
-        <div className="grid grid-cols-2 gap-y-10 sm:grid-cols-4">
+      <div className="mx-auto max-w-[820px] px-5 sm:px-8">
+        <div className="grid grid-cols-1 gap-y-10 sm:grid-cols-3">
           {stats.map((stat, index) => (
             <Reveal
               key={stat.label}
@@ -2218,6 +2216,8 @@ function Channels() {
   );
 }
 
+// Commented out of the page (see HomePage). Kept for easy restore.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Testimonials() {
   return (
     <section
@@ -2480,10 +2480,6 @@ function Capabilities() {
               <div className="absolute -bottom-20 -right-14 h-52 w-52 rounded-full bg-[var(--brand-orange)]/12 blur-[80px]" />
             </div>
 
-            <span className="absolute right-6 top-6 text-[11px] font-semibold tabular-nums text-white/70">
-              {String(active + 1).padStart(2, '0')} / {String(capabilities.length).padStart(2, '0')}
-            </span>
-
             <AnimatePresence mode="wait">
               <motion.div
                 key={current.tab}
@@ -2676,12 +2672,12 @@ export default function HomePage() {
           <Navigation />
           <main>
             <Hero />
-            <CustomerStrip />
+            {/* <CustomerStrip /> */}
             <Stats />
             <Features />
             <Capabilities />
             <Channels />
-            <Testimonials />
+            {/* <Testimonials /> */}
             <FinalCta />
           </main>
           <Footer />
