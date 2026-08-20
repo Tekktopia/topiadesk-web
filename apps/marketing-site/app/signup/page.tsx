@@ -249,7 +249,7 @@ export default function SignupPage() {
             />
           )}
 
-          {step === 3 && <Step3 subdomain={subdomain} />}
+          {step === 3 && <Step3 subdomain={subdomain} email={email} />}
         </div>
       </main>
     </div>
@@ -670,7 +670,7 @@ function scorePassword(password: string): { score: number; label: string } {
   return { score, label: labels[Math.max(0, score - 1)] ?? '' };
 }
 
-function Step3({ subdomain }: { subdomain: string }) {
+function Step3({ subdomain, email }: { subdomain: string; email: string }) {
   return (
     <div className="space-y-6 text-center">
       <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-emerald-700">
@@ -678,36 +678,34 @@ function Step3({ subdomain }: { subdomain: string }) {
       </div>
       <header>
         <h1 className="font-display text-3xl font-bold tracking-tight">
-          Your tenant is being provisioned
+          Check your inbox
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          We&rsquo;re setting up{' '}
-          <span className="font-mono text-foreground">
-            {subdomain || 'your-tenant'}.topiadesk.com
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+          A custom tenant will be sent to{' '}
+          <span className="font-medium text-foreground">
+            {email || 'your work email'}
           </span>{' '}
-          right now. You&rsquo;ll receive an activation email within the next
-          minute.
+          soon — for you to enjoy Topiadesk free of charge for 14 days.
         </p>
       </header>
 
-      <ul className="space-y-2 rounded-md border border-border bg-muted/40 p-4 text-left text-sm">
-        {[
-          'Reserving subdomain and DNS records',
-          'Seeding default roles, SLAs and ticket statuses',
-          'Provisioning your administrator account',
-          'Assigning an account officer',
-        ].map((item) => (
-          <li key={item} className="flex items-center gap-2 text-muted-foreground">
-            <Loader2 className="h-3 w-3 animate-spin text-[var(--brand-blue-active)]" />
-            {item}
-          </li>
-        ))}
-      </ul>
+      <div className="rounded-md border border-border bg-muted/40 p-4 text-left">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Your workspace
+        </p>
+        <p className="mt-1 font-mono text-sm text-foreground">
+          {subdomain || 'your-tenant'}.topiadesk.com
+        </p>
+      </div>
 
-      <p className="text-xs text-muted-foreground">
-        This usually takes under 60 seconds. We&rsquo;ll redirect you to your
-        admin portal as soon as it&rsquo;s ready.
-      </p>
+      <div className="pt-1">
+        <Button asChild variant="outline" className="w-full">
+          <Link href="/">
+            <ArrowLeft className="h-4 w-4" />
+            Back to home
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }
