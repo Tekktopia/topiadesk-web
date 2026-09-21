@@ -13,6 +13,21 @@ export const metadata: Metadata = {
     icon: [{ url: '/icons/icon.png', type: 'image/png' }],
     apple: [{ url: '/icons/icon.png', type: 'image/png' }],
   },
+  openGraph: {
+    title: 'Topiadesk - The unified support and infrastructure platform',
+    description:
+      'Helpdesk, asset management, monitoring and operations - one tenant, one source of truth.',
+    siteName: 'Topiadesk',
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630 }],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Topiadesk - The unified support and infrastructure platform',
+    description:
+      'Helpdesk, asset management, monitoring and operations - one tenant, one source of truth.',
+    images: ['/og-image.jpg'],
+  },
 };
 
 const THEME_INIT_SCRIPT = `
