@@ -6,26 +6,26 @@ import 'lenis/dist/lenis.css';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Topiadesk - The unified support and infrastructure platform',
+  title: 'TopiaDesk CRM',
   description:
-    'Helpdesk, asset management, monitoring and operations - one tenant, one source of truth.',
+    'Topiadesk CRM -  the super-fast customer support platform built for the way your business actually works',
   icons: {
     icon: [{ url: '/icons/icon.png', type: 'image/png' }],
     apple: [{ url: '/icons/icon.png', type: 'image/png' }],
   },
   openGraph: {
-    title: 'Topiadesk - The unified support and infrastructure platform',
+    title: 'TopiaDesk CRM',
     description:
-      'Helpdesk, asset management, monitoring and operations - one tenant, one source of truth.',
-    siteName: 'Topiadesk',
+      'Topiadesk CRM -  the super-fast customer support platform built for the way your business actually works',
+    siteName: 'TopiaDesk CRM',
     images: [{ url: '/og-image.jpg', width: 1200, height: 630 }],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Topiadesk - The unified support and infrastructure platform',
+    title: 'TopiaDesk CRM',
     description:
-      'Helpdesk, asset management, monitoring and operations - one tenant, one source of truth.',
+      'Topiadesk CRM -  the super-fast customer support platform built for the way your business actually works',
     images: ['/og-image.jpg'],
   },
 };
